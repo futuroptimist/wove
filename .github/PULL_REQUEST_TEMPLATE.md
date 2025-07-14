@@ -3,6 +3,8 @@
 - **Related issues:** closes #
 
 ## Checklist
-- [ ] `./scripts/checks.sh` passes
+- [ ] Quick-Start: lint & tests pass
+- [ ] Commits are atomic and follow Conventional Commits
 - [ ] Docs updated
-- [ ] AGENTS.md updated if needed
+- [ ] AGENTS.md updated if applicable
+- [ ] `./scripts/checks.sh` passes
