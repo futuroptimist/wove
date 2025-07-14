@@ -1,6 +1,6 @@
 # 🤖 Agents
 
-This repository uses lightweight LLM assistants to automate common chores.
+This repository uses lightweight LLM assistants to automate common chores. Conventions are borrowed from [flywheel](https://github.com/futuroptimist/flywheel).
 
 ## Docs Agent
 - Spell-checks and checks links for Markdown files on each PR.
@@ -11,4 +11,4 @@ This repository uses lightweight LLM assistants to automate common chores.
 ## CAD Agent
 - Helps generate new OpenSCAD modules from text prompts.
 
-Run `scripts/checks.sh` before pushing changes to keep the wheel spinning.
+Run `pre-commit run --all-files` before pushing changes to keep the wheel spinning.
