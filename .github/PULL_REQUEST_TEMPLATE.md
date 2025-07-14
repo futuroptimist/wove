@@ -7,3 +7,4 @@
 - [ ] Commits are atomic and follow Conventional Commits
 - [ ] Docs updated
 - [ ] AGENTS.md updated if applicable
+- [ ] `./scripts/checks.sh` passes

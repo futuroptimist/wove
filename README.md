@@ -12,9 +12,16 @@
 git clone git@github.com:YOURNAME/wove.git
 cd wove
 
-# install pre-commit hooks and run checks
-pip install pre-commit
-pre-commit run --all-files
+# personalize badges and docs
+./scripts/setup.sh YOURNAME wove
+
+# create virtualenv and install deps
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+# run checks
+./scripts/checks.sh
 ```
 
-See [AGENTS.md](AGENTS.md) for details on LLM helpers that keep this repo tidy.
+See [AGENTS.md](AGENTS.md) for details on LLM helpers that keep this repo tidy. Contributions are welcome—see [CONTRIBUTING.md](CONTRIBUTING.md) and our [Code of Conduct](CODE_OF_CONDUCT.md). For AI helper context see [llms.txt](llms.txt).

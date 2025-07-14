@@ -15,7 +15,7 @@ if [ -f package.json ]; then
   npm test -- --coverage
 fi
 
-# run tests
+echo "Running tests"
 pytest -q
 
 # docs checks
