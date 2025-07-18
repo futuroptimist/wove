@@ -1,9 +1,19 @@
 # 🧶 wove
 
-[![Tests](https://img.shields.io/github/actions/workflow/status/futuroptimist/wove/tests.yml?label=tests)](https://github.com/futuroptimist/wove/actions/workflows/tests.yml)
+[![Lint & Format](https://img.shields.io/github/actions/workflow/status/futuroptimist/wove/.github/workflows/01-lint-format.yml?label=lint%20%26%20format)](https://github.com/futuroptimist/wove/actions/workflows/01-lint-format.yml)
+[![Tests](https://img.shields.io/github/actions/workflow/status/futuroptimist/wove/.github/workflows/02-tests.yml?label=tests)](https://github.com/futuroptimist/wove/actions/workflows/02-tests.yml)
+[![Coverage](https://codecov.io/gh/futuroptimist/wove/branch/main/graph/badge.svg)](https://codecov.io/gh/futuroptimist/wove)
+[![Docs](https://img.shields.io/github/actions/workflow/status/futuroptimist/wove/.github/workflows/03-docs.yml?label=docs)](https://github.com/futuroptimist/wove/actions/workflows/03-docs.yml)
 [![License](https://img.shields.io/github/license/futuroptimist/wove)](LICENSE)
 
 **wove** aims to provide an open-source toolkit for learning to knit and for building a robotic knitting machine. Documentation in `docs/` walks through the basics of hand knitting while the `cad/` directory contains OpenSCAD files for printable hardware components.
+
+Key features include:
+
+- CI workflows for linting, testing, and docs previews.
+- Pre-commit hooks with spell checking via `pyspelling`.
+- Simple OpenSCAD scripts and STLs for hardware.
+- LLM helpers described in [AGENTS.md](AGENTS.md).
 
 ## Getting Started
 
