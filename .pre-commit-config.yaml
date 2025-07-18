@@ -17,6 +17,7 @@ repos:
           - black
           - pytest
           - linkchecker
+          - pyspelling
           - requests
           - Flask
           - responses
