@@ -5,23 +5,20 @@ on:
       - 'docs/**'
       - 'README.md'
 jobs:
-  spellcheck:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install aspell dictionaries
-        run: sudo apt-get update && sudo apt-get install -y aspell aspell-en
-      - name: Spell check markdown & docs
-        uses: rojopolis/spellcheck-github-actions@0.35.0
-        with:
-          config_path: .spellcheck.yaml
-  linkcheck:
+  docs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
           python-version: '3.x'
-      - run: |
-          pip install linkchecker
-          linkchecker README.md docs/ || true
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install linkchecker pyspelling
+          sudo apt-get update
+          sudo apt-get install -y aspell aspell-en
+      - name: Spell check markdown & docs
+        run: pyspelling -c .spellcheck.yaml
+      - name: Link check
+        run: linkchecker README.md docs/ || true
