@@ -1,3 +1,7 @@
+---
+orphan: true
+---
+
 # Documentation
 
 - [Knitting Basics](knitting-basics.md)
