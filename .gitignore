@@ -19,3 +19,5 @@ dictionary.dic
 .venv/
 playwright-report/
 test-results/
+
+docs/_build/

@@ -109,3 +109,5 @@ sugarkube
 DIY
 deps
 virtualenv
+maxdepth
+toctree
