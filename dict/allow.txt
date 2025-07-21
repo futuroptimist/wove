@@ -111,3 +111,4 @@ deps
 virtualenv
 maxdepth
 toctree
+amigurumi
