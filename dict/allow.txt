@@ -111,3 +111,7 @@ deps
 virtualenv
 maxdepth
 toctree
+crochet
+crocheting
+amigurumi
+slipknot
