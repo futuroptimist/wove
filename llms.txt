@@ -1,14 +1,18 @@
-# Wove llms.txt
+# Wove
+> Open-source toolkit for knitting and crochet with automated helpers
+Documentation and CAD modules for a future robotic knitting machine.
 
-This repository provides a GitHub template with CI workflows, style guides, and LLM-powered helpers.
+## Docs
+- [README](README.md): Getting started and setup
+- [Contributing Guide](CONTRIBUTING.md): Development workflow
+- [CAD Overview](cad/README.md): Hardware modules
+- [User Guides](docs/): Knitting basics and project documentation
 
-Commit messages should be descriptive; every change feeds the public knowledge base.
+## Examples
+- [cad/](cad/): OpenSCAD modules and STL files
+- [tests/](tests/): Example pytest suite
 
-## Development
-- Python 3.12, formatted with black and flake8 via pre-commit.
-- Install hooks with `pre-commit install` and run `pre-commit run --all-files` before pushing.
-- Tests live in `tests/` and run with `pytest`.
-
-See AGENTS.md for built-in assistants, [CLAUDE.md](CLAUDE.md) for
-Anthropic-style best practices, and [CUSTOM_INSTRUCTIONS.md](CUSTOM_INSTRUCTIONS.md)
-for Codex behavior rules. Additional integration guides live in `docs/`.
+## Optional
+- [CODE_OF_CONDUCT](CODE_OF_CONDUCT.md)
+- [Agents guide](AGENTS.md)
+- [llmstxt directories](https://llmstxt.site/)
