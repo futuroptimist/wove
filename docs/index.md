@@ -7,4 +7,6 @@ knitting-basics
 crochet-basics
 robotic-knitting-machine
 styleguides/python
+prompts-codex
+prompts-codex-cad
 ```
