@@ -14,6 +14,7 @@ Key features include:
 - Pre-commit hooks with spell checking via `pyspelling`.
 - Simple OpenSCAD scripts and STLs for hardware.
 - LLM helpers described in [AGENTS.md](AGENTS.md).
+- Sample Codex prompts in [`docs/prompts-codex.md`](docs/prompts-codex.md).
 
 ## Getting Started
 
