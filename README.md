@@ -31,8 +31,11 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
+# install pre-commit hooks
+pre-commit install
+
 # run checks
-./scripts/checks.sh
+pre-commit run --all-files
 ```
 
 The [`scripts/checks.sh`](scripts/checks.sh) script runs:
