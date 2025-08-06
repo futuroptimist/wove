@@ -15,6 +15,7 @@ Key features include:
 - Simple OpenSCAD scripts and STLs for hardware.
 - LLM helpers described in [AGENTS.md](AGENTS.md).
 - Sample Codex prompts in [`docs/prompts-codex.md`](docs/prompts-codex.md).
+- Utility helpers such as a factorial function in [`math_utils.py`](math_utils.py).
 
 ## Getting Started
 
