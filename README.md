@@ -31,8 +31,11 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
+# install pre-commit hooks
+pre-commit install
+
 # run checks
-./scripts/checks.sh
+pre-commit run --all-files
 ```
 
 See [AGENTS.md](AGENTS.md) for details on LLM helpers that keep this repo tidy. Contributions are welcome—see [CONTRIBUTING.md](CONTRIBUTING.md) and our [Code of Conduct](CODE_OF_CONDUCT.md). For AI helper context see [llms.txt](llms.txt).
