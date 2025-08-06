@@ -35,4 +35,10 @@ pip install -r requirements.txt
 ./scripts/checks.sh
 ```
 
+The [`scripts/checks.sh`](scripts/checks.sh) script runs:
+
+- linting
+- tests
+- link checks
+
 See [AGENTS.md](AGENTS.md) for details on LLM helpers that keep this repo tidy. Contributions are welcome—see [CONTRIBUTING.md](CONTRIBUTING.md) and our [Code of Conduct](CODE_OF_CONDUCT.md). For AI helper context see [llms.txt](llms.txt).
