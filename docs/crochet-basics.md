@@ -7,6 +7,13 @@ This guide introduces hand crochet for absolute beginners and outlines a path to
 - **Holding the Yarn** – Maintain even tension by threading the yarn through your fingers.
 - **Starting Slipknot** – Begin projects with a basic slipknot on the hook.
 
+## Glossary
+
+| Term | Meaning |
+| --- | --- |
+| Chain | Basic stitch forming a foundation row by pulling a loop through another loop. |
+| Slip stitch | Short stitch for joining or moving without height; insert hook, yarn over, pull through. |
+
 ## Beginner Techniques
 1. **Chain Stitch** – The foundation for most patterns.
 2. **Single Crochet** – Forms a tight, dense fabric.
