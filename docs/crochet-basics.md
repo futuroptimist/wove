@@ -9,10 +9,10 @@ This guide introduces hand crochet for absolute beginners and outlines a path to
 
 ## Glossary
 
-| Term | Meaning |
-| --- | --- |
-| Chain | Basic stitch forming a foundation row by pulling a loop through another loop. |
-| Slip stitch | Short stitch for joining or moving without height; insert hook, yarn over, pull through. |
+| Term        | Meaning                                             |
+|-------------|-----------------------------------------------------|
+| chain       | foundational loops for building rows or rounds      |
+| slip stitch | joins stitches or moves yarn without adding height |
 
 ## Beginner Techniques
 1. **Chain Stitch** – The foundation for most patterns.
