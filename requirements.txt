@@ -2,3 +2,4 @@ flake8
 isort
 black
 pytest
+pre-commit
