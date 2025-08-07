@@ -16,7 +16,7 @@ if [ -f package.json ]; then
 fi
 
 echo "Running tests"
-pytest -q
+python -m pytest -q
 
 # docs checks
 if command -v pyspelling >/dev/null 2>&1 && [ -f .spellcheck.yaml ]; then
