@@ -13,7 +13,7 @@ Key features include:
 - CI workflows for linting, testing, and docs previews.
 - Pre-commit hooks with spell checking via `pyspelling`.
 - Simple OpenSCAD scripts and STLs for hardware.
-- Utility functions such as a stitch gauge calculator.
+- Utility functions such as stitch and row gauge calculators.
 - LLM helpers described in [AGENTS.md](AGENTS.md).
 - Sample Codex prompts in [`docs/prompts-codex.md`](docs/prompts-codex.md).
 
