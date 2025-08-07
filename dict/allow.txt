@@ -44,6 +44,7 @@ npm
 pipx
 pre
 prettierrc
+pytest
 release-drafter
 repo
 repo_manager
