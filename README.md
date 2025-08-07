@@ -36,6 +36,7 @@ pre-commit install
 
 # run checks
 pre-commit run --all-files
+pytest
 ```
 
 The [`scripts/checks.sh`](scripts/checks.sh) script runs:
