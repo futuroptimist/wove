@@ -13,3 +13,9 @@ This guide introduces the fundamentals of hand knitting with two standard needle
 4. **Bind off** to finish your piece.
 
 Continue experimenting with gauge and patterns as you grow more comfortable.
+
+```python
+from wove import stitches_per_inch
+
+stitches_per_inch(20, 4)  # 5.0 stitches per inch
+```
