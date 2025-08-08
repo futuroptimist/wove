@@ -15,8 +15,15 @@ This guide introduces the fundamentals of hand knitting with two standard needle
 Continue experimenting with gauge and patterns as you grow more comfortable.
 
 ```python
-from wove import rows_per_inch, stitches_per_inch
+from wove import (
+    rows_per_cm,
+    rows_per_inch,
+    stitches_per_cm,
+    stitches_per_inch,
+)
 
 stitches_per_inch(20, 4)  # 5.0 stitches per inch
 rows_per_inch(30, 4)  # 7.5 rows per inch
+stitches_per_cm(20, 10)  # 2.0 stitches per cm
+rows_per_cm(30, 10)  # 3.0 rows per cm
 ```
