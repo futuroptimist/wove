@@ -1,11 +1,6 @@
 import pytest
 
-from wove import (
-    rows_per_cm,
-    rows_per_inch,
-    stitches_per_cm,
-    stitches_per_inch,
-)
+from wove import rows_per_cm, rows_per_inch, stitches_per_cm, stitches_per_inch
 
 
 def test_stitches_per_inch():
