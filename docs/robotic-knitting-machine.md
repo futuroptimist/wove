@@ -10,5 +10,6 @@ The long-term goal of this project is to develop a DIY robotic system that autom
   optional chamfer for smoother stacking.
 - **Calibration cube** – simple 20 mm block for printer calibration.
 - **Yarn guide** – directs yarn through the system and helps maintain tension.
+- **Cable clip** – manages wiring or yarn along the frame.
 
 Generated G-code or custom instructions will drive these parts to knit automatically.
