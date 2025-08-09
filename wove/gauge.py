@@ -79,3 +79,83 @@ def rows_per_cm(rows: int, cm: float) -> float:
     if cm <= 0:
         raise ValueError("cm must be positive")
     return rows / cm
+
+
+def stitches_for_inches(inches: float, gauge: float) -> int:
+    """Return stitch count for a desired width in inches.
+
+    Args:
+        inches: Desired width in inches. Must be > 0.
+        gauge: Stitch gauge in stitches per inch. Must be > 0.
+
+    Returns:
+        Number of stitches rounded to the nearest integer.
+
+    Raises:
+        ValueError: If ``inches`` or ``gauge`` is not positive.
+    """
+    if inches <= 0:
+        raise ValueError("inches must be positive")
+    if gauge <= 0:
+        raise ValueError("gauge must be positive")
+    return round(inches * gauge)
+
+
+def rows_for_inches(inches: float, gauge: float) -> int:
+    """Return row count for a desired height in inches.
+
+    Args:
+        inches: Desired height in inches. Must be > 0.
+        gauge: Row gauge in rows per inch. Must be > 0.
+
+    Returns:
+        Number of rows rounded to the nearest integer.
+
+    Raises:
+        ValueError: If ``inches`` or ``gauge`` is not positive.
+    """
+    if inches <= 0:
+        raise ValueError("inches must be positive")
+    if gauge <= 0:
+        raise ValueError("gauge must be positive")
+    return round(inches * gauge)
+
+
+def stitches_for_cm(cm: float, gauge: float) -> int:
+    """Return stitch count for a desired width in centimeters.
+
+    Args:
+        cm: Desired width in centimeters. Must be > 0.
+        gauge: Stitch gauge in stitches per centimeter. Must be > 0.
+
+    Returns:
+        Number of stitches rounded to the nearest integer.
+
+    Raises:
+        ValueError: If ``cm`` or ``gauge`` is not positive.
+    """
+    if cm <= 0:
+        raise ValueError("cm must be positive")
+    if gauge <= 0:
+        raise ValueError("gauge must be positive")
+    return round(cm * gauge)
+
+
+def rows_for_cm(cm: float, gauge: float) -> int:
+    """Return row count for a desired height in centimeters.
+
+    Args:
+        cm: Desired height in centimeters. Must be > 0.
+        gauge: Row gauge in rows per centimeter. Must be > 0.
+
+    Returns:
+        Number of rows rounded to the nearest integer.
+
+    Raises:
+        ValueError: If ``cm`` or ``gauge`` is not positive.
+    """
+    if cm <= 0:
+        raise ValueError("cm must be positive")
+    if gauge <= 0:
+        raise ValueError("gauge must be positive")
+    return round(cm * gauge)
