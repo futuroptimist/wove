@@ -17,6 +17,11 @@ def test_stitches_per_inch_invalid():
         stitches_per_inch(10, 0)
 
 
+def test_stitches_per_inch_negative_stitches():
+    with pytest.raises(ValueError):
+        stitches_per_inch(-10, 4)
+
+
 def test_rows_per_inch():
     assert rows_per_inch(30, 4) == 7.5
 
@@ -24,6 +29,11 @@ def test_rows_per_inch():
 def test_rows_per_inch_invalid():
     with pytest.raises(ValueError):
         rows_per_inch(10, 0)
+
+
+def test_rows_per_inch_negative_rows():
+    with pytest.raises(ValueError):
+        rows_per_inch(-10, 4)
 
 
 def test_stitches_per_cm():
@@ -35,6 +45,11 @@ def test_stitches_per_cm_invalid():
         stitches_per_cm(10, 0)
 
 
+def test_stitches_per_cm_negative_stitches():
+    with pytest.raises(ValueError):
+        stitches_per_cm(-10, 10)
+
+
 def test_rows_per_cm():
     assert rows_per_cm(30, 10) == 3.0
 
@@ -42,3 +57,8 @@ def test_rows_per_cm():
 def test_rows_per_cm_invalid():
     with pytest.raises(ValueError):
         rows_per_cm(10, 0)
+
+
+def test_rows_per_cm_negative_rows():
+    with pytest.raises(ValueError):
+        rows_per_cm(-10, 10)
