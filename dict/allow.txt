@@ -116,3 +116,4 @@ crochet
 crocheting
 amigurumi
 slipknot
+chamfer
