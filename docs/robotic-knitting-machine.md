@@ -5,8 +5,10 @@ The long-term goal of this project is to develop a DIY robotic system that autom
 ## Planned Modules
 - **Needle adapter** – holds a standard needle and connects to a stepper-driven carriage.
 - **Stepper mount** – secures a motor for precise control.
-- **Carriage** – moves the working yarn and needles according to instructions.
+- **Carriage** – moves the working yarn and needles and includes a center hole for mounting hardware.
 - **Spacer** – maintains consistent gaps between components and now includes an
   optional chamfer for smoother stacking.
+- **Calibration cube** – simple 20 mm block for printer calibration.
+- **Yarn guide** – directs yarn through the system and helps maintain tension.
 
 Generated G-code or custom instructions will drive these parts to knit automatically.

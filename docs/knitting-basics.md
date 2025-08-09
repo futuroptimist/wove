@@ -27,3 +27,6 @@ rows_per_inch(30, 4)  # 7.5 rows per inch
 stitches_per_cm(20, 10)  # 2.0 stitches per cm
 rows_per_cm(30, 10)  # 3.0 rows per cm
 ```
+
+All gauge helpers require positive stitch and row counts and positive measurements.
+Passing non-positive values raises ``ValueError``.
