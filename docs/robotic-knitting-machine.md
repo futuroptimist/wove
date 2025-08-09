@@ -7,5 +7,6 @@ The long-term goal of this project is to develop a DIY robotic system that autom
 - **Stepper mount** – secures a motor for precise control.
 - **Carriage** – moves the working yarn and needles according to instructions.
 - **Spacer** – maintains consistent gaps between components.
+- **Calibration cube** – simple 20 mm block for printer calibration.
 
 Generated G-code or custom instructions will drive these parts to knit automatically.
