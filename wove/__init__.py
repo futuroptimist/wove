@@ -1,3 +1,4 @@
+# isort: skip_file
 from .gauge import (
     rows_per_cm,
     rows_per_inch,
