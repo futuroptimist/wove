@@ -12,5 +12,5 @@ jobs:
           python -m pip install --upgrade pip
           pip install flake8 isort black
           flake8 . --exclude=.venv
-          isort --check-only . --skip .venv
+          isort --profile black --check-only . --skip .venv
           black --check . --exclude ".venv/"

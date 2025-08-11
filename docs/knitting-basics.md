@@ -16,6 +16,8 @@ Continue experimenting with gauge and patterns as you grow more comfortable.
 
 ```python
 from wove import (
+    per_cm_to_per_inch,
+    per_inch_to_per_cm,
     rows_per_cm,
     rows_per_inch,
     stitches_per_cm,
@@ -26,6 +28,8 @@ stitches_per_inch(20, 4)  # 5.0 stitches per inch
 rows_per_inch(30, 4)  # 7.5 rows per inch
 stitches_per_cm(20, 10)  # 2.0 stitches per cm
 rows_per_cm(30, 10)  # 3.0 rows per cm
+per_inch_to_per_cm(5.08)  # ~2.0 per cm
+per_cm_to_per_inch(2.0)  # ~5.08 per inch
 ```
 
 All gauge helpers require positive stitch and row counts and positive measurements.

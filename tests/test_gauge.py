@@ -1,6 +1,13 @@
 import pytest
 
-from wove import rows_per_cm, rows_per_inch, stitches_per_cm, stitches_per_inch
+from wove import (
+    per_cm_to_per_inch,
+    per_inch_to_per_cm,
+    rows_per_cm,
+    rows_per_inch,
+    stitches_per_cm,
+    stitches_per_inch,
+)
 
 
 def test_stitches_per_inch():
@@ -57,3 +64,21 @@ def test_rows_per_cm_invalid_cm():
 def test_rows_per_cm_invalid_rows():
     with pytest.raises(ValueError):
         rows_per_cm(0, 10)
+
+
+def test_per_inch_to_per_cm():
+    assert per_inch_to_per_cm(5.08) == pytest.approx(2.0)
+
+
+def test_per_inch_to_per_cm_invalid():
+    with pytest.raises(ValueError):
+        per_inch_to_per_cm(0)
+
+
+def test_per_cm_to_per_inch():
+    assert per_cm_to_per_inch(2.0) == pytest.approx(5.08)
+
+
+def test_per_cm_to_per_inch_invalid():
+    with pytest.raises(ValueError):
+        per_cm_to_per_inch(0)
