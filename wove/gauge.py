@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+CM_PER_INCH = 2.54
+
 
 def stitches_per_inch(stitches: int, inches: float) -> float:
     """Return stitch gauge in stitches per inch.
@@ -79,3 +81,17 @@ def rows_per_cm(rows: int, cm: float) -> float:
     if cm <= 0:
         raise ValueError("cm must be positive")
     return rows / cm
+
+
+def inches_to_cm(inches: float) -> float:
+    """Return length in centimeters for a positive inch value."""
+    if inches <= 0:
+        raise ValueError("inches must be positive")
+    return inches * CM_PER_INCH
+
+
+def cm_to_inches(cm: float) -> float:
+    """Return length in inches for a positive centimeter value."""
+    if cm <= 0:
+        raise ValueError("cm must be positive")
+    return cm / CM_PER_INCH
