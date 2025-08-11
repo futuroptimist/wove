@@ -10,7 +10,9 @@ The long-term goal of this project is to develop a DIY robotic system that autom
   optional chamfer for smoother stacking.
 - **Calibration cube** – simple 20 mm block with a center hole for printer
   calibration and bridging tests.
+- **Washer** – flat ring for spacing hardware components.
 - **Yarn guide** – directs yarn through the system and helps maintain tension.
-- **End cap** – covers rod ends to prevent snagging.
+- **End cap** – covers rod ends to prevent snagging and now includes an optional
+  chamfer for smoother edges.
 
 Generated G-code or custom instructions will drive these parts to knit automatically.
