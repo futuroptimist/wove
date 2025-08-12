@@ -15,5 +15,6 @@ The long-term goal of this project is to develop a DIY robotic system that autom
 - **Yarn guide** – directs yarn through the system and helps maintain tension.
 - **End cap** – covers rod ends to prevent snagging and now includes an optional
   chamfer for smoother edges.
+- **Alignment pin** – 5 mm cylinder for aligning stacked components.
 
 Generated G-code or custom instructions will drive these parts to knit automatically.
