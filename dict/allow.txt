@@ -117,3 +117,7 @@ crocheting
 amigurumi
 slipknot
 chamfer
+aspell
+linkchecker
+pyspelling
+yaml
