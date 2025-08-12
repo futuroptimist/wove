@@ -14,7 +14,8 @@ Key features include:
 - Pre-commit hooks with spell checking via `pyspelling`.
 - Simple OpenSCAD scripts and STLs for hardware.
 - Utility functions such as stitch and row gauge calculators for inches and centimeters,
-  plus simple unit conversion helpers.
+  plus simple unit conversion helpers.centimeters. See [docs/gauge.md](docs/gauge.md)
+  for examples.
 - LLM helpers described in [AGENTS.md](AGENTS.md).
 - Sample Codex prompts in [`docs/prompts-codex.md`](docs/prompts-codex.md).
 
@@ -39,6 +40,10 @@ pre-commit install
 # run checks
 pre-commit run --all-files
 pytest
+
+# for documentation changes
+pyspelling -c .spellcheck.yaml  # requires 'aspell'
+linkchecker README.md docs/
 ```
 
 The [`scripts/checks.sh`](scripts/checks.sh) script runs:
