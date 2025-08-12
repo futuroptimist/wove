@@ -13,6 +13,7 @@ The long-term goal of this project is to develop a DIY robotic system that autom
   calibration and bridging tests.
 - **Washer** – flat ring for spacing hardware components.
 - **Yarn guide** – directs yarn through the system and helps maintain tension.
+- **Tension post** – vertical pin with a base to anchor yarn tension.
 - **End cap** – covers rod ends to prevent snagging and now includes an optional
   chamfer for smoother edges.
 
