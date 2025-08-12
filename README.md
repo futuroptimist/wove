@@ -38,6 +38,10 @@ pre-commit install
 # run checks
 pre-commit run --all-files
 pytest
+
+# for documentation changes
+pyspelling -c .spellcheck.yaml  # requires 'aspell'
+linkchecker README.md docs/
 ```
 
 The [`scripts/checks.sh`](scripts/checks.sh) script runs:
