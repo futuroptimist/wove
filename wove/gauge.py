@@ -3,6 +3,42 @@ from __future__ import annotations
 CM_PER_INCH = 2.54
 
 
+def inches_to_cm(inches: float) -> float:
+    """Convert inches to centimeters.
+
+    Args:
+        inches: Length in inches. Must be \u2265 0.
+
+    Returns:
+        Equivalent length in centimeters.
+
+    Raises:
+        ValueError: If ``inches`` is negative.
+    """
+
+    if inches < 0:
+        raise ValueError("inches must be non-negative")
+    return inches * CM_PER_INCH
+
+
+def cm_to_inches(cm: float) -> float:
+    """Convert centimeters to inches.
+
+    Args:
+        cm: Length in centimeters. Must be \u2265 0.
+
+    Returns:
+        Equivalent length in inches.
+
+    Raises:
+        ValueError: If ``cm`` is negative.
+    """
+
+    if cm < 0:
+        raise ValueError("cm must be non-negative")
+    return cm / CM_PER_INCH
+
+
 def stitches_per_inch(stitches: int, inches: float) -> float:
     """Return stitch gauge in stitches per inch.
 

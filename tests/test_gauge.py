@@ -1,6 +1,8 @@
 import pytest
 
 from wove import (
+    cm_to_inches,
+    inches_to_cm,
     per_cm_to_per_inch,
     per_inch_to_per_cm,
     rows_per_cm,
@@ -82,3 +84,21 @@ def test_per_cm_to_per_inch():
 def test_per_cm_to_per_inch_invalid():
     with pytest.raises(ValueError):
         per_cm_to_per_inch(0)
+
+
+def test_inches_to_cm():
+    assert inches_to_cm(1.0) == pytest.approx(2.54)
+
+
+def test_inches_to_cm_invalid():
+    with pytest.raises(ValueError):
+        inches_to_cm(-1)
+
+
+def test_cm_to_inches():
+    assert cm_to_inches(2.54) == pytest.approx(1.0)
+
+
+def test_cm_to_inches_invalid():
+    with pytest.raises(ValueError):
+        cm_to_inches(-1)
