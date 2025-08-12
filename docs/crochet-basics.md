@@ -1,4 +1,4 @@
-# Crochet Guide
+# Crochet Basics
 
 This guide introduces hand crochet for absolute beginners and outlines a path toward more advanced patterns.
 
