@@ -12,4 +12,3 @@ per_cm_to_per_inch(2.0)  # 5.08
 
 Each function checks that its inputs are positive and raises `ValueError` when
 an invalid value is supplied.
-

@@ -1,6 +1,8 @@
 # Robotic Knitting Machine Overview
 
-The long-term goal of this project is to develop a DIY robotic system that automates knitting. Components are modeled in OpenSCAD and live in the `cad/` directory.
+The long-term goal of this project is to develop a DIY robotic system that automates
+knitting. Components are modeled in [OpenSCAD](https://openscad.org/) and stored in
+the [`cad/`](../cad/) directory, where you can modify or export printable parts.
 
 ## Planned Modules
 - **Needle adapter** – holds a standard needle with adjustable clearance and connects to a
