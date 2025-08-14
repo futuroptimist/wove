@@ -17,5 +17,6 @@ The long-term goal of this project is to develop a DIY robotic system that autom
 - **End cap** – covers rod ends to prevent snagging and now includes an optional
   chamfer for smoother edges.
 - **Alignment pin** – 5 mm cylinder for aligning stacked components.
+- **Mounting bracket** – rectangular plate with two holes for joining components.
 
 Generated G-code or custom instructions will drive these parts to knit automatically.
