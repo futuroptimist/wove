@@ -1,15 +1,17 @@
 # Gauge utilities
 
-The `wove.gauge` module provides helpers for calculating stitch and row gauge and
-converting measurements between inches and centimeters.
+The `wove.gauge` module offers helpers for computing stitch and row gauge and
+converting measurements between inches and centimeters. To measure gauge, knit a
+swatch, measure its width or height, and pass both the stitch or row count and the
+measurement to the appropriate function.
 
 ```python
-from wove import stitches_per_inch, per_cm_to_per_inch
+from wove import stitches_per_inch, rows_per_inch, per_cm_to_per_inch
 
-stitches_per_inch(20, 4)  # 5.0
-per_cm_to_per_inch(2.0)  # 5.08
+stitches_per_inch(20, 4)  # 5.0 stitches per inch
+rows_per_inch(30, 4)      # 7.5 rows per inch
+per_cm_to_per_inch(2.0)   # ~5.08 per inch
 ```
 
-Each function checks that its inputs are positive and raises `ValueError` when
-an invalid value is supplied.
-
+Gauge helpers require positive counts and measurements. Passing zero or negative
+values raises ``ValueError``.
