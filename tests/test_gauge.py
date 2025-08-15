@@ -7,6 +7,8 @@ from wove import (
     per_inch_to_per_cm,
     rows_per_cm,
     rows_per_inch,
+    stitches_for_cm,
+    stitches_for_inches,
     stitches_per_cm,
     stitches_per_inch,
 )
@@ -84,6 +86,34 @@ def test_per_cm_to_per_inch():
 def test_per_cm_to_per_inch_invalid():
     with pytest.raises(ValueError):
         per_cm_to_per_inch(0)
+
+
+def test_stitches_for_inches():
+    assert stitches_for_inches(5.0, 4) == 20
+
+
+def test_stitches_for_inches_invalid_gauge():
+    with pytest.raises(ValueError):
+        stitches_for_inches(0, 4)
+
+
+def test_stitches_for_inches_invalid_inches():
+    with pytest.raises(ValueError):
+        stitches_for_inches(5.0, 0)
+
+
+def test_stitches_for_cm():
+    assert stitches_for_cm(2.0, 10) == 20
+
+
+def test_stitches_for_cm_invalid_gauge():
+    with pytest.raises(ValueError):
+        stitches_for_cm(0, 10)
+
+
+def test_stitches_for_cm_invalid_cm():
+    with pytest.raises(ValueError):
+        stitches_for_cm(2.0, 0)
 
 
 def test_inches_to_cm():
