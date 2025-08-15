@@ -14,8 +14,7 @@ Key features include:
 - Pre-commit hooks with spell checking via `pyspelling`.
 - Simple OpenSCAD scripts and STLs for hardware.
 - Utility functions such as stitch and row gauge calculators for inches and centimeters,
-  plus simple unit conversion helpers.centimeters. See [docs/gauge.md](docs/gauge.md)
-  for examples.
+  plus simple unit conversion helpers. See [docs/gauge.md](docs/gauge.md) for examples.
 - LLM helpers described in [AGENTS.md](AGENTS.md).
 - Sample Codex prompts in [`docs/prompts-codex.md`](docs/prompts-codex.md).
 
