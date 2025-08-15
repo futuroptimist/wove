@@ -151,3 +151,43 @@ def per_cm_to_per_inch(value: float) -> float:
     if value <= 0:
         raise ValueError("value must be positive")
     return value * CM_PER_INCH
+
+
+def stitches_for_inches(gauge: float, inches: float) -> int:
+    """Return the number of stitches needed for a width in inches.
+
+    Args:
+        gauge: Stitch gauge in stitches per inch. Must be > 0.
+        inches: Desired width in inches. Must be > 0.
+
+    Returns:
+        Required number of stitches rounded to the nearest whole number.
+
+    Raises:
+        ValueError: If ``gauge`` or ``inches`` is not positive.
+    """
+    if gauge <= 0:
+        raise ValueError("gauge must be positive")
+    if inches <= 0:
+        raise ValueError("inches must be positive")
+    return int(round(gauge * inches))
+
+
+def stitches_for_cm(gauge: float, cm: float) -> int:
+    """Return the number of stitches needed for a width in centimeters.
+
+    Args:
+        gauge: Stitch gauge in stitches per centimeter. Must be > 0.
+        cm: Desired width in centimeters. Must be > 0.
+
+    Returns:
+        Required number of stitches rounded to the nearest whole number.
+
+    Raises:
+        ValueError: If ``gauge`` or ``cm`` is not positive.
+    """
+    if gauge <= 0:
+        raise ValueError("gauge must be positive")
+    if cm <= 0:
+        raise ValueError("cm must be positive")
+    return int(round(gauge * cm))
