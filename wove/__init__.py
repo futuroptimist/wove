@@ -6,6 +6,8 @@ from .gauge import (
     per_inch_to_per_cm,
     rows_per_cm,
     rows_per_inch,
+    rows_for_cm,
+    rows_for_inches,
     stitches_for_cm,
     stitches_for_inches,
     stitches_per_cm,
@@ -23,4 +25,6 @@ __all__ = [
     "per_cm_to_per_inch",
     "stitches_for_inches",
     "stitches_for_cm",
+    "rows_for_inches",
+    "rows_for_cm",
 ]
