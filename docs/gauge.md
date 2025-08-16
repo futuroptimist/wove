@@ -11,6 +11,7 @@ To calculate gauge:
 2. Block the swatch and lay it flat to relax the stitches.
 3. Measure in the middle of the swatch and count stitches across and rows down.
 4. Pass those counts and measurements to the helper functions shown below.
+5. Use `stitches_for_inches` or `stitches_for_cm` to estimate your cast-on.
 
 ```python
 from wove import (
