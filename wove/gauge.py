@@ -191,3 +191,45 @@ def stitches_for_cm(gauge: float, cm: float) -> int:
     if cm <= 0:
         raise ValueError("cm must be positive")
     return int(round(gauge * cm))
+
+
+def rows_for_inches(gauge: float, inches: float) -> int:
+    """Return the number of rows needed for a height in inches.
+
+    Args:
+        gauge: Row gauge in rows per inch. Must be > 0.
+        inches: Desired height in inches. Must be > 0.
+
+    Returns:
+        Required number of rows rounded to the nearest whole number.
+
+    Raises:
+        ValueError: If ``gauge`` or ``inches`` is not positive.
+    """
+
+    if gauge <= 0:
+        raise ValueError("gauge must be positive")
+    if inches <= 0:
+        raise ValueError("inches must be positive")
+    return int(round(gauge * inches))
+
+
+def rows_for_cm(gauge: float, cm: float) -> int:
+    """Return the number of rows needed for a height in centimeters.
+
+    Args:
+        gauge: Row gauge in rows per centimeter. Must be > 0.
+        cm: Desired height in centimeters. Must be > 0.
+
+    Returns:
+        Required number of rows rounded to the nearest whole number.
+
+    Raises:
+        ValueError: If ``gauge`` or ``cm`` is not positive.
+    """
+
+    if gauge <= 0:
+        raise ValueError("gauge must be positive")
+    if cm <= 0:
+        raise ValueError("cm must be positive")
+    return int(round(gauge * cm))
