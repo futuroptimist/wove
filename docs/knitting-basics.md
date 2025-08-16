@@ -3,7 +3,7 @@
 This guide introduces the fundamentals of hand knitting with two standard needles.
 
 ## Materials
-- A pair of straight knitting needles
+- A pair of straight knitting needles sized for your yarn
 - Worsted-weight yarn
 
 ## First Steps
@@ -11,6 +11,13 @@ This guide introduces the fundamentals of hand knitting with two standard needle
 2. Practice the **knit stitch** to create a simple fabric.
 3. Learn the **purl stitch** to add texture.
 4. **Bind off** to finish your piece.
+
+## Measuring Gauge
+
+Knit a small swatch (at least 4 in / 10 cm square), block it, then measure
+the stitches across and rows down in the center. Use the
+[gauge utilities](gauge.md) to convert between units or estimate how many
+stitches you need for a project.
 
 Continue experimenting with gauge and patterns as you grow more comfortable.
 
