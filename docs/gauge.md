@@ -2,7 +2,7 @@
 
 The `wove.gauge` module provides helpers for calculating stitch and row gauge,
 converting measurements between inches and centimeters, and estimating the
-number of stitches needed for a given width.
+number of stitches or rows needed for a given dimension.
 
 To calculate gauge:
 
@@ -27,7 +27,10 @@ stitches_per_cm(20, 10)    # 2.0 stitches per cm
 rows_per_cm(30, 10)        # 3.0 rows per cm
 per_cm_to_per_inch(2.0)    # 5.08
 per_inch_to_per_cm(5.08)   # ~2.0 per cm
+stitches_for_inches(5.0, 4)  # 20 stitches
+rows_for_inches(7.5, 4)      # 30 rows
 stitches_for_cm(2.0, 10)     # 20 stitches
+rows_for_cm(3.0, 10)         # 30 rows
 ```
 
 Each function checks that its inputs are positive and raises `ValueError`
