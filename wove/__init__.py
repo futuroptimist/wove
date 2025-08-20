@@ -1,13 +1,15 @@
 # isort: skip_file
 from .gauge import (
+    cm_for_stitches,
     cm_to_inches,
+    inches_for_stitches,
     inches_to_cm,
     per_cm_to_per_inch,
     per_inch_to_per_cm,
-    rows_per_cm,
-    rows_per_inch,
     rows_for_cm,
     rows_for_inches,
+    rows_per_cm,
+    rows_per_inch,
     stitches_for_cm,
     stitches_for_inches,
     stitches_per_cm,
@@ -15,7 +17,9 @@ from .gauge import (
 )
 
 __all__ = [
+    "cm_for_stitches",
     "cm_to_inches",
+    "inches_for_stitches",
     "inches_to_cm",
     "stitches_per_inch",
     "rows_per_inch",
