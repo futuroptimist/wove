@@ -3,7 +3,9 @@
 The `wove.gauge` module provides helpers for calculating stitch and row gauge,
 converting measurements between inches and centimeters, and estimating the
 number of stitches needed for a given width. Use `stitches_for_inches` or
-`stitches_for_cm` to calculate how many stitches a project requires.
+`stitches_for_cm` to calculate how many stitches a project requires, or
+`inches_for_stitches` and `cm_for_stitches` to determine width from a stitch
+count.
 
 To calculate gauge:
 
@@ -11,7 +13,8 @@ To calculate gauge:
 2. Block the swatch and lay it flat to relax the stitches.
 3. Measure in the middle of the swatch and count stitches across and rows down.
 4. Pass those counts and measurements to the helper functions shown below.
-5. Use `stitches_for_inches` or `stitches_for_cm` to estimate your cast-on.
+5. Use `stitches_for_inches` or `stitches_for_cm` to estimate your cast-on, or
+   `inches_for_stitches`/`cm_for_stitches` to check a pattern's finished size.
 
 ```python
 from wove import (
@@ -23,6 +26,8 @@ from wove import (
     per_inch_to_per_cm,
     stitches_for_inches,
     stitches_for_cm,
+    inches_for_stitches,
+    cm_for_stitches,
     rows_for_inches,
     rows_for_cm,
 )
@@ -37,6 +42,8 @@ rows_for_inches(7.5, 4)      # 30 rows
 rows_for_cm(3.0, 10)         # 30 rows
 stitches_for_inches(5.0, 7)   # 35 stitches for 7 in width
 stitches_for_cm(2.0, 10)      # 20 stitches for 10 cm width
+inches_for_stitches(35, 5.0)  # 7.0 inches for 35 stitches
+cm_for_stitches(20, 2.0)      # 10.0 cm for 20 stitches
 ```
 
 Each function checks that its inputs are positive and raises `ValueError`
