@@ -10,4 +10,6 @@ gauge
 styleguides/python
 prompts-codex
 prompts-codex-cad
+prompts-codex-docs
+prompts-codex-ci-fix
 ```
