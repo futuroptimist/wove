@@ -1,6 +1,7 @@
 # Knitting Basics
 
-This guide introduces the fundamentals of hand knitting with two standard needles.
+This guide introduces the fundamentals of hand knitting with two
+standard needles.
 
 ## Materials
 - A pair of straight knitting needles sized for your yarn
@@ -12,12 +13,21 @@ This guide introduces the fundamentals of hand knitting with two standard needle
 3. Learn the **purl stitch** to add texture.
 4. **Bind off** to finish your piece.
 
+## Gauge
+
+Gauge keeps your project at the intended size; even small stitch differences
+can grow into inches on larger pieces. Swatching ensures your fabric matches
+the pattern's expectations.
+
+1. Cast on enough stitches for a 4 in / 10 cm square in your pattern.
+2. Knit until the swatch reaches 4 in / 10 cm tall.
+3. Block the swatch, then measure stitches and rows in the center.
+
 ## Measuring Gauge
 
-Knit a small swatch (at least 4 in / 10 cm square), block it, then measure
-the stitches across and rows down in the center. Use the
-[gauge utilities](gauge.md) to convert between units or estimate how many
-stitches you need for a project.
+After knitting and blocking your swatch, count the stitches across and rows
+down in the center. Use the [gauge utilities](gauge.md) to convert between
+units or estimate how many stitches you need for a project.
 
 Continue experimenting with gauge and patterns as you grow more comfortable.
 
@@ -43,6 +53,7 @@ inches_to_cm(1)  # 2.54 cm
 cm_to_inches(2.54)  # 1.0 in
 ```
 
-All gauge helpers require positive stitch and row counts and positive measurements.
-Passing non-positive values raises ``ValueError``. Unit conversion helpers accept
-non-negative values and raise ``ValueError`` for negatives.
+All gauge helpers require positive stitch and row counts and positive
+measurements. Passing non-positive values raises ``ValueError``.
+Unit conversion helpers accept non-negative values and raise
+``ValueError`` for negatives.
