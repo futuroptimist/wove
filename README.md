@@ -49,7 +49,7 @@ pyspelling -c .spellcheck.yaml  # requires 'aspell'
 linkchecker README.md docs/
 ```
 
-The [`scripts/checks.sh`](scripts/checks.sh) script runs:
+The [`./scripts/checks.sh`](./scripts/checks.sh) script runs:
 
 - linting
 - tests
