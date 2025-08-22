@@ -5,6 +5,7 @@
 
 knitting-basics
 crochet-basics
+yarn-basics
 robotic-knitting-machine
 gauge
 styleguides/python
