@@ -18,5 +18,6 @@ Then open `docs/_build/html/index.html` in a browser.
 - [Robotic Knitting Machine](robotic-knitting-machine.md)
 - [Gauge utilities](gauge.md)
 - [Python Style Guide](styleguides/python.md)
+- [Markdown Style Guide](styleguides/markdown.md)
 - [Codex Prompt](prompts-codex.md)
 - [Codex CAD Prompt](prompts-codex-cad.md)
