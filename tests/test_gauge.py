@@ -106,6 +106,10 @@ def test_stitches_for_inches_invalid_inches():
         stitches_for_inches(5.0, 0)
 
 
+def test_stitches_for_inches_rounds_half_up():
+    assert stitches_for_inches(5.0, 0.5) == 3
+
+
 def test_stitches_for_cm():
     assert stitches_for_cm(2.0, 10) == 20
 
@@ -118,6 +122,10 @@ def test_stitches_for_cm_invalid_gauge():
 def test_stitches_for_cm_invalid_cm():
     with pytest.raises(ValueError):
         stitches_for_cm(2.0, 0)
+
+
+def test_stitches_for_cm_rounds_half_up():
+    assert stitches_for_cm(2.0, 1.25) == 3
 
 
 def test_inches_for_stitches():
@@ -162,6 +170,10 @@ def test_rows_for_inches_invalid_inches():
         rows_for_inches(7.5, 0)
 
 
+def test_rows_for_inches_rounds_half_up():
+    assert rows_for_inches(5.0, 0.5) == 3
+
+
 def test_rows_for_cm():
     assert rows_for_cm(3.0, 10) == 30
 
@@ -174,6 +186,10 @@ def test_rows_for_cm_invalid_gauge():
 def test_rows_for_cm_invalid_cm():
     with pytest.raises(ValueError):
         rows_for_cm(3.0, 0)
+
+
+def test_rows_for_cm_rounds_half_up():
+    assert rows_for_cm(2.0, 1.25) == 3
 
 
 def test_inches_to_cm():

@@ -47,4 +47,6 @@ cm_for_stitches(20, 2.0)      # 10.0 cm for 20 stitches
 ```
 
 Each function checks that its inputs are positive and raises `ValueError`
-when an invalid value is supplied.
+when an invalid value is supplied. Conversions from gauge to counts
+use standard arithmetic rounding so that `.5` values round up instead of
+down.

@@ -1,6 +1,13 @@
 from __future__ import annotations
 
+import math
+
 CM_PER_INCH = 2.54
+
+
+def _round_half_up(value: float) -> int:
+    """Return ``value`` rounded to the nearest whole number with .5 rounding up."""
+    return math.floor(value + 0.5)
 
 
 def inches_to_cm(inches: float) -> float:
@@ -161,7 +168,8 @@ def stitches_for_inches(gauge: float, inches: float) -> int:
         inches: Desired width in inches. Must be > 0.
 
     Returns:
-        Required number of stitches rounded to the nearest whole number.
+        Required number of stitches rounded to the nearest whole number with `.5` values
+        rounded up.
 
     Raises:
         ValueError: If ``gauge`` or ``inches`` is not positive.
@@ -170,7 +178,7 @@ def stitches_for_inches(gauge: float, inches: float) -> int:
         raise ValueError("gauge must be positive")
     if inches <= 0:
         raise ValueError("inches must be positive")
-    return int(round(gauge * inches))
+    return _round_half_up(gauge * inches)
 
 
 def stitches_for_cm(gauge: float, cm: float) -> int:
@@ -181,7 +189,8 @@ def stitches_for_cm(gauge: float, cm: float) -> int:
         cm: Desired width in centimeters. Must be > 0.
 
     Returns:
-        Required number of stitches rounded to the nearest whole number.
+        Required number of stitches rounded to the nearest whole number with `.5` values
+        rounded up.
 
     Raises:
         ValueError: If ``gauge`` or ``cm`` is not positive.
@@ -190,7 +199,7 @@ def stitches_for_cm(gauge: float, cm: float) -> int:
         raise ValueError("gauge must be positive")
     if cm <= 0:
         raise ValueError("cm must be positive")
-    return int(round(gauge * cm))
+    return _round_half_up(gauge * cm)
 
 
 def rows_for_inches(gauge: float, inches: float) -> int:
@@ -201,7 +210,8 @@ def rows_for_inches(gauge: float, inches: float) -> int:
         inches: Desired height in inches. Must be > 0.
 
     Returns:
-        Required number of rows rounded to the nearest whole number.
+        Required number of rows rounded to the nearest whole number with `.5` values
+        rounded up.
 
     Raises:
         ValueError: If ``gauge`` or ``inches`` is not positive.
@@ -210,7 +220,7 @@ def rows_for_inches(gauge: float, inches: float) -> int:
         raise ValueError("gauge must be positive")
     if inches <= 0:
         raise ValueError("inches must be positive")
-    return int(round(gauge * inches))
+    return _round_half_up(gauge * inches)
 
 
 def rows_for_cm(gauge: float, cm: float) -> int:
@@ -221,7 +231,8 @@ def rows_for_cm(gauge: float, cm: float) -> int:
         cm: Desired height in centimeters. Must be > 0.
 
     Returns:
-        Required number of rows rounded to the nearest whole number.
+        Required number of rows rounded to the nearest whole number with `.5` values
+        rounded up.
 
     Raises:
         ValueError: If ``gauge`` or ``cm`` is not positive.
@@ -230,7 +241,7 @@ def rows_for_cm(gauge: float, cm: float) -> int:
         raise ValueError("gauge must be positive")
     if cm <= 0:
         raise ValueError("cm must be positive")
-    return int(round(gauge * cm))
+    return _round_half_up(gauge * cm)
 
 
 def inches_for_stitches(stitches: int, gauge: float) -> float:
