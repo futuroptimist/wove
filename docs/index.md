@@ -9,6 +9,7 @@ robotic-knitting-machine
 gauge
 learning-resources
 testing
+glossary
 styleguides/python
 styleguides/markdown
 prompts-codex
