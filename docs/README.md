@@ -21,3 +21,4 @@ Then open `docs/_build/html/index.html` in a browser.
 - [Markdown Style Guide](styleguides/markdown.md)
 - [Codex Prompt](prompts-codex.md)
 - [Codex CAD Prompt](prompts-codex-cad.md)
+- [Testing](testing.md)

@@ -8,6 +8,7 @@ crochet-basics
 robotic-knitting-machine
 gauge
 learning-resources
+testing
 styleguides/python
 styleguides/markdown
 prompts-codex
