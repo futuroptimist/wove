@@ -9,6 +9,7 @@ robotic-knitting-machine
 gauge
 styleguides/python
 styleguides/markdown
+contributing-docs
 prompts-codex
 prompts-codex-cad
 prompts-docs
