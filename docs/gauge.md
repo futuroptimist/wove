@@ -5,7 +5,8 @@ converting measurements between inches, centimeters, yards, and meters, and
 estimating the number of stitches needed for a given width. Use
 `stitches_for_inches` or `stitches_for_cm` to calculate how many stitches a
 project requires, or `inches_for_stitches` and `cm_for_stitches` to determine
-width from a stitch count.
+width from a stitch count. Use `inches_for_rows` and `cm_for_rows` to convert a
+row count back to height.
 
 Values ending in `.5` are rounded up when using `stitches_for_inches`,
 `stitches_for_cm`, `rows_for_inches`, or `rows_for_cm`.
@@ -29,6 +30,8 @@ from wove import (
     per_inch_to_per_cm,
     stitches_for_inches,
     stitches_for_cm,
+    inches_for_rows,
+    cm_for_rows,
     inches_for_stitches,
     cm_for_stitches,
     rows_for_inches,
@@ -47,6 +50,8 @@ per_cm_to_per_inch(2.0)    # 5.08
 per_inch_to_per_cm(5.08)   # ~2.0 per cm
 rows_for_inches(7.5, 4)      # 30 rows
 rows_for_cm(3.0, 10)         # 30 rows
+inches_for_rows(30, 7.5)     # 4.0 inches for 30 rows
+cm_for_rows(30, 3.0)         # 10.0 cm for 30 rows
 stitches_for_inches(5.0, 7)   # 35 stitches for 7 in width
 stitches_for_cm(2.0, 10)      # 20 stitches for 10 cm width
 inches_for_stitches(35, 5.0)  # 7.0 inches for 35 stitches

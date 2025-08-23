@@ -2,7 +2,9 @@
 from .gauge import (
     cm_for_stitches,
     cm_to_inches,
+    cm_for_rows,
     inches_for_stitches,
+    inches_for_rows,
     inches_to_cm,
     inches_to_yards,
     meters_to_yards,
@@ -23,7 +25,9 @@ from .gauge import (
 __all__ = [
     "cm_for_stitches",
     "cm_to_inches",
+    "cm_for_rows",
     "inches_for_stitches",
+    "inches_for_rows",
     "inches_to_cm",
     "inches_to_yards",
     "meters_to_yards",
