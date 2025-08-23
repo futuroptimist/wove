@@ -4,6 +4,7 @@ import math
 
 CM_PER_INCH = 2.54
 M_PER_YARD = 0.9144
+INCHES_PER_YARD = 36.0
 
 
 def _round_half_up(value: float) -> int:
@@ -45,6 +46,42 @@ def cm_to_inches(cm: float) -> float:
     if cm < 0:
         raise ValueError("cm must be non-negative")
     return cm / CM_PER_INCH
+
+
+def yards_to_inches(yards: float) -> float:
+    """Convert yards to inches.
+
+    Args:
+        yards: Length in yards. Must be \u2265 0.
+
+    Returns:
+        Equivalent length in inches.
+
+    Raises:
+        ValueError: If ``yards`` is negative.
+    """
+
+    if yards < 0:
+        raise ValueError("yards must be non-negative")
+    return yards * INCHES_PER_YARD
+
+
+def inches_to_yards(inches: float) -> float:
+    """Convert inches to yards.
+
+    Args:
+        inches: Length in inches. Must be \u2265 0.
+
+    Returns:
+        Equivalent length in yards.
+
+    Raises:
+        ValueError: If ``inches`` is negative.
+    """
+
+    if inches < 0:
+        raise ValueError("inches must be non-negative")
+    return inches / INCHES_PER_YARD
 
 
 def yards_to_meters(yards: float) -> float:

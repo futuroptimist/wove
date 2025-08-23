@@ -1,3 +1,7 @@
+# isort: skip_file
+
+# isort: skip_file
+
 import pytest
 
 from wove import (
@@ -5,6 +9,7 @@ from wove import (
     cm_to_inches,
     inches_for_stitches,
     inches_to_cm,
+    inches_to_yards,
     meters_to_yards,
     per_cm_to_per_inch,
     per_inch_to_per_cm,
@@ -16,6 +21,7 @@ from wove import (
     stitches_for_inches,
     stitches_per_cm,
     stitches_per_inch,
+    yards_to_inches,
     yards_to_meters,
 )
 
@@ -194,6 +200,24 @@ def test_cm_to_inches():
 def test_cm_to_inches_invalid():
     with pytest.raises(ValueError):
         cm_to_inches(-1)
+
+
+def test_yards_to_inches():
+    assert yards_to_inches(1.0) == pytest.approx(36.0)
+
+
+def test_yards_to_inches_invalid():
+    with pytest.raises(ValueError):
+        yards_to_inches(-1)
+
+
+def test_inches_to_yards():
+    assert inches_to_yards(36.0) == pytest.approx(1.0)
+
+
+def test_inches_to_yards_invalid():
+    with pytest.raises(ValueError):
+        inches_to_yards(-1)
 
 
 def test_yards_to_meters():
