@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 
 CM_PER_INCH = 2.54
+M_PER_YARD = 0.9144
 
 
 def _round_half_up(value: float) -> int:
@@ -44,6 +45,42 @@ def cm_to_inches(cm: float) -> float:
     if cm < 0:
         raise ValueError("cm must be non-negative")
     return cm / CM_PER_INCH
+
+
+def yards_to_meters(yards: float) -> float:
+    """Convert yards to meters.
+
+    Args:
+        yards: Length in yards. Must be \u2265 0.
+
+    Returns:
+        Equivalent length in meters.
+
+    Raises:
+        ValueError: If ``yards`` is negative.
+    """
+
+    if yards < 0:
+        raise ValueError("yards must be non-negative")
+    return yards * M_PER_YARD
+
+
+def meters_to_yards(meters: float) -> float:
+    """Convert meters to yards.
+
+    Args:
+        meters: Length in meters. Must be \u2265 0.
+
+    Returns:
+        Equivalent length in yards.
+
+    Raises:
+        ValueError: If ``meters`` is negative.
+    """
+
+    if meters < 0:
+        raise ValueError("meters must be non-negative")
+    return meters / M_PER_YARD
 
 
 def stitches_per_inch(stitches: int, inches: float) -> float:
