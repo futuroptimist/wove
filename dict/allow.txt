@@ -121,3 +121,5 @@ aspell
 linkchecker
 pyspelling
 yaml
+
+Swatching
