@@ -8,6 +8,7 @@ crochet-basics
 robotic-knitting-machine
 gauge
 styleguides/python
+styleguides/markdown
 prompts-codex
 prompts-codex-cad
 prompts-docs

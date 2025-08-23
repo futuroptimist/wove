@@ -212,3 +212,11 @@ def test_meters_to_yards():
 def test_meters_to_yards_invalid():
     with pytest.raises(ValueError):
         meters_to_yards(-1)
+
+
+def test_stitches_for_inches_half_up():
+    assert stitches_for_inches(2.5, 1) == 3
+
+
+def test_rows_for_cm_half_up():
+    assert rows_for_cm(2.5, 1) == 3

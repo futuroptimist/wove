@@ -7,6 +7,9 @@ estimating the number of stitches needed for a given width. Use
 project requires, or `inches_for_stitches` and `cm_for_stitches` to determine
 width from a stitch count.
 
+Values ending in `.5` are rounded up when using `stitches_for_inches`,
+`stitches_for_cm`, `rows_for_inches`, or `rows_for_cm`.
+
 To calculate gauge:
 
 1. Knit a swatch at least 4 in (10 cm) square.
