@@ -13,4 +13,5 @@ prompts-codex
 prompts-codex-cad
 prompts-docs
 prompts-tests
+testing
 ```
