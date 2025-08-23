@@ -121,5 +121,7 @@ aspell
 linkchecker
 pyspelling
 yaml
-
+AllFreeCrochet
+Knitty
 Swatching
+VeryPink
