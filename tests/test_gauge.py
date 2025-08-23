@@ -18,6 +18,7 @@ from wove import (
     stitches_per_inch,
     yards_to_meters,
 )
+from wove.gauge import _round_half_up
 
 
 def test_stitches_per_inch():
@@ -220,3 +221,8 @@ def test_stitches_for_inches_half_up():
 
 def test_rows_for_cm_half_up():
     assert rows_for_cm(2.5, 1) == 3
+
+
+def test_round_half_up_invalid():
+    with pytest.raises(ValueError):
+        _round_half_up(-0.1)

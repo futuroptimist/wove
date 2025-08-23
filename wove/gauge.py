@@ -5,9 +5,15 @@ import math
 CM_PER_INCH = 2.54
 M_PER_YARD = 0.9144
 
-
 def _round_half_up(value: float) -> int:
-    """Round a positive float to the nearest int with halves rounding up."""
+    """Round a non-negative float to the nearest int with halves rounding up.
+
+    Raises:
+        ValueError: If ``value`` is negative.
+    """
+
+    if value < 0:
+        raise ValueError("value must be non-negative")
     return int(math.floor(value + 0.5))
 
 
