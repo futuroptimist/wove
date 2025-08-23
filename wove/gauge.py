@@ -321,3 +321,45 @@ def cm_for_stitches(stitches: int, gauge: float) -> float:
     if gauge <= 0:
         raise ValueError("gauge must be positive")
     return stitches / gauge
+
+
+def inches_for_rows(rows: int, gauge: float) -> float:
+    """Return the height in inches for a given row count.
+
+    Args:
+        rows: Number of rows. Must be > 0.
+        gauge: Row gauge in rows per inch. Must be > 0.
+
+    Returns:
+        Height in inches.
+
+    Raises:
+        ValueError: If ``rows`` or ``gauge`` is not positive.
+    """
+
+    if rows <= 0:
+        raise ValueError("rows must be positive")
+    if gauge <= 0:
+        raise ValueError("gauge must be positive")
+    return rows / gauge
+
+
+def cm_for_rows(rows: int, gauge: float) -> float:
+    """Return the height in centimeters for a given row count.
+
+    Args:
+        rows: Number of rows. Must be > 0.
+        gauge: Row gauge in rows per centimeter. Must be > 0.
+
+    Returns:
+        Height in centimeters.
+
+    Raises:
+        ValueError: If ``rows`` or ``gauge`` is not positive.
+    """
+
+    if rows <= 0:
+        raise ValueError("rows must be positive")
+    if gauge <= 0:
+        raise ValueError("gauge must be positive")
+    return rows / gauge

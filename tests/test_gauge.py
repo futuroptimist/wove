@@ -2,8 +2,10 @@ import pytest
 
 from wove import (
     cm_for_stitches,
+    cm_for_rows,
     cm_to_inches,
     inches_for_stitches,
+    inches_for_rows,
     inches_to_cm,
     meters_to_yards,
     per_cm_to_per_inch,
@@ -148,6 +150,34 @@ def test_cm_for_stitches_invalid_stitches():
 def test_cm_for_stitches_invalid_gauge():
     with pytest.raises(ValueError):
         cm_for_stitches(20, 0)
+
+
+def test_inches_for_rows():
+    assert inches_for_rows(30, 7.5) == 4.0
+
+
+def test_inches_for_rows_invalid_rows():
+    with pytest.raises(ValueError):
+        inches_for_rows(0, 7.5)
+
+
+def test_inches_for_rows_invalid_gauge():
+    with pytest.raises(ValueError):
+        inches_for_rows(30, 0)
+
+
+def test_cm_for_rows():
+    assert cm_for_rows(30, 3.0) == 10.0
+
+
+def test_cm_for_rows_invalid_rows():
+    with pytest.raises(ValueError):
+        cm_for_rows(0, 3.0)
+
+
+def test_cm_for_rows_invalid_gauge():
+    with pytest.raises(ValueError):
+        cm_for_rows(30, 0)
 
 
 def test_rows_for_inches():

@@ -2,10 +2,11 @@
 
 The `wove.gauge` module provides helpers for calculating stitch and row gauge,
 converting measurements between inches, centimeters, yards, and meters, and
-estimating the number of stitches needed for a given width. Use
+estimating the number of stitches or rows needed for a given size. Use
 `stitches_for_inches` or `stitches_for_cm` to calculate how many stitches a
-project requires, or `inches_for_stitches` and `cm_for_stitches` to determine
-width from a stitch count.
+project requires, and `rows_for_inches` or `rows_for_cm` for row counts. To
+determine dimensions from counts, use `inches_for_stitches`/`cm_for_stitches`
+for width and the new `inches_for_rows`/`cm_for_rows` helpers for height.
 
 Values ending in `.5` are rounded up when using `stitches_for_inches`,
 `stitches_for_cm`, `rows_for_inches`, or `rows_for_cm`.
@@ -31,6 +32,8 @@ from wove import (
     stitches_for_cm,
     inches_for_stitches,
     cm_for_stitches,
+    inches_for_rows,
+    cm_for_rows,
     rows_for_inches,
     rows_for_cm,
     yards_to_meters,
@@ -49,6 +52,8 @@ stitches_for_inches(5.0, 7)   # 35 stitches for 7 in width
 stitches_for_cm(2.0, 10)      # 20 stitches for 10 cm width
 inches_for_stitches(35, 5.0)  # 7.0 inches for 35 stitches
 cm_for_stitches(20, 2.0)      # 10.0 cm for 20 stitches
+inches_for_rows(30, 7.5)      # 4.0 inches for 30 rows
+cm_for_rows(30, 3.0)          # 10.0 cm for 30 rows
 yards_to_meters(1.0)         # 0.9144 meters
 meters_to_yards(0.9144)      # ~1.0 yard
 ```
