@@ -5,6 +5,7 @@
 
 knitting-basics
 crochet-basics
+crochet-tools
 robotic-knitting-machine
 gauge
 learning-resources
