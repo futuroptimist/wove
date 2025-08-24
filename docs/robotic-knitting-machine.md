@@ -21,7 +21,8 @@ printing.
 - **Tension post** – vertical pin with a base to anchor yarn tension.
 - **End cap** – covers rod ends to prevent snagging and now includes an optional
   chamfer for smoother edges.
-- **Alignment pin** – 5 mm cylinder for aligning stacked components.
+- **Alignment pin** – 5 mm cylinder for aligning stacked components with an optional
+  chamfer for easier insertion.
 
 ## Exporting models
 
