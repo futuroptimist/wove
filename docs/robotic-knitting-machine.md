@@ -11,6 +11,7 @@ printing.
 - **Stepper mount** – secures a motor for precise control.
 - **Carriage** – moves the working yarn and needles and includes a center hole for mounting
   hardware.
+- **Mounting bracket** – simple L-shaped bracket for test assemblies.
 - **Spacer** – maintains consistent gaps between components and now includes an
   optional chamfer for smoother stacking.
 - **Calibration cube** – simple 20 mm block with a center hole for printer
