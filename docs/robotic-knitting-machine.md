@@ -24,6 +24,7 @@ printing.
   chamfer for smoother edges.
 - **Alignment pin** – 5 mm cylinder for aligning stacked components with an optional
   chamfer for easier insertion.
+- **Hook** – L-shaped hook for hanging lightweight accessories.
 
 ## Exporting models
 
