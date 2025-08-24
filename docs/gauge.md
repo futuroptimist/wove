@@ -36,8 +36,12 @@ from wove import (
     cm_for_stitches,
     rows_for_inches,
     rows_for_cm,
+    inches_to_cm,
+    cm_to_inches,
     yards_to_inches,
     inches_to_yards,
+    yards_to_cm,
+    cm_to_yards,
     yards_to_meters,
     meters_to_yards,
 )
@@ -56,8 +60,12 @@ stitches_for_inches(5.0, 7)   # 35 stitches for 7 in width
 stitches_for_cm(2.0, 10)      # 20 stitches for 10 cm width
 inches_for_stitches(35, 5.0)  # 7.0 inches for 35 stitches
 cm_for_stitches(20, 2.0)      # 10.0 cm for 20 stitches
+inches_to_cm(1.0)            # 2.54 cm
+cm_to_inches(2.54)          # 1.0 inch
 yards_to_inches(1.0)         # 36.0 inches
 inches_to_yards(36.0)        # ~1.0 yard
+yards_to_cm(1.0)             # 91.44 cm
+cm_to_yards(91.44)           # ~1.0 yard
 yards_to_meters(1.0)         # 0.9144 meters
 meters_to_yards(0.9144)      # ~1.0 yard
 ```

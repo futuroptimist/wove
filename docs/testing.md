@@ -21,4 +21,3 @@ Run the test suite:
 ```bash
 pytest
 ```
-
