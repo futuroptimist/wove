@@ -84,6 +84,42 @@ def inches_to_yards(inches: float) -> float:
     return inches / INCHES_PER_YARD
 
 
+def yards_to_cm(yards: float) -> float:
+    """Convert yards to centimeters.
+
+    Args:
+        yards: Length in yards. Must be \u2265 0.
+
+    Returns:
+        Equivalent length in centimeters.
+
+    Raises:
+        ValueError: If ``yards`` is negative.
+    """
+
+    if yards < 0:
+        raise ValueError("yards must be non-negative")
+    return yards * INCHES_PER_YARD * CM_PER_INCH
+
+
+def cm_to_yards(cm: float) -> float:
+    """Convert centimeters to yards.
+
+    Args:
+        cm: Length in centimeters. Must be \u2265 0.
+
+    Returns:
+        Equivalent length in yards.
+
+    Raises:
+        ValueError: If ``cm`` is negative.
+    """
+
+    if cm < 0:
+        raise ValueError("cm must be non-negative")
+    return cm / (INCHES_PER_YARD * CM_PER_INCH)
+
+
 def yards_to_meters(yards: float) -> float:
     """Convert yards to meters.
 

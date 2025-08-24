@@ -25,6 +25,8 @@ Key features include:
 
 ## Getting Started
 
+This project targets Python 3.12. Ensure your virtual environment uses Python 3.12.
+
 ```bash
 # clone your fork
 git clone git@github.com:YOURNAME/wove.git
