@@ -22,6 +22,7 @@ printing.
 - **End cap** – covers rod ends to prevent snagging and now includes an optional
   chamfer for smoother edges.
 - **Alignment pin** – 5 mm cylinder for aligning stacked components.
+- **Hook** – L-shaped hook for hanging lightweight accessories.
 
 ## Exporting models
 
