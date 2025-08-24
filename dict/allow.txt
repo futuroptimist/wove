@@ -21,6 +21,7 @@ axel's
 backend
 cd
 cli
+codebase
 configs
 dev
 dspace
