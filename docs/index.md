@@ -10,6 +10,7 @@ robotic-knitting-machine
 gauge
 learning-resources
 testing
+repository-overview
 glossary
 styleguides/python
 styleguides/markdown
