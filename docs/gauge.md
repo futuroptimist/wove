@@ -8,6 +8,10 @@ project requires, or `inches_for_stitches` and `cm_for_stitches` to determine
 width from a stitch count. Use `inches_for_rows` and `cm_for_rows` to convert a
 row count back to height.
 
+Direct helpers such as `meters_to_cm`, `cm_to_meters`, `meters_to_inches`, and
+`inches_to_meters` keep metric conversions straightforward without chaining
+multiple functions.
+
 Values ending in `.5` are rounded up when using `stitches_for_inches`,
 `stitches_for_cm`, `rows_for_inches`, or `rows_for_cm`.
 
@@ -38,12 +42,16 @@ from wove import (
     rows_for_cm,
     inches_to_cm,
     cm_to_inches,
+    meters_to_cm,
+    cm_to_meters,
     yards_to_inches,
     inches_to_yards,
     yards_to_cm,
     cm_to_yards,
     yards_to_meters,
     meters_to_yards,
+    meters_to_inches,
+    inches_to_meters,
 )
 
 stitches_per_inch(20, 4)   # 5.0 stitches per inch
@@ -62,12 +70,16 @@ inches_for_stitches(35, 5.0)  # 7.0 inches for 35 stitches
 cm_for_stitches(20, 2.0)      # 10.0 cm for 20 stitches
 inches_to_cm(1.0)            # 2.54 cm
 cm_to_inches(2.54)          # 1.0 inch
+meters_to_cm(1.5)           # 150.0 cm
+cm_to_meters(123)           # 1.23 meters
 yards_to_inches(1.0)         # 36.0 inches
 inches_to_yards(36.0)        # ~1.0 yard
 yards_to_cm(1.0)             # 91.44 cm
 cm_to_yards(91.44)           # ~1.0 yard
 yards_to_meters(1.0)         # 0.9144 meters
 meters_to_yards(0.9144)      # ~1.0 yard
+meters_to_inches(1.0)        # ~39.37 inches
+inches_to_meters(39.37007874)  # ~1.0 meter
 ```
 
 Each function checks that its inputs are positive and raises `ValueError`

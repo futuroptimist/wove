@@ -3,8 +3,10 @@ from __future__ import annotations
 import math
 
 CM_PER_INCH = 2.54
+CM_PER_METER = 100.0
 M_PER_YARD = 0.9144
 INCHES_PER_YARD = 36.0
+INCHES_PER_METER = CM_PER_METER / CM_PER_INCH
 
 
 def _round_half_up(value: float) -> int:
@@ -154,6 +156,78 @@ def meters_to_yards(meters: float) -> float:
     if meters < 0:
         raise ValueError("meters must be non-negative")
     return meters / M_PER_YARD
+
+
+def meters_to_cm(meters: float) -> float:
+    """Convert meters to centimeters.
+
+    Args:
+        meters: Length in meters. Must be \u2265 0.
+
+    Returns:
+        Equivalent length in centimeters.
+
+    Raises:
+        ValueError: If ``meters`` is negative.
+    """
+
+    if meters < 0:
+        raise ValueError("meters must be non-negative")
+    return meters * CM_PER_METER
+
+
+def cm_to_meters(cm: float) -> float:
+    """Convert centimeters to meters.
+
+    Args:
+        cm: Length in centimeters. Must be \u2265 0.
+
+    Returns:
+        Equivalent length in meters.
+
+    Raises:
+        ValueError: If ``cm`` is negative.
+    """
+
+    if cm < 0:
+        raise ValueError("cm must be non-negative")
+    return cm / CM_PER_METER
+
+
+def meters_to_inches(meters: float) -> float:
+    """Convert meters to inches.
+
+    Args:
+        meters: Length in meters. Must be \u2265 0.
+
+    Returns:
+        Equivalent length in inches.
+
+    Raises:
+        ValueError: If ``meters`` is negative.
+    """
+
+    if meters < 0:
+        raise ValueError("meters must be non-negative")
+    return meters * INCHES_PER_METER
+
+
+def inches_to_meters(inches: float) -> float:
+    """Convert inches to meters.
+
+    Args:
+        inches: Length in inches. Must be \u2265 0.
+
+    Returns:
+        Equivalent length in meters.
+
+    Raises:
+        ValueError: If ``inches`` is negative.
+    """
+
+    if inches < 0:
+        raise ValueError("inches must be non-negative")
+    return inches / INCHES_PER_METER
 
 
 def stitches_per_inch(stitches: int, inches: float) -> float:
