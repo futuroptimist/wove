@@ -15,6 +15,7 @@ glossary
 styleguides/python
 styleguides/markdown
 prompts-codex
+prompts-codex-implement
 prompts-codex-cad
 prompts-docs
 prompts-tests
