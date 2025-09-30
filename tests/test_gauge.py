@@ -8,13 +8,17 @@ from wove import (
     cm_for_rows,
     cm_for_stitches,
     cm_to_inches,
+    cm_to_meters,
     inches_for_rows,
     inches_for_stitches,
     inches_to_cm,
+    inches_to_meters,
     inches_to_yards,
     cm_to_yards,
     yards_to_cm,
     meters_to_yards,
+    meters_to_cm,
+    meters_to_inches,
     per_cm_to_per_inch,
     per_inch_to_per_cm,
     rows_for_cm,
@@ -232,6 +236,42 @@ def test_cm_to_inches():
 def test_cm_to_inches_invalid():
     with pytest.raises(ValueError):
         cm_to_inches(-1)
+
+
+def test_meters_to_cm():
+    assert meters_to_cm(1.5) == pytest.approx(150.0)
+
+
+def test_meters_to_cm_invalid():
+    with pytest.raises(ValueError):
+        meters_to_cm(-1)
+
+
+def test_cm_to_meters():
+    assert cm_to_meters(123) == pytest.approx(1.23)
+
+
+def test_cm_to_meters_invalid():
+    with pytest.raises(ValueError):
+        cm_to_meters(-1)
+
+
+def test_meters_to_inches():
+    assert meters_to_inches(1.0) == pytest.approx(39.37007874)
+
+
+def test_meters_to_inches_invalid():
+    with pytest.raises(ValueError):
+        meters_to_inches(-1)
+
+
+def test_inches_to_meters():
+    assert inches_to_meters(39.37007874) == pytest.approx(1.0)
+
+
+def test_inches_to_meters_invalid():
+    with pytest.raises(ValueError):
+        inches_to_meters(-1)
 
 
 def test_yards_to_inches():
