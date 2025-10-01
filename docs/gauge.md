@@ -1,8 +1,9 @@
 # Gauge utilities
 
 The `wove.gauge` module provides helpers for calculating stitch and row gauge,
-converting measurements between inches, centimeters, yards, and meters, and
-estimating the number of stitches needed for a given width. Use
+including direct helpers for inches, centimeters, yards, and meters. It also
+converts measurements between these units and estimates the number of stitches
+needed for a given width. Use
 `stitches_for_inches` or `stitches_for_cm` to calculate how many stitches a
 project requires, or `inches_for_stitches` and `cm_for_stitches` to determine
 width from a stitch count. Use `inches_for_rows` and `cm_for_rows` to convert a
@@ -32,6 +33,10 @@ from wove import (
     rows_per_cm,
     per_cm_to_per_inch,
     per_inch_to_per_cm,
+    stitches_per_yard,
+    rows_per_yard,
+    stitches_per_meter,
+    rows_per_meter,
     stitches_for_inches,
     stitches_for_cm,
     inches_for_rows,
@@ -58,6 +63,10 @@ stitches_per_inch(20, 4)   # 5.0 stitches per inch
 rows_per_inch(30, 4)       # 7.5 rows per inch
 stitches_per_cm(20, 10)    # 2.0 stitches per cm
 rows_per_cm(30, 10)        # 3.0 rows per cm
+stitches_per_yard(450, 5)  # 90.0 stitches per yard
+rows_per_yard(800, 10)     # 80.0 rows per yard
+stitches_per_meter(300, 3) # 100.0 stitches per meter
+rows_per_meter(250, 2.5)   # 100.0 rows per meter
 per_cm_to_per_inch(2.0)    # 5.08
 per_inch_to_per_cm(5.08)   # ~2.0 per cm
 rows_for_inches(7.5, 4)      # 30 rows

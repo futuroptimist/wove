@@ -9,6 +9,10 @@ from wove import (
     cm_for_stitches,
     cm_to_inches,
     cm_to_meters,
+    rows_per_yard,
+    stitches_per_yard,
+    rows_per_meter,
+    stitches_per_meter,
     inches_for_rows,
     inches_for_stitches,
     inches_to_cm,
@@ -88,6 +92,62 @@ def test_rows_per_cm_invalid_cm():
 def test_rows_per_cm_invalid_rows():
     with pytest.raises(ValueError):
         rows_per_cm(0, 10)
+
+
+def test_stitches_per_yard():
+    assert stitches_per_yard(180, 2.0) == 90.0
+
+
+def test_stitches_per_yard_invalid_yards():
+    with pytest.raises(ValueError):
+        stitches_per_yard(180, 0)
+
+
+def test_stitches_per_yard_invalid_stitches():
+    with pytest.raises(ValueError):
+        stitches_per_yard(0, 2.0)
+
+
+def test_rows_per_yard():
+    assert rows_per_yard(240, 3.0) == 80.0
+
+
+def test_rows_per_yard_invalid_yards():
+    with pytest.raises(ValueError):
+        rows_per_yard(240, 0)
+
+
+def test_rows_per_yard_invalid_rows():
+    with pytest.raises(ValueError):
+        rows_per_yard(0, 3.0)
+
+
+def test_stitches_per_meter():
+    assert stitches_per_meter(300, 3.0) == 100.0
+
+
+def test_stitches_per_meter_invalid_meters():
+    with pytest.raises(ValueError):
+        stitches_per_meter(300, 0)
+
+
+def test_stitches_per_meter_invalid_stitches():
+    with pytest.raises(ValueError):
+        stitches_per_meter(0, 3.0)
+
+
+def test_rows_per_meter():
+    assert rows_per_meter(250, 2.5) == 100.0
+
+
+def test_rows_per_meter_invalid_meters():
+    with pytest.raises(ValueError):
+        rows_per_meter(250, 0)
+
+
+def test_rows_per_meter_invalid_rows():
+    with pytest.raises(ValueError):
+        rows_per_meter(0, 2.5)
 
 
 def test_per_inch_to_per_cm():

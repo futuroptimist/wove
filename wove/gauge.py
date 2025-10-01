@@ -310,6 +310,90 @@ def rows_per_cm(rows: int, cm: float) -> float:
     return rows / cm
 
 
+def stitches_per_yard(stitches: int, yards: float) -> float:
+    """Return stitch gauge in stitches per yard.
+
+    Args:
+        stitches: Number of stitches across the swatch. Must be > 0.
+        yards: Width of the swatch in yards. Must be > 0.
+
+    Returns:
+        Stitches per yard as a float.
+
+    Raises:
+        ValueError: If ``stitches`` or ``yards`` is not positive.
+    """
+
+    if stitches <= 0:
+        raise ValueError("stitches must be positive")
+    if yards <= 0:
+        raise ValueError("yards must be positive")
+    return stitches / yards
+
+
+def rows_per_yard(rows: int, yards: float) -> float:
+    """Return row gauge in rows per yard.
+
+    Args:
+        rows: Number of rows across the swatch. Must be > 0.
+        yards: Height of the swatch in yards. Must be > 0.
+
+    Returns:
+        Rows per yard as a float.
+
+    Raises:
+        ValueError: If ``rows`` or ``yards`` is not positive.
+    """
+
+    if rows <= 0:
+        raise ValueError("rows must be positive")
+    if yards <= 0:
+        raise ValueError("yards must be positive")
+    return rows / yards
+
+
+def stitches_per_meter(stitches: int, meters: float) -> float:
+    """Return stitch gauge in stitches per meter.
+
+    Args:
+        stitches: Number of stitches across the swatch. Must be > 0.
+        meters: Width of the swatch in meters. Must be > 0.
+
+    Returns:
+        Stitches per meter as a float.
+
+    Raises:
+        ValueError: If ``stitches`` or ``meters`` is not positive.
+    """
+
+    if stitches <= 0:
+        raise ValueError("stitches must be positive")
+    if meters <= 0:
+        raise ValueError("meters must be positive")
+    return stitches / meters
+
+
+def rows_per_meter(rows: int, meters: float) -> float:
+    """Return row gauge in rows per meter.
+
+    Args:
+        rows: Number of rows across the swatch. Must be > 0.
+        meters: Height of the swatch in meters. Must be > 0.
+
+    Returns:
+        Rows per meter as a float.
+
+    Raises:
+        ValueError: If ``rows`` or ``meters`` is not positive.
+    """
+
+    if rows <= 0:
+        raise ValueError("rows must be positive")
+    if meters <= 0:
+        raise ValueError("meters must be positive")
+    return rows / meters
+
+
 def per_inch_to_per_cm(value: float) -> float:
     """Convert a gauge measured per inch to per centimeter.
 
