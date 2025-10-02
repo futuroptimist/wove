@@ -14,9 +14,10 @@ repository-overview
 glossary
 styleguides/python
 styleguides/markdown
-prompts-codex
-prompts-codex-implement
-prompts-codex-cad
-prompts-docs
-prompts-tests
+prompts/codex/automation
+prompts/codex/implement
+prompts/codex/cad
+prompts/codex/docs
+prompts/codex/propagate
+prompts/codex/tests
 ```

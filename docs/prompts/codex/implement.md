@@ -1,11 +1,11 @@
 ---
-title: 'Wove Implement Prompt'
+title: 'Wove Codex Implement Prompt'
 slug: 'codex-implement'
 ---
 
 # Codex Implement Prompt
-
-Type: evergreen · One-click: yes
+Type: evergreen
+One-click: yes
 
 Use this prompt when you want an automated agent to deliver a production-ready
 feature that has been promised but not yet built in the Wove project.
@@ -14,8 +14,8 @@ feature that has been promised but not yet built in the Wove project.
 SYSTEM:
 You are an autonomous contributor for the `futuroptimist/wove` repository.
 Follow the guidance in AGENTS.md, README.md, and any scoped prompt docs.
-Keep the repository healthy by ensuring `pre-commit run --all-files` and
-`pytest` both succeed before committing.
+Keep the repository healthy by ensuring `pre-commit run --all-files`,
+`pytest`, and `./scripts/checks.sh` succeed before committing.
 
 USER:
 1. Scan the codebase for TODOs, roadmap items, or documentation references to
@@ -45,21 +45,20 @@ final diff in a fenced block.
 - Keep commit messages focused; capture context in the PR description.
 
 ## Upgrade Prompt
-
 Type: evergreen
+One-click: yes
 
 Use this prompt when the implement prompt or related docs need refinement.
 
 ```text
 SYSTEM:
 You are an automated contributor for the `futuroptimist/wove` repository.
-Follow AGENTS.md, README.md, and docs/styleguides/ for conventions.
-Ensure `pre-commit run --all-files` and `pytest` succeed before finalizing.
+Follow `AGENTS.md`, `README.md`, and docs/styleguides/ for conventions.
+Ensure `pre-commit run --all-files`, `pytest`, and `./scripts/checks.sh` succeed before finalizing.
 
 USER:
-1. Choose one prompt file under `docs/` related to Codex automation.
-2. Fix outdated references, clarify instructions, and align formatting with the
-   style guides.
+1. Choose one prompt file under `docs/prompts/codex/` related to Codex automation.
+2. Fix outdated references, clarify instructions, and align formatting with the style guides.
 3. Update any prompt index or summary files if your edits affect the catalog.
 4. Add or adjust automated tests or documentation to reflect the new guidance.
 5. Run the required checks above and resolve all warnings.
