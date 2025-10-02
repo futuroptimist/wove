@@ -9,6 +9,8 @@ from wove import (
     cm_for_stitches,
     cm_to_inches,
     cm_to_meters,
+    meters_for_rows,
+    meters_for_stitches,
     rows_per_yard,
     stitches_per_yard,
     rows_per_meter,
@@ -20,6 +22,8 @@ from wove import (
     inches_to_yards,
     cm_to_yards,
     yards_to_cm,
+    yards_for_rows,
+    yards_for_stitches,
     meters_to_yards,
     meters_to_cm,
     meters_to_inches,
@@ -27,10 +31,14 @@ from wove import (
     per_inch_to_per_cm,
     rows_for_cm,
     rows_for_inches,
+    rows_for_meters,
+    rows_for_yards,
     rows_per_cm,
     rows_per_inch,
     stitches_for_cm,
     stitches_for_inches,
+    stitches_for_meters,
+    stitches_for_yards,
     stitches_per_cm,
     stitches_per_inch,
     yards_to_inches,
@@ -196,6 +204,34 @@ def test_stitches_for_cm_invalid_cm():
         stitches_for_cm(2.0, 0)
 
 
+def test_stitches_for_yards():
+    assert stitches_for_yards(180.0, 0.25) == 45
+
+
+def test_stitches_for_yards_invalid_gauge():
+    with pytest.raises(ValueError):
+        stitches_for_yards(0, 0.25)
+
+
+def test_stitches_for_yards_invalid_yards():
+    with pytest.raises(ValueError):
+        stitches_for_yards(180.0, 0)
+
+
+def test_stitches_for_meters():
+    assert stitches_for_meters(120.0, 0.3) == 36
+
+
+def test_stitches_for_meters_invalid_gauge():
+    with pytest.raises(ValueError):
+        stitches_for_meters(0, 0.3)
+
+
+def test_stitches_for_meters_invalid_meters():
+    with pytest.raises(ValueError):
+        stitches_for_meters(120.0, 0)
+
+
 def test_inches_for_stitches():
     assert inches_for_stitches(20, 5.0) == 4.0
 
@@ -222,6 +258,34 @@ def test_cm_for_stitches_invalid_stitches():
 def test_cm_for_stitches_invalid_gauge():
     with pytest.raises(ValueError):
         cm_for_stitches(20, 0)
+
+
+def test_yards_for_stitches():
+    assert yards_for_stitches(90, 360.0) == pytest.approx(0.25)
+
+
+def test_yards_for_stitches_invalid_stitches():
+    with pytest.raises(ValueError):
+        yards_for_stitches(0, 360.0)
+
+
+def test_yards_for_stitches_invalid_gauge():
+    with pytest.raises(ValueError):
+        yards_for_stitches(90, 0)
+
+
+def test_meters_for_stitches():
+    assert meters_for_stitches(200, 200.0) == pytest.approx(1.0)
+
+
+def test_meters_for_stitches_invalid_stitches():
+    with pytest.raises(ValueError):
+        meters_for_stitches(0, 200.0)
+
+
+def test_meters_for_stitches_invalid_gauge():
+    with pytest.raises(ValueError):
+        meters_for_stitches(200, 0)
 
 
 def test_rows_for_inches():
@@ -252,6 +316,34 @@ def test_rows_for_cm_invalid_cm():
         rows_for_cm(3.0, 0)
 
 
+def test_rows_for_yards():
+    assert rows_for_yards(270.0, 0.1) == 27
+
+
+def test_rows_for_yards_invalid_gauge():
+    with pytest.raises(ValueError):
+        rows_for_yards(0, 0.1)
+
+
+def test_rows_for_yards_invalid_yards():
+    with pytest.raises(ValueError):
+        rows_for_yards(270.0, 0)
+
+
+def test_rows_for_meters():
+    assert rows_for_meters(100.0, 0.25) == 25
+
+
+def test_rows_for_meters_invalid_gauge():
+    with pytest.raises(ValueError):
+        rows_for_meters(0, 0.25)
+
+
+def test_rows_for_meters_invalid_meters():
+    with pytest.raises(ValueError):
+        rows_for_meters(100.0, 0)
+
+
 def test_inches_for_rows():
     assert inches_for_rows(30, 7.5) == 4.0
 
@@ -278,6 +370,34 @@ def test_cm_for_rows_invalid_rows():
 def test_cm_for_rows_invalid_gauge():
     with pytest.raises(ValueError):
         cm_for_rows(30, 0)
+
+
+def test_yards_for_rows():
+    assert yards_for_rows(36, 120.0) == pytest.approx(0.3)
+
+
+def test_yards_for_rows_invalid_rows():
+    with pytest.raises(ValueError):
+        yards_for_rows(0, 120.0)
+
+
+def test_yards_for_rows_invalid_gauge():
+    with pytest.raises(ValueError):
+        yards_for_rows(36, 0)
+
+
+def test_meters_for_rows():
+    assert meters_for_rows(400, 400.0) == pytest.approx(1.0)
+
+
+def test_meters_for_rows_invalid_rows():
+    with pytest.raises(ValueError):
+        meters_for_rows(0, 400.0)
+
+
+def test_meters_for_rows_invalid_gauge():
+    with pytest.raises(ValueError):
+        meters_for_rows(400, 0)
 
 
 def test_inches_to_cm():
@@ -394,3 +514,11 @@ def test_stitches_for_inches_half_up():
 
 def test_rows_for_cm_half_up():
     assert rows_for_cm(2.5, 1) == 3
+
+
+def test_stitches_for_yards_half_up():
+    assert stitches_for_yards(2.0, 0.25) == 1
+
+
+def test_rows_for_meters_half_up():
+    assert rows_for_meters(2.0, 0.25) == 1
