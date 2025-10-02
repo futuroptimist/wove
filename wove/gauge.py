@@ -8,10 +8,71 @@ M_PER_YARD = 0.9144
 INCHES_PER_YARD = 36.0
 INCHES_PER_METER = CM_PER_METER / CM_PER_INCH
 
+_LENGTH_UNIT_ALIASES = {
+    "inch": {"inch", "inches", "in"},
+    "cm": {"cm", "centimeter", "centimeters", "centimetre", "centimetres"},
+    "meter": {"meter", "meters", "metre", "metres", "m"},
+    "yard": {"yard", "yards", "yd"},
+}
+
+_LENGTH_UNIT_LOOKUP = {
+    alias: canonical for canonical, aliases in _LENGTH_UNIT_ALIASES.items() for alias in aliases
+}
+
+_UNIT_TO_METERS = {
+    "inch": CM_PER_INCH / CM_PER_METER,
+    "cm": 1.0 / CM_PER_METER,
+    "meter": 1.0,
+    "yard": M_PER_YARD,
+}
+
 
 def _round_half_up(value: float) -> int:
     """Round a positive float to the nearest int with halves rounding up."""
     return int(math.floor(value + 0.5))
+
+
+def _normalize_length_unit(unit: str) -> str:
+    """Return the canonical name for a supported length unit."""
+
+    if not unit:
+        raise ValueError("unknown length unit: ''")
+
+    normalized = unit.strip().lower()
+    try:
+        return _LENGTH_UNIT_LOOKUP[normalized]
+    except KeyError as error:
+        raise ValueError(f"unknown length unit: {unit}") from error
+
+
+def convert_per_length(value: float, from_unit: str, to_unit: str) -> float:
+    """Convert a gauge measured "per unit" between supported length units.
+
+    Args:
+        value: Positive gauge rate (for example stitches per inch).
+        from_unit: Unit the gauge is currently expressed in.
+        to_unit: Desired output unit.
+
+    Returns:
+        Gauge rate expressed per ``to_unit``.
+
+    Raises:
+        ValueError: If ``value`` is not positive or an unknown unit is supplied.
+    """
+
+    if value <= 0:
+        raise ValueError("value must be positive")
+
+    canonical_from = _normalize_length_unit(from_unit)
+    canonical_to = _normalize_length_unit(to_unit)
+
+    if canonical_from == canonical_to:
+        return value
+
+    from_meters = _UNIT_TO_METERS[canonical_from]
+    to_meters = _UNIT_TO_METERS[canonical_to]
+    per_meter = value / from_meters
+    return per_meter * to_meters
 
 
 def inches_to_cm(inches: float) -> float:
@@ -406,9 +467,7 @@ def per_inch_to_per_cm(value: float) -> float:
     Raises:
         ValueError: If ``value`` is not positive.
     """
-    if value <= 0:
-        raise ValueError("value must be positive")
-    return value / CM_PER_INCH
+    return convert_per_length(value, "inch", "cm")
 
 
 def per_cm_to_per_inch(value: float) -> float:
@@ -423,9 +482,7 @@ def per_cm_to_per_inch(value: float) -> float:
     Raises:
         ValueError: If ``value`` is not positive.
     """
-    if value <= 0:
-        raise ValueError("value must be positive")
-    return value * CM_PER_INCH
+    return convert_per_length(value, "cm", "inch")
 
 
 def stitches_for_inches(gauge: float, inches: float) -> int:

@@ -14,7 +14,8 @@ the row count for a desired height, or `inches_for_rows`, `cm_for_rows`,
 
 Direct helpers such as `meters_to_cm`, `cm_to_meters`, `meters_to_inches`, and
 `inches_to_meters` keep metric conversions straightforward without chaining
-multiple functions.
+multiple functions. Use `convert_per_length` to convert gauge rates between
+inches, centimeters, yards, and meters without manual math.
 
 Values ending in `.5` are rounded up when using `stitches_for_inches`,
 `stitches_for_cm`, `stitches_for_yards`, `stitches_for_meters`,
@@ -37,6 +38,7 @@ from wove import (
     rows_per_cm,
     per_cm_to_per_inch,
     per_inch_to_per_cm,
+    convert_per_length,
     stitches_per_yard,
     rows_per_yard,
     stitches_per_meter,
@@ -81,6 +83,7 @@ stitches_per_meter(300, 3) # 100.0 stitches per meter
 rows_per_meter(250, 2.5)   # 100.0 rows per meter
 per_cm_to_per_inch(2.0)    # 5.08
 per_inch_to_per_cm(5.08)   # ~2.0 per cm
+convert_per_length(5.0, "inch", "yard")  # 180.0 per yard
 rows_for_inches(7.5, 4)      # 30 rows
 rows_for_cm(3.0, 10)         # 30 rows
 rows_for_yards(270, 0.1)     # 27 rows

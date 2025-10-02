@@ -29,6 +29,7 @@ from wove import (
     meters_to_inches,
     per_cm_to_per_inch,
     per_inch_to_per_cm,
+    convert_per_length,
     rows_for_cm,
     rows_for_inches,
     rows_for_meters,
@@ -174,6 +175,28 @@ def test_per_cm_to_per_inch():
 def test_per_cm_to_per_inch_invalid():
     with pytest.raises(ValueError):
         per_cm_to_per_inch(0)
+
+
+def test_convert_per_length_inch_to_yard():
+    assert convert_per_length(5.0, "inch", "yard") == pytest.approx(180.0)
+
+
+def test_convert_per_length_aliases():
+    assert convert_per_length(180.0, "yards", "meter") == pytest.approx(196.8503937)
+
+
+def test_convert_per_length_same_unit():
+    assert convert_per_length(7.5, "inches", "inch") == pytest.approx(7.5)
+
+
+def test_convert_per_length_invalid_value():
+    with pytest.raises(ValueError):
+        convert_per_length(0, "inch", "yard")
+
+
+def test_convert_per_length_unknown_unit():
+    with pytest.raises(ValueError):
+        convert_per_length(5.0, "furlong", "inch")
 
 
 def test_stitches_for_inches():
