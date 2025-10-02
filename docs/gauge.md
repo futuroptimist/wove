@@ -3,18 +3,22 @@
 The `wove.gauge` module provides helpers for calculating stitch and row gauge,
 including direct helpers for inches, centimeters, yards, and meters. It also
 converts measurements between these units and estimates the number of stitches
-needed for a given width. Use
-`stitches_for_inches` or `stitches_for_cm` to calculate how many stitches a
-project requires, or `inches_for_stitches` and `cm_for_stitches` to determine
-width from a stitch count. Use `inches_for_rows` and `cm_for_rows` to convert a
-row count back to height.
+or rows needed for a given dimension. Use
+`stitches_for_inches`, `stitches_for_cm`, `stitches_for_yards`, or
+`stitches_for_meters` to calculate how many stitches a project requires. Use
+`inches_for_stitches`, `cm_for_stitches`, `yards_for_stitches`, or
+`meters_for_stitches` to determine width from a stitch count. Use
+`rows_for_inches`, `rows_for_cm`, `rows_for_yards`, or `rows_for_meters` to find
+the row count for a desired height, or `inches_for_rows`, `cm_for_rows`,
+`yards_for_rows`, and `meters_for_rows` to convert a row count back to height.
 
 Direct helpers such as `meters_to_cm`, `cm_to_meters`, `meters_to_inches`, and
 `inches_to_meters` keep metric conversions straightforward without chaining
 multiple functions.
 
 Values ending in `.5` are rounded up when using `stitches_for_inches`,
-`stitches_for_cm`, `rows_for_inches`, or `rows_for_cm`.
+`stitches_for_cm`, `stitches_for_yards`, `stitches_for_meters`,
+`rows_for_inches`, `rows_for_cm`, `rows_for_yards`, or `rows_for_meters`.
 
 To calculate gauge:
 
@@ -39,12 +43,20 @@ from wove import (
     rows_per_meter,
     stitches_for_inches,
     stitches_for_cm,
+    stitches_for_yards,
+    stitches_for_meters,
     inches_for_rows,
     cm_for_rows,
+    yards_for_rows,
+    meters_for_rows,
     inches_for_stitches,
     cm_for_stitches,
+    yards_for_stitches,
+    meters_for_stitches,
     rows_for_inches,
     rows_for_cm,
+    rows_for_yards,
+    rows_for_meters,
     inches_to_cm,
     cm_to_inches,
     meters_to_cm,
@@ -71,12 +83,20 @@ per_cm_to_per_inch(2.0)    # 5.08
 per_inch_to_per_cm(5.08)   # ~2.0 per cm
 rows_for_inches(7.5, 4)      # 30 rows
 rows_for_cm(3.0, 10)         # 30 rows
+rows_for_yards(270, 0.1)     # 27 rows
+rows_for_meters(100, 0.25)   # 25 rows
 inches_for_rows(30, 7.5)     # 4.0 inches for 30 rows
 cm_for_rows(30, 3.0)         # 10.0 cm for 30 rows
+yards_for_rows(36, 120)      # 0.3 yards for 36 rows
+meters_for_rows(400, 400)    # 1.0 meter for 400 rows
 stitches_for_inches(5.0, 7)   # 35 stitches for 7 in width
 stitches_for_cm(2.0, 10)      # 20 stitches for 10 cm width
+stitches_for_yards(180, 0.25) # 45 stitches for 0.25 yards
+stitches_for_meters(120, 0.3) # 36 stitches for 0.3 meters
 inches_for_stitches(35, 5.0)  # 7.0 inches for 35 stitches
 cm_for_stitches(20, 2.0)      # 10.0 cm for 20 stitches
+yards_for_stitches(90, 360)   # 0.25 yards for 90 stitches
+meters_for_stitches(200, 200) # 1.0 meter for 200 stitches
 inches_to_cm(1.0)            # 2.54 cm
 cm_to_inches(2.54)          # 1.0 inch
 meters_to_cm(1.5)           # 150.0 cm

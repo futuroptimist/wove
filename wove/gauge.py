@@ -470,6 +470,50 @@ def stitches_for_cm(gauge: float, cm: float) -> int:
     return _round_half_up(gauge * cm)
 
 
+def stitches_for_yards(gauge: float, yards: float) -> int:
+    """Return the number of stitches needed for a width in yards.
+
+    Args:
+        gauge: Stitch gauge in stitches per yard. Must be > 0.
+        yards: Desired width in yards. Must be > 0.
+
+    Returns:
+        Required number of stitches rounded to the nearest whole number.
+        Values ending in .5 are rounded up.
+
+    Raises:
+        ValueError: If ``gauge`` or ``yards`` is not positive.
+    """
+
+    if gauge <= 0:
+        raise ValueError("gauge must be positive")
+    if yards <= 0:
+        raise ValueError("yards must be positive")
+    return _round_half_up(gauge * yards)
+
+
+def stitches_for_meters(gauge: float, meters: float) -> int:
+    """Return the number of stitches needed for a width in meters.
+
+    Args:
+        gauge: Stitch gauge in stitches per meter. Must be > 0.
+        meters: Desired width in meters. Must be > 0.
+
+    Returns:
+        Required number of stitches rounded to the nearest whole number.
+        Values ending in .5 are rounded up.
+
+    Raises:
+        ValueError: If ``gauge`` or ``meters`` is not positive.
+    """
+
+    if gauge <= 0:
+        raise ValueError("gauge must be positive")
+    if meters <= 0:
+        raise ValueError("meters must be positive")
+    return _round_half_up(gauge * meters)
+
+
 def rows_for_inches(gauge: float, inches: float) -> int:
     """Return the number of rows needed for a height in inches.
 
@@ -510,6 +554,50 @@ def rows_for_cm(gauge: float, cm: float) -> int:
     if cm <= 0:
         raise ValueError("cm must be positive")
     return _round_half_up(gauge * cm)
+
+
+def rows_for_yards(gauge: float, yards: float) -> int:
+    """Return the number of rows needed for a height in yards.
+
+    Args:
+        gauge: Row gauge in rows per yard. Must be > 0.
+        yards: Desired height in yards. Must be > 0.
+
+    Returns:
+        Required number of rows rounded to the nearest whole number.
+        Values ending in .5 are rounded up.
+
+    Raises:
+        ValueError: If ``gauge`` or ``yards`` is not positive.
+    """
+
+    if gauge <= 0:
+        raise ValueError("gauge must be positive")
+    if yards <= 0:
+        raise ValueError("yards must be positive")
+    return _round_half_up(gauge * yards)
+
+
+def rows_for_meters(gauge: float, meters: float) -> int:
+    """Return the number of rows needed for a height in meters.
+
+    Args:
+        gauge: Row gauge in rows per meter. Must be > 0.
+        meters: Desired height in meters. Must be > 0.
+
+    Returns:
+        Required number of rows rounded to the nearest whole number.
+        Values ending in .5 are rounded up.
+
+    Raises:
+        ValueError: If ``gauge`` or ``meters`` is not positive.
+    """
+
+    if gauge <= 0:
+        raise ValueError("gauge must be positive")
+    if meters <= 0:
+        raise ValueError("meters must be positive")
+    return _round_half_up(gauge * meters)
 
 
 def inches_for_rows(rows: int, gauge: float) -> float:
@@ -594,3 +682,87 @@ def cm_for_stitches(stitches: int, gauge: float) -> float:
     if gauge <= 0:
         raise ValueError("gauge must be positive")
     return stitches / gauge
+
+
+def yards_for_stitches(stitches: int, gauge: float) -> float:
+    """Return the width in yards for a given stitch count.
+
+    Args:
+        stitches: Number of stitches. Must be > 0.
+        gauge: Stitch gauge in stitches per yard. Must be > 0.
+
+    Returns:
+        Width in yards.
+
+    Raises:
+        ValueError: If ``stitches`` or ``gauge`` is not positive.
+    """
+
+    if stitches <= 0:
+        raise ValueError("stitches must be positive")
+    if gauge <= 0:
+        raise ValueError("gauge must be positive")
+    return stitches / gauge
+
+
+def meters_for_stitches(stitches: int, gauge: float) -> float:
+    """Return the width in meters for a given stitch count.
+
+    Args:
+        stitches: Number of stitches. Must be > 0.
+        gauge: Stitch gauge in stitches per meter. Must be > 0.
+
+    Returns:
+        Width in meters.
+
+    Raises:
+        ValueError: If ``stitches`` or ``gauge`` is not positive.
+    """
+
+    if stitches <= 0:
+        raise ValueError("stitches must be positive")
+    if gauge <= 0:
+        raise ValueError("gauge must be positive")
+    return stitches / gauge
+
+
+def yards_for_rows(rows: int, gauge: float) -> float:
+    """Return the height in yards for a given row count.
+
+    Args:
+        rows: Number of rows. Must be > 0.
+        gauge: Row gauge in rows per yard. Must be > 0.
+
+    Returns:
+        Height in yards.
+
+    Raises:
+        ValueError: If ``rows`` or ``gauge`` is not positive.
+    """
+
+    if rows <= 0:
+        raise ValueError("rows must be positive")
+    if gauge <= 0:
+        raise ValueError("gauge must be positive")
+    return rows / gauge
+
+
+def meters_for_rows(rows: int, gauge: float) -> float:
+    """Return the height in meters for a given row count.
+
+    Args:
+        rows: Number of rows. Must be > 0.
+        gauge: Row gauge in rows per meter. Must be > 0.
+
+    Returns:
+        Height in meters.
+
+    Raises:
+        ValueError: If ``rows`` or ``gauge`` is not positive.
+    """
+
+    if rows <= 0:
+        raise ValueError("rows must be positive")
+    if gauge <= 0:
+        raise ValueError("gauge must be positive")
+    return rows / gauge

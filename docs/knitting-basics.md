@@ -57,3 +57,8 @@ All gauge helpers require positive stitch and row counts and positive
 measurements. Passing non-positive values raises ``ValueError``.
 Unit conversion helpers accept non-negative values and raise
 ``ValueError`` for negatives.
+
+For large projects measured in yards or meters, use
+``stitches_for_yards``/``stitches_for_meters`` and
+``rows_for_yards``/``rows_for_meters`` to scale your fabric without converting
+back to inches or centimeters first.
