@@ -8,7 +8,9 @@ CAD_README = CAD_DIR / "README.md"
 
 
 def test_cad_readme_exists() -> None:
-    assert CAD_README.exists(), "cad/README.md should describe hardware modules"
+    assert CAD_README.exists(), (
+        "cad/README.md should describe hardware modules"
+    )
 
 
 def test_cad_readme_lists_all_modules() -> None:
