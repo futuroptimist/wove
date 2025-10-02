@@ -18,5 +18,6 @@ prompts/codex/automation
 prompts/codex/implement
 prompts/codex/cad
 prompts/codex/docs
+prompts/codex/propagate
 prompts/codex/tests
 ```
