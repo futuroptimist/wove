@@ -28,7 +28,14 @@ from wove import (
     meters_to_cm,
     meters_to_inches,
     per_cm_to_per_inch,
+    per_cm_to_per_meter,
+    per_cm_to_per_yard,
     per_inch_to_per_cm,
+    per_inch_to_per_meter,
+    per_inch_to_per_yard,
+    per_meter_to_per_cm,
+    per_meter_to_per_inch,
+    per_meter_to_per_yard,
     rows_for_cm,
     rows_for_inches,
     rows_for_meters,
@@ -41,6 +48,9 @@ from wove import (
     stitches_for_yards,
     stitches_per_cm,
     stitches_per_inch,
+    per_yard_to_per_cm,
+    per_yard_to_per_inch,
+    per_yard_to_per_meter,
     yards_to_inches,
     yards_to_meters,
 )
@@ -174,6 +184,45 @@ def test_per_cm_to_per_inch():
 def test_per_cm_to_per_inch_invalid():
     with pytest.raises(ValueError):
         per_cm_to_per_inch(0)
+
+
+@pytest.mark.parametrize(
+    ("func", "value", "expected"),
+    [
+        (per_inch_to_per_yard, 5.0, 180.0),
+        (per_yard_to_per_inch, 180.0, 5.0),
+        (per_inch_to_per_meter, 5.0, 196.8503937007874),
+        (per_meter_to_per_inch, 196.8503937007874, 5.0),
+        (per_cm_to_per_meter, 2.0, 200.0),
+        (per_meter_to_per_cm, 200.0, 2.0),
+        (per_cm_to_per_yard, 2.0, 182.88),
+        (per_yard_to_per_cm, 182.88, 2.0),
+        (per_yard_to_per_meter, 180.0, 196.8503937007874),
+        (per_meter_to_per_yard, 196.8503937007874, 180.0),
+    ],
+)
+def test_additional_per_unit_conversions(func, value, expected):
+    assert func(value) == pytest.approx(expected)
+
+
+@pytest.mark.parametrize(
+    "func",
+    [
+        per_inch_to_per_yard,
+        per_yard_to_per_inch,
+        per_inch_to_per_meter,
+        per_meter_to_per_inch,
+        per_cm_to_per_meter,
+        per_meter_to_per_cm,
+        per_cm_to_per_yard,
+        per_yard_to_per_cm,
+        per_yard_to_per_meter,
+        per_meter_to_per_yard,
+    ],
+)
+def test_additional_per_unit_conversions_invalid(func):
+    with pytest.raises(ValueError):
+        func(0)
 
 
 def test_stitches_for_inches():

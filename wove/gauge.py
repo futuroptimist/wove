@@ -428,6 +428,186 @@ def per_cm_to_per_inch(value: float) -> float:
     return value * CM_PER_INCH
 
 
+def per_inch_to_per_yard(value: float) -> float:
+    """Convert a gauge measured per inch to per yard.
+
+    Args:
+        value: Gauge value per inch. Must be > 0.
+
+    Returns:
+        Gauge value per yard.
+
+    Raises:
+        ValueError: If ``value`` is not positive.
+    """
+
+    if value <= 0:
+        raise ValueError("value must be positive")
+    return value * INCHES_PER_YARD
+
+
+def per_yard_to_per_inch(value: float) -> float:
+    """Convert a gauge measured per yard to per inch.
+
+    Args:
+        value: Gauge value per yard. Must be > 0.
+
+    Returns:
+        Gauge value per inch.
+
+    Raises:
+        ValueError: If ``value`` is not positive.
+    """
+
+    if value <= 0:
+        raise ValueError("value must be positive")
+    return value / INCHES_PER_YARD
+
+
+def per_inch_to_per_meter(value: float) -> float:
+    """Convert a gauge measured per inch to per meter.
+
+    Args:
+        value: Gauge value per inch. Must be > 0.
+
+    Returns:
+        Gauge value per meter.
+
+    Raises:
+        ValueError: If ``value`` is not positive.
+    """
+
+    if value <= 0:
+        raise ValueError("value must be positive")
+    return value * INCHES_PER_METER
+
+
+def per_meter_to_per_inch(value: float) -> float:
+    """Convert a gauge measured per meter to per inch.
+
+    Args:
+        value: Gauge value per meter. Must be > 0.
+
+    Returns:
+        Gauge value per inch.
+
+    Raises:
+        ValueError: If ``value`` is not positive.
+    """
+
+    if value <= 0:
+        raise ValueError("value must be positive")
+    return value / INCHES_PER_METER
+
+
+def per_cm_to_per_meter(value: float) -> float:
+    """Convert a gauge measured per centimeter to per meter.
+
+    Args:
+        value: Gauge value per centimeter. Must be > 0.
+
+    Returns:
+        Gauge value per meter.
+
+    Raises:
+        ValueError: If ``value`` is not positive.
+    """
+
+    if value <= 0:
+        raise ValueError("value must be positive")
+    return value * CM_PER_METER
+
+
+def per_meter_to_per_cm(value: float) -> float:
+    """Convert a gauge measured per meter to per centimeter.
+
+    Args:
+        value: Gauge value per meter. Must be > 0.
+
+    Returns:
+        Gauge value per centimeter.
+
+    Raises:
+        ValueError: If ``value`` is not positive.
+    """
+
+    if value <= 0:
+        raise ValueError("value must be positive")
+    return value / CM_PER_METER
+
+
+def per_cm_to_per_yard(value: float) -> float:
+    """Convert a gauge measured per centimeter to per yard.
+
+    Args:
+        value: Gauge value per centimeter. Must be > 0.
+
+    Returns:
+        Gauge value per yard.
+
+    Raises:
+        ValueError: If ``value`` is not positive.
+    """
+
+    if value <= 0:
+        raise ValueError("value must be positive")
+    return value * CM_PER_INCH * INCHES_PER_YARD
+
+
+def per_yard_to_per_cm(value: float) -> float:
+    """Convert a gauge measured per yard to per centimeter.
+
+    Args:
+        value: Gauge value per yard. Must be > 0.
+
+    Returns:
+        Gauge value per centimeter.
+
+    Raises:
+        ValueError: If ``value`` is not positive.
+    """
+
+    if value <= 0:
+        raise ValueError("value must be positive")
+    return value / (CM_PER_INCH * INCHES_PER_YARD)
+
+
+def per_yard_to_per_meter(value: float) -> float:
+    """Convert a gauge measured per yard to per meter.
+
+    Args:
+        value: Gauge value per yard. Must be > 0.
+
+    Returns:
+        Gauge value per meter.
+
+    Raises:
+        ValueError: If ``value`` is not positive.
+    """
+
+    if value <= 0:
+        raise ValueError("value must be positive")
+    return value / M_PER_YARD
+
+
+def per_meter_to_per_yard(value: float) -> float:
+    """Convert a gauge measured per meter to per yard.
+
+    Args:
+        value: Gauge value per meter. Must be > 0.
+
+    Returns:
+        Gauge value per yard.
+
+    Raises:
+        ValueError: If ``value`` is not positive.
+    """
+
+    if value <= 0:
+        raise ValueError("value must be positive")
+    return value * M_PER_YARD
+
+
 def stitches_for_inches(gauge: float, inches: float) -> int:
     """Return the number of stitches needed for a width in inches.
 

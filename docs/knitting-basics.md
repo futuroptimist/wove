@@ -53,6 +53,10 @@ inches_to_cm(1)  # 2.54 cm
 cm_to_inches(2.54)  # 1.0 in
 ```
 
+Translate gauge between yards and meters with helpers such as
+`per_inch_to_per_yard`, `per_yard_to_per_inch`, `per_yard_to_per_meter`, and
+`per_meter_to_per_yard` so a single swatch can inform patterns across units.
+
 All gauge helpers require positive stitch and row counts and positive
 measurements. Passing non-positive values raises ``ValueError``.
 Unit conversion helpers accept non-negative values and raise

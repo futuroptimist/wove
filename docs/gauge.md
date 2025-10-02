@@ -14,7 +14,12 @@ the row count for a desired height, or `inches_for_rows`, `cm_for_rows`,
 
 Direct helpers such as `meters_to_cm`, `cm_to_meters`, `meters_to_inches`, and
 `inches_to_meters` keep metric conversions straightforward without chaining
-multiple functions.
+multiple functions. Gauge conversion helpers (`per_inch_to_per_cm`,
+`per_cm_to_per_inch`, `per_inch_to_per_yard`, `per_yard_to_per_inch`,
+`per_inch_to_per_meter`, `per_meter_to_per_inch`, `per_cm_to_per_meter`,
+`per_meter_to_per_cm`, `per_cm_to_per_yard`, `per_yard_to_per_cm`,
+`per_yard_to_per_meter`, and `per_meter_to_per_yard`) translate stitches- or
+rows-per-unit values across inches, centimeters, yards, and meters.
 
 Values ending in `.5` are rounded up when using `stitches_for_inches`,
 `stitches_for_cm`, `stitches_for_yards`, `stitches_for_meters`,
@@ -37,6 +42,13 @@ from wove import (
     rows_per_cm,
     per_cm_to_per_inch,
     per_inch_to_per_cm,
+    per_cm_to_per_meter,
+    per_cm_to_per_yard,
+    per_inch_to_per_meter,
+    per_inch_to_per_yard,
+    per_meter_to_per_cm,
+    per_meter_to_per_inch,
+    per_meter_to_per_yard,
     stitches_per_yard,
     rows_per_yard,
     stitches_per_meter,
@@ -69,6 +81,9 @@ from wove import (
     meters_to_yards,
     meters_to_inches,
     inches_to_meters,
+    per_yard_to_per_cm,
+    per_yard_to_per_inch,
+    per_yard_to_per_meter,
 )
 
 stitches_per_inch(20, 4)   # 5.0 stitches per inch
@@ -81,6 +96,16 @@ stitches_per_meter(300, 3) # 100.0 stitches per meter
 rows_per_meter(250, 2.5)   # 100.0 rows per meter
 per_cm_to_per_inch(2.0)    # 5.08
 per_inch_to_per_cm(5.08)   # ~2.0 per cm
+per_inch_to_per_yard(5.0)      # 180.0 per yard
+per_yard_to_per_inch(180.0)    # 5.0 per inch
+per_inch_to_per_meter(5.0)     # ~196.85 per meter
+per_meter_to_per_inch(196.8503937)  # ~5.0 per inch
+per_cm_to_per_meter(2.0)       # 200.0 per meter
+per_meter_to_per_cm(200.0)     # 2.0 per cm
+per_cm_to_per_yard(2.0)        # ~182.88 per yard
+per_yard_to_per_cm(182.88)     # ~2.0 per cm
+per_yard_to_per_meter(180.0)   # ~196.85 per meter
+per_meter_to_per_yard(196.8503937)  # ~180.0 per yard
 rows_for_inches(7.5, 4)      # 30 rows
 rows_for_cm(3.0, 10)         # 30 rows
 rows_for_yards(270, 0.1)     # 27 rows
