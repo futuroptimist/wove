@@ -22,7 +22,7 @@ Key features include:
   simple unit conversion helpers.
   See [docs/gauge.md](docs/gauge.md) for examples.
 - LLM helpers described in [AGENTS.md](AGENTS.md).
-- Sample Codex prompts in [`docs/prompts-codex.md`](docs/prompts-codex.md).
+- Sample Codex prompts in [`docs/prompts/codex/automation.md`](docs/prompts/codex/automation.md).
 
 ## Getting Started
 
