@@ -1,0 +1,4 @@
+# Repository name followed by the path to its working copy.
+# The path is interpreted relative to the current working directory when
+# running ``scripts/update_prompt_docs_summary.py``.
+futuroptimist/wove .
