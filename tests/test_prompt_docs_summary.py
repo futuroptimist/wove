@@ -125,3 +125,24 @@ def test_generate_and_write_summary(tmp_path: Path) -> None:
     ps.write_summary(output, summary)
 
     assert output.read_text(encoding="utf-8").startswith("# Prompt Docs Summary")
+
+
+def test_strip_quotes_handles_various_wrappers() -> None:
+    assert ps._strip_quotes("'quoted'") == "quoted"
+    assert ps._strip_quotes('"double"') == "double"
+    assert ps._strip_quotes("plain") == "plain"
+
+
+def test_parse_helpers_gracefully_handle_missing_headers() -> None:
+    lines = ("Not front matter", "Type: evergreen")
+
+    front_matter, index = ps._parse_front_matter(lines)
+    assert front_matter == {}
+    assert index == 0
+
+    doc_type, one_click, description = ps._extract_metadata(
+        ("```", "Type: ignored", "```", "One-click: yes", "Description line"),
+    )
+    assert doc_type is None
+    assert one_click == "yes"
+    assert description == "Description line"
