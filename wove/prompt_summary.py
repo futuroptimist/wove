@@ -20,9 +20,13 @@ class PromptDoc:
 
     @property
     def rel_path(self) -> str:
-        """Return a POSIX-style path relative to the repository root."""
+        """Return a POSIX path suitable for intra-doc links."""
 
-        return self.path.as_posix()
+        try:
+            docs_relative = self.path.relative_to("docs")
+        except ValueError:
+            docs_relative = self.path
+        return docs_relative.as_posix()
 
 
 def load_repo_sources(repo_file: Path) -> list[tuple[str, Path]]:
@@ -115,9 +119,7 @@ def discover_prompt_docs(repo: str, repo_root: Path) -> list[PromptDoc]:
         lines = path.read_text(encoding="utf-8").splitlines()
         front_matter, start_index = _parse_front_matter(lines)
         heading = _first_heading(lines[start_index:])
-        doc_type, one_click, description = _extract_metadata(
-            lines[start_index:]
-        )
+        doc_type, one_click, description = _extract_metadata(lines[start_index:])
         title = front_matter.get("title") or heading or path.stem
         prompt_docs.append(
             PromptDoc(
