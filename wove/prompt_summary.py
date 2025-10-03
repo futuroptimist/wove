@@ -118,8 +118,9 @@ def discover_prompt_docs(repo: str, repo_root: Path) -> list[PromptDoc]:
     for path in sorted(docs_dir.glob("*.md")):
         lines = path.read_text(encoding="utf-8").splitlines()
         front_matter, start_index = _parse_front_matter(lines)
-        heading = _first_heading(lines[start_index:])
-        doc_type, one_click, description = _extract_metadata(lines[start_index:])
+        body_lines = lines[start_index:]
+        heading = _first_heading(body_lines)
+        doc_type, one_click, description = _extract_metadata(body_lines)
         title = front_matter.get("title") or heading or path.stem
         prompt_docs.append(
             PromptDoc(

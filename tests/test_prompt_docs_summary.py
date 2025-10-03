@@ -38,7 +38,13 @@ def test_discover_prompt_docs_extracts_metadata(
     prompt_docs: list[ps.PromptDoc],
 ) -> None:
     target_path = "prompts/codex/automation.md"
-    automation = next(doc for doc in prompt_docs if doc.rel_path == target_path)
+    automation = None
+    for doc in prompt_docs:
+        if doc.rel_path == target_path:
+            automation = doc
+            break
+
+    assert automation is not None
 
     assert automation.title == "Wove Codex Automation Prompt"
     assert automation.doc_type == "evergreen"
@@ -53,7 +59,8 @@ def test_render_summary_contains_expected_row(
 ) -> None:
     summary = ps.render_summary(prompt_docs)
 
-    expected_link = "| [prompts/codex/automation.md]" "(prompts/codex/automation.md) |"
+    link_target = "prompts/codex/automation.md"
+    expected_link = f"| [{link_target}]({link_target}) |"
     assert expected_link in summary
     assert "| File | Title | Type | One-click | Summary |" in summary
 
@@ -84,7 +91,9 @@ def test_prompt_doc_rel_path_falls_back_without_docs_prefix() -> None:
     assert doc.rel_path == "README.md"
 
 
-def test_escape_pipes_and_render_summary_for_empty_docs(tmp_path: Path) -> None:
+def test_escape_pipes_and_render_summary_for_empty_docs(
+    tmp_path: Path,
+) -> None:
     escaped = ps.escape_pipes("value | with pipe")
     assert escaped == r"value \| with pipe"
 
@@ -124,7 +133,8 @@ def test_generate_and_write_summary(tmp_path: Path) -> None:
     output = tmp_path / "out.md"
     ps.write_summary(output, summary)
 
-    assert output.read_text(encoding="utf-8").startswith("# Prompt Docs Summary")
+    content = output.read_text(encoding="utf-8")
+    assert content.startswith("# Prompt Docs Summary")
 
 
 def test_strip_quotes_handles_various_wrappers() -> None:
@@ -140,9 +150,14 @@ def test_parse_helpers_gracefully_handle_missing_headers() -> None:
     assert front_matter == {}
     assert index == 0
 
-    doc_type, one_click, description = ps._extract_metadata(
-        ("```", "Type: ignored", "```", "One-click: yes", "Description line"),
+    metadata_lines = (
+        "```",
+        "Type: ignored",
+        "```",
+        "One-click: yes",
+        "Description line",
     )
+    doc_type, one_click, description = ps._extract_metadata(metadata_lines)
     assert doc_type is None
     assert one_click == "yes"
     assert description == "Description line"
