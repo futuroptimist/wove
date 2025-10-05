@@ -1,0 +1,3 @@
+[tool.black]
+line-length = 88
+force-exclude = "(?x)(\n  (^|/)\\.git/\n  |(^|/)\\.venv/\n)"
