@@ -23,3 +23,4 @@ Then open `docs/_build/html/index.html` in a browser.
 - [Codex Implement Prompt](prompts/codex/implement.md)
 - [Codex CAD Prompt](prompts/codex/cad.md)
 - [Testing](testing.md)
+- [Prompt documentation summary](prompt-docs-summary.md)

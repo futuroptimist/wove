@@ -20,4 +20,5 @@ prompts/codex/cad
 prompts/codex/docs
 prompts/codex/propagate
 prompts/codex/tests
+prompt-docs-summary
 ```

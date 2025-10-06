@@ -1,0 +1,3 @@
+# Repository roots to include when generating docs/prompt-docs-summary.md.
+# Paths may be absolute or relative to the repository root.
+.
