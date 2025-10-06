@@ -84,10 +84,16 @@ def test_read_repo_paths_handles_comments_and_relative(tmp_path, monkeypatch):
 
     repos_file = tmp_path / "repos.txt"
     repos_file.write_text(
-        "# comment\n\n"
-        f"{absolute_repo}\n"
-        "relative\n"
-        "~/home_repo\n",
+        "\n".join(
+            [
+                "# comment",
+                "",
+                str(absolute_repo),
+                "relative",
+                "~/home_repo",
+                "",
+            ]
+        ),
         encoding="utf-8",
     )
 
@@ -108,11 +114,17 @@ def test_parse_prompt_doc_defaults(tmp_path):
     repo_root.mkdir()
     prompt_path = tmp_path / "lonely.md"
     prompt_path.write_text(
-        "---\n"
-        "type: quickstart\n\n"
-        "```json\n"
-        "{\"example\": true}\n"
-        "```\n",
+        "\n".join(
+            [
+                "---",
+                "type: quickstart",
+                "",
+                "```json",
+                '{"example": true}',
+                "```",
+                "",
+            ]
+        ),
         encoding="utf-8",
     )
 
