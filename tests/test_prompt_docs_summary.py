@@ -125,3 +125,32 @@ def test_parse_prompt_doc_defaults(tmp_path):
     empty_summary = module.render_summary([])
     assert empty_summary.startswith(module.SUMMARY_HEADER)
     assert "No description provided." not in empty_summary
+
+
+def test_collect_prompt_docs_with_missing_metadata_and_repo_display(tmp_path, monkeypatch):
+    module = load_module()
+
+    empty_repo = tmp_path / "empty"
+    empty_repo.mkdir()
+
+    monkeypatch.chdir(tmp_path)
+    prompts_dir = Path("docs") / "prompts"
+    prompts_dir.mkdir(parents=True)
+    (prompts_dir / "fallback.md").write_text(
+        "# Fallback Prompt\n\nThe description is intentionally after metadata.\n",
+        encoding="utf-8",
+    )
+
+    docs = module.collect_prompt_docs([empty_repo, Path(".")])
+
+    assert len(docs) == 1
+    doc = docs[0]
+    assert doc.repo_display == "."
+    assert doc.repo_path == Path(".")
+    assert doc.relative_path.as_posix() == "docs/prompts/fallback.md"
+    assert doc.type_value == "unspecified"
+    assert doc.description == "No description provided."
+
+    summary = module.render_summary(docs)
+    assert "## ." in summary
+    assert "`docs/prompts/fallback.md`" in summary
