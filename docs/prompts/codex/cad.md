@@ -20,12 +20,12 @@ Maintain CAD sources and exported models.
 CONTEXT:
 - Follow AGENTS.md and README.md.
 - SCAD files live in `cad/` and STLs are committed alongside them.
-- Use `scripts/build_stl.sh` to regenerate models.
+- Use `scripts/build_stl.sh` (or `python -m wove.build_stl`) to regenerate models.
 - Ensure `pre-commit run --all-files`, `pytest`, and `./scripts/checks.sh` pass.
 
 REQUEST:
 1. Create or modify a `.scad` file under `cad/`.
-2. Run `scripts/build_stl.sh <file.scad>` to export the matching STL.
+2. Run `python -m wove.build_stl <file.scad>` (or the shell wrapper) to export the matching STL.
 3. Update documentation if the part changes.
 4. Verify the commands listed above succeed.
 
@@ -47,8 +47,13 @@ Ensure `pre-commit run --all-files`, `pytest`, and `./scripts/checks.sh` pass be
 USER:
 1. Audit the CAD prompt at `docs/prompts/codex/cad.md` for outdated steps.
 2. Update build scripts, README notes, or CAD docs as needed.
-3. Regenerate `docs/prompt-docs-summary.md` if links or titles change using
-   `python scripts/update_prompt_docs_summary.py --repos-from dict/prompt-doc-repos.txt --out docs/prompt-docs-summary.md`.
+3. Regenerate `docs/prompt-docs-summary.md` if links or titles change using:
+
+   ```bash
+   python scripts/update_prompt_docs_summary.py \
+       --repos-from dict/prompt-doc-repos.txt \
+       --out docs/prompt-docs-summary.md
+   ```
 4. Run the commands above and capture results in the PR description.
 
 OUTPUT:

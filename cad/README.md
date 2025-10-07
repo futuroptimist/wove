@@ -2,12 +2,18 @@
 
 The `cad/` directory contains parametric OpenSCAD sources for the prototype knitting hardware.
 Each module ships with a matching STL in `stl/` and can be regenerated when parameters change.
-Use `scripts/build_stl.sh` for a quick render or `scripts/openscad_render.sh` to select the
-standoff mode.
+Use `scripts/build_stl.sh` (a thin wrapper around `python -m wove.build_stl`) for quick renders or
+`scripts/openscad_render.sh` to select the standoff mode.
 
 ```bash
 # Render the spacer with default parameters
 ./scripts/build_stl.sh cad/spacer.scad
+
+# Regenerate every module, skipping up-to-date STLs
+./scripts/build_stl.sh
+
+# Force a rebuild into a custom output directory
+python -m wove.build_stl --force --stl-dir build-stl cad/spacer.scad
 
 # Render the tension post with printed standoffs
 STANDOFF_MODE=printed ./scripts/openscad_render.sh cad/tension_post.scad

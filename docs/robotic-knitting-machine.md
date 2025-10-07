@@ -28,7 +28,9 @@ printing.
 
 ## Exporting models
 
-Run `./scripts/build_stl.sh <file.scad>` to convert any module in `cad/` to a matching STL.
+Use `./scripts/build_stl.sh <file.scad>` to convert any module in `cad/` to a matching STL.
+The wrapper delegates to `python -m wove.build_stl <file.scad>` so both commands behave identically.
+Run the script without arguments to update every model while skipping up-to-date outputs.
 Store the exported models alongside their sources to keep hardware and code in sync.
 
 Generated G-code or custom instructions will drive these parts to knit automatically.
