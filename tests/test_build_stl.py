@@ -121,7 +121,10 @@ def test_resolve_targets_missing_file(scad_project: Path) -> None:
         build_stl._resolve_targets(scad_project, [str(target)])
 
 
-def test_stl_path_for_outside_scad_dir(tmp_path: Path, scad_project: Path) -> None:
+def test_stl_path_for_outside_scad_dir(
+    tmp_path: Path,
+    scad_project: Path,
+) -> None:
     stl_dir = tmp_path / "stl"
     outside = scad_project.parent / "external.scad"
     outside.write_text("// ext", encoding="utf-8")
@@ -131,28 +134,51 @@ def test_stl_path_for_outside_scad_dir(tmp_path: Path, scad_project: Path) -> No
     assert result == stl_dir / "external.stl"
 
 
-def test_should_skip_force_overrides(scad_project: Path, tmp_path: Path) -> None:
+def test_should_skip_force_overrides(
+    scad_project: Path, tmp_path: Path
+) -> None:
     stale = scad_project / "alpha.scad"
     stl = tmp_path / "alpha.stl"
     stl.write_text("existing", encoding="utf-8")
 
-    assert build_stl._should_skip(stale, stl, force=True) is False
+    assert build_stl._should_skip(
+        stale,
+        stl,
+        force=True,
+    ) is False
 
 
-def test_should_skip_without_output(scad_project: Path, tmp_path: Path) -> None:
+def test_should_skip_without_output(
+    scad_project: Path, tmp_path: Path
+) -> None:
     stale = scad_project / "alpha.scad"
     stl = tmp_path / "alpha.stl"
 
-    assert build_stl._should_skip(stale, stl, force=False) is False
+    assert build_stl._should_skip(
+        stale,
+        stl,
+        force=False,
+    ) is False
 
 
-def test_run_openscad_invocation(monkeypatch: pytest.MonkeyPatch, scad_project: Path, tmp_path: Path) -> None:
+def test_run_openscad_invocation(
+    monkeypatch: pytest.MonkeyPatch,
+    scad_project: Path,
+    tmp_path: Path,
+) -> None:
     called_with: List[List[str]] = []
 
-    def fake_run(args: List[str], check: bool) -> None:  # type: ignore[override]
+    def fake_run(
+        args: List[str],
+        check: bool,
+    ) -> None:  # type: ignore[override]
         called_with.append(args)
 
-    monkeypatch.setattr(build_stl.subprocess, "run", fake_run)  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        build_stl.subprocess,
+        "run",
+        fake_run,
+    )  # type: ignore[arg-type]
 
     scad = scad_project / "alpha.scad"
     stl = tmp_path / "alpha.stl"
@@ -201,7 +227,11 @@ def test_render_stls_handles_skips(
     ]
 
 
-def test_main_handles_errors(scad_project: Path, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+def test_main_handles_errors(
+    scad_project: Path,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     bad_target = scad_project / "missing.scad"
 
     exit_code = build_stl.main([
@@ -215,7 +245,9 @@ def test_main_handles_errors(scad_project: Path, tmp_path: Path, capsys: pytest.
     assert "does not exist" in captured.out
 
 
-def test_main_reports_no_targets(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+def test_main_reports_no_targets(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     empty_scad = tmp_path / "cad"
     empty_scad.mkdir()
 
