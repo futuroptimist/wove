@@ -8,7 +8,8 @@ printing.
 ## Planned Modules
 - **Needle adapter** – holds a standard needle with adjustable clearance and connects to a
   stepper-driven carriage.
-- **Stepper mount** – secures a motor for precise control.
+- **Stepper mount** – secures a motor for precise control with adjustable screw spacing
+  (set `hole_spacing`, defaulting to 31 mm for NEMA17).
 - **Carriage** – moves the working yarn and needles and includes a center hole for mounting
   hardware.
 - **Mounting bracket** – simple L-shaped bracket for test assemblies.
