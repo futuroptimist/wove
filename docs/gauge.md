@@ -24,6 +24,8 @@ rows-per-unit values across inches, centimeters, yards, and meters.
 Values ending in `.5` are rounded up when using `stitches_for_inches`,
 `stitches_for_cm`, `stitches_for_yards`, `stitches_for_meters`,
 `rows_for_inches`, `rows_for_cm`, `rows_for_yards`, or `rows_for_meters`.
+Use `width_difference_for_stitches` or `height_difference_for_rows` to
+quantify how an off-gauge swatch will change a project's finished size.
 
 To calculate gauge:
 
@@ -65,6 +67,7 @@ from wove import (
     cm_for_stitches,
     yards_for_stitches,
     meters_for_stitches,
+    height_difference_for_rows,
     rows_for_inches,
     rows_for_cm,
     rows_for_yards,
@@ -84,6 +87,7 @@ from wove import (
     per_yard_to_per_cm,
     per_yard_to_per_inch,
     per_yard_to_per_meter,
+    width_difference_for_stitches,
 )
 
 stitches_per_inch(20, 4)   # 5.0 stitches per inch
@@ -114,6 +118,8 @@ inches_for_rows(30, 7.5)     # 4.0 inches for 30 rows
 cm_for_rows(30, 3.0)         # 10.0 cm for 30 rows
 yards_for_rows(36, 120)      # 0.3 yards for 36 rows
 meters_for_rows(400, 400)    # 1.0 meter for 400 rows
+width_difference_for_stitches(180, 20, 22)  # ~-0.82 units (narrower fabric)
+height_difference_for_rows(220, 30, 28)     # ~0.52 units (taller fabric)
 stitches_for_inches(5.0, 7)   # 35 stitches for 7 in width
 stitches_for_cm(2.0, 10)      # 20 stitches for 10 cm width
 stitches_for_yards(180, 0.25) # 45 stitches for 0.25 yards

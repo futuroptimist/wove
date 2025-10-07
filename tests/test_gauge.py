@@ -11,6 +11,7 @@ from wove import (
     cm_to_meters,
     meters_for_rows,
     meters_for_stitches,
+    height_difference_for_rows,
     rows_per_yard,
     stitches_per_yard,
     rows_per_meter,
@@ -24,6 +25,7 @@ from wove import (
     yards_to_cm,
     yards_for_rows,
     yards_for_stitches,
+    width_difference_for_stitches,
     meters_to_yards,
     meters_to_cm,
     meters_to_inches,
@@ -571,3 +573,31 @@ def test_stitches_for_yards_half_up():
 
 def test_rows_for_meters_half_up():
     assert rows_for_meters(2.0, 0.25) == 1
+
+
+def test_width_difference_for_stitches():
+    diff = width_difference_for_stitches(180, 20, 22)
+    assert diff == pytest.approx(-0.8181818182)
+
+
+def test_width_difference_for_stitches_invalid_inputs():
+    with pytest.raises(ValueError):
+        width_difference_for_stitches(0, 20, 22)
+    with pytest.raises(ValueError):
+        width_difference_for_stitches(180, 0, 22)
+    with pytest.raises(ValueError):
+        width_difference_for_stitches(180, 20, 0)
+
+
+def test_height_difference_for_rows():
+    diff = height_difference_for_rows(220, 30, 28)
+    assert diff == pytest.approx(0.5238095238)
+
+
+def test_height_difference_for_rows_invalid_inputs():
+    with pytest.raises(ValueError):
+        height_difference_for_rows(0, 30, 28)
+    with pytest.raises(ValueError):
+        height_difference_for_rows(220, 0, 28)
+    with pytest.raises(ValueError):
+        height_difference_for_rows(220, 30, 0)
