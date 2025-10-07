@@ -12,6 +12,8 @@ from wove import (
     meters_for_rows,
     meters_for_stitches,
     height_difference_for_rows,
+    stitch_adjustment_for_width,
+    row_adjustment_for_height,
     rows_per_yard,
     stitches_per_yard,
     rows_per_meter,
@@ -601,3 +603,51 @@ def test_height_difference_for_rows_invalid_inputs():
         height_difference_for_rows(220, 0, 28)
     with pytest.raises(ValueError):
         height_difference_for_rows(220, 30, 0)
+
+
+def test_stitch_adjustment_for_width_adds_stitches():
+    adjustment = stitch_adjustment_for_width(90, 4.5, 5.25)
+    assert adjustment == 15  # requires 105 stitches to maintain width
+
+
+def test_stitch_adjustment_for_width_removes_stitches():
+    adjustment = stitch_adjustment_for_width(100, 5.0, 4.5)
+    assert adjustment == -10
+
+
+def test_stitch_adjustment_for_width_invalid_inputs():
+    with pytest.raises(ValueError):
+        stitch_adjustment_for_width(0, 5.0, 4.5)
+    with pytest.raises(ValueError):
+        stitch_adjustment_for_width(100, 0, 4.5)
+    with pytest.raises(ValueError):
+        stitch_adjustment_for_width(100, 5.0, 0)
+
+
+def test_stitch_adjustment_for_width_half_up():
+    adjustment = stitch_adjustment_for_width(90, 4.5, 5.025)
+    assert adjustment == 11  # adjusted stitches round 100.5 -> 101
+
+
+def test_row_adjustment_for_height_adds_rows():
+    adjustment = row_adjustment_for_height(120, 6.0, 6.5)
+    assert adjustment == 10  # requires 130 rows to maintain height
+
+
+def test_row_adjustment_for_height_removes_rows():
+    adjustment = row_adjustment_for_height(150, 7.5, 6.0)
+    assert adjustment == -30
+
+
+def test_row_adjustment_for_height_invalid_inputs():
+    with pytest.raises(ValueError):
+        row_adjustment_for_height(0, 6.0, 6.5)
+    with pytest.raises(ValueError):
+        row_adjustment_for_height(120, 0, 6.5)
+    with pytest.raises(ValueError):
+        row_adjustment_for_height(120, 6.0, 0)
+
+
+def test_row_adjustment_for_height_half_up():
+    adjustment = row_adjustment_for_height(120, 6.0, 6.05)
+    assert adjustment == 1  # adjusted rows round 121.0 -> 121

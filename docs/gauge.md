@@ -26,6 +26,9 @@ Values ending in `.5` are rounded up when using `stitches_for_inches`,
 `rows_for_inches`, `rows_for_cm`, `rows_for_yards`, or `rows_for_meters`.
 Use `width_difference_for_stitches` or `height_difference_for_rows` to
 quantify how an off-gauge swatch will change a project's finished size.
+Use `stitch_adjustment_for_width` or `row_adjustment_for_height` to convert
+that difference into the number of stitches or rows to add (positive values)
+or remove (negative values) to stay on size.
 
 To calculate gauge:
 
@@ -68,6 +71,8 @@ from wove import (
     yards_for_stitches,
     meters_for_stitches,
     height_difference_for_rows,
+    stitch_adjustment_for_width,
+    row_adjustment_for_height,
     rows_for_inches,
     rows_for_cm,
     rows_for_yards,
@@ -120,6 +125,8 @@ yards_for_rows(36, 120)      # 0.3 yards for 36 rows
 meters_for_rows(400, 400)    # 1.0 meter for 400 rows
 width_difference_for_stitches(180, 20, 22)  # ~-0.82 units (narrower fabric)
 height_difference_for_rows(220, 30, 28)     # ~0.52 units (taller fabric)
+stitch_adjustment_for_width(90, 4.5, 5.025)  # 11 extra stitches to hold width
+row_adjustment_for_height(120, 6.0, 6.5)     # 10 extra rows to match height
 stitches_for_inches(5.0, 7)   # 35 stitches for 7 in width
 stitches_for_cm(2.0, 10)      # 20 stitches for 10 cm width
 stitches_for_yards(180, 0.25) # 45 stitches for 0.25 yards
