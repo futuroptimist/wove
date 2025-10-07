@@ -4,7 +4,10 @@ import importlib.util
 import sys
 from pathlib import Path
 
-PHRASE = "Use this prompt when verifying tests for automation scripts."
+PHRASE = (
+    "Use this prompt when verifying tests for automation scripts. "
+    "It keeps coverage reviews focused."
+)
 
 
 def load_module():
@@ -39,6 +42,7 @@ Type: evergreen
 One-click: yes
 
 Use this prompt when verifying tests for automation scripts.
+It keeps coverage reviews focused.
 """
     (prompt_dir / "sample.md").write_text(prompt_content, encoding="utf-8")
 
@@ -55,7 +59,8 @@ Use this prompt when verifying tests for automation scripts.
     assert "## sample" in summary.lower()
     assert "Sample Prompt" in summary
     assert "`docs/prompts/sample.md`" in summary
-    assert expected_phrase in summary
+    normalized_summary = " ".join(summary.split())
+    assert expected_phrase in normalized_summary
 
     repos_file = tmp_path / "repos.txt"
     repos_file.write_text(str(repo_root.resolve()), encoding="utf-8")
@@ -172,3 +177,55 @@ def test_collect_prompt_docs_with_missing_metadata_and_repo_display(
     summary = module.render_summary(docs)
     assert "## ." in summary
     assert "`docs/prompts/fallback.md`" in summary
+
+
+def test_description_strips_markdown_links(tmp_path):
+    module = load_module()
+    repo_root = tmp_path / "repo"
+    prompt_dir = repo_root / "docs" / "prompts"
+    prompt_dir.mkdir(parents=True)
+
+    prompt_dir.joinpath("links.md").write_text(
+        "\n".join(
+            [
+                "# Link Prompt",
+                "Type: evergreen",
+                "",
+                (
+                    "Use alongside [propagate.md](propagate.md) "
+                    "to keep summaries stable."
+                ),
+                ("External docs live at " "[Wove](https://wove.space)."),
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    doc = module.collect_prompt_docs([repo_root])[0]
+    expected_description = " ".join(
+        [
+            "Use alongside propagate.md to keep summaries stable.",
+            "External docs live at Wove.",
+        ]
+    )
+    assert doc.description == expected_description
+
+    summary = module.render_summary([doc])
+    assert "[propagate.md](" not in summary
+    assert "External docs live at Wove." in " ".join(summary.split())
+
+
+def test_description_stops_at_first_blank_line():
+    module = load_module()
+
+    lines = [
+        "Type: evergreen",
+        "",
+        "First sentence.",
+        "",
+        "Second paragraph should be ignored.",
+    ]
+
+    description = module._extract_description(lines)
+
+    assert description == "First sentence."
