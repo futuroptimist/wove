@@ -191,18 +191,24 @@ def test_description_strips_markdown_links(tmp_path):
                 "# Link Prompt",
                 "Type: evergreen",
                 "",
-                "Use alongside [propagate.md](propagate.md) to keep summaries stable.",
-                "External docs live at [Wove](https://wove.space).",
+                (
+                    "Use alongside [propagate.md](propagate.md) "
+                    "to keep summaries stable."
+                ),
+                ("External docs live at " "[Wove](https://wove.space)."),
             ]
         ),
         encoding="utf-8",
     )
 
     doc = module.collect_prompt_docs([repo_root])[0]
-    assert doc.description == (
-        "Use alongside propagate.md to keep summaries stable. "
-        "External docs live at Wove."
+    expected_description = " ".join(
+        [
+            "Use alongside propagate.md to keep summaries stable.",
+            "External docs live at Wove.",
+        ]
     )
+    assert doc.description == expected_description
 
     summary = module.render_summary([doc])
     assert "[propagate.md](" not in summary
