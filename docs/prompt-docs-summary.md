@@ -6,19 +6,28 @@ Update `dict/prompt-doc-repos.txt` to control which repositories appear.
 ## wove
 
 - **Codex Automation Prompt** (`evergreen`) — `docs/prompts/codex/automation.md`
-  This document stores the baseline prompt used when instructing OpenAI Codex (or
+  This document stores the baseline prompt used when instructing OpenAI Codex (or compatible
+  agents) to contribute to the Wove repository. Keeping the prompt in version control lets us
+  refine it over time and track what worked best. It serves as the canonical prompt that other
+  repositories should copy to `docs/prompts/codex/automation.md` for consistent automation. For
+  propagation instructions, see [propagate.md](propagate.md).
 
 - **Codex CAD Prompt** (`evergreen`) — `docs/prompts/codex/cad.md`
-  Use this prompt when generating or updating OpenSCAD modules for Wove. It keeps
+  Use this prompt when generating or updating OpenSCAD modules for Wove. It keeps 3D assets and
+  their exported models in sync.
 
 - **Codex Docs Prompt** (`evergreen`) — `docs/prompts/codex/docs.md`
-  Use this prompt when updating or creating documentation in Wove. It keeps
+  Use this prompt when updating or creating documentation in Wove. It keeps written guides and
+  references consistent.
 
 - **Codex Implement Prompt** (`evergreen`) — `docs/prompts/codex/implement.md`
-  Use this prompt when you want an automated agent to deliver a production-ready
+  Use this prompt when you want an automated agent to deliver a production-ready feature that
+  has been promised but not yet built in the Wove project.
 
 - **Codex Prompt Propagation Guide** (`evergreen`) — `docs/prompts/codex/propagate.md`
-  Use this guide when copying Wove's Codex prompt catalog into another repository or
+  Use this guide when copying Wove's Codex prompt catalog into another repository or rotating a
+  fresh automation setup. It documents the lightweight checklist for keeping prompt docs
+  synchronized with downstream projects.
 
 - **Codex Test Prompt** (`evergreen`) — `docs/prompts/codex/tests.md`
-  Use this prompt when adding or improving tests for Wove to ensure changes are
+  Use this prompt when adding or improving tests for Wove to ensure changes are well validated.

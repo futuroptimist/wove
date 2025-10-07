@@ -150,9 +150,12 @@ def _extract_type(lines: List[str]) -> str | None:
 
 def _extract_description(lines: List[str]) -> str | None:
     after_type = False
+    paragraph: List[str] = []
     for line in lines:
         stripped = line.strip()
         if not stripped:
+            if paragraph:
+                break
             continue
         if stripped.lower().startswith("type:"):
             after_type = True
@@ -164,8 +167,10 @@ def _extract_description(lines: List[str]) -> str | None:
         if stripped.startswith("```"):
             # Skip code blocks that appear before any narrative description.
             return None
-        return stripped
-    return None
+        paragraph.append(stripped)
+    if not paragraph:
+        return None
+    return " ".join(paragraph)
 
 
 def render_summary(docs: Sequence[PromptDoc]) -> str:

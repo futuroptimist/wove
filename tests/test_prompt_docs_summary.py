@@ -4,7 +4,10 @@ import importlib.util
 import sys
 from pathlib import Path
 
-PHRASE = "Use this prompt when verifying tests for automation scripts."
+PHRASE = (
+    "Use this prompt when verifying tests for automation scripts. "
+    "It keeps coverage reviews focused."
+)
 
 
 def load_module():
@@ -39,6 +42,7 @@ Type: evergreen
 One-click: yes
 
 Use this prompt when verifying tests for automation scripts.
+It keeps coverage reviews focused.
 """
     (prompt_dir / "sample.md").write_text(prompt_content, encoding="utf-8")
 
@@ -55,7 +59,8 @@ Use this prompt when verifying tests for automation scripts.
     assert "## sample" in summary.lower()
     assert "Sample Prompt" in summary
     assert "`docs/prompts/sample.md`" in summary
-    assert expected_phrase in summary
+    normalized_summary = " ".join(summary.split())
+    assert expected_phrase in normalized_summary
 
     repos_file = tmp_path / "repos.txt"
     repos_file.write_text(str(repo_root.resolve()), encoding="utf-8")
