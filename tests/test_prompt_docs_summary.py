@@ -207,3 +207,19 @@ def test_description_strips_markdown_links(tmp_path):
     summary = module.render_summary([doc])
     assert "[propagate.md](" not in summary
     assert "External docs live at Wove." in " ".join(summary.split())
+
+
+def test_description_stops_at_first_blank_line():
+    module = load_module()
+
+    lines = [
+        "Type: evergreen",
+        "",
+        "First sentence.",
+        "",
+        "Second paragraph should be ignored.",
+    ]
+
+    description = module._extract_description(lines)
+
+    assert description == "First sentence."
