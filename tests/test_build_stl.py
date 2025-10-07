@@ -129,7 +129,11 @@ def test_stl_path_for_outside_scad_dir(
     outside = scad_project.parent / "external.scad"
     outside.write_text("// ext", encoding="utf-8")
 
-    result = build_stl._stl_path_for(scad_project, stl_dir, outside)
+    result = build_stl._stl_path_for(
+        scad_project,
+        stl_dir,
+        outside,
+    )
 
     assert result == stl_dir / "external.stl"
 
@@ -141,11 +145,13 @@ def test_should_skip_force_overrides(
     stl = tmp_path / "alpha.stl"
     stl.write_text("existing", encoding="utf-8")
 
-    assert build_stl._should_skip(
+    skip = build_stl._should_skip(
         stale,
         stl,
         force=True,
-    ) is False
+    )
+
+    assert skip is False
 
 
 def test_should_skip_without_output(
@@ -154,11 +160,13 @@ def test_should_skip_without_output(
     stale = scad_project / "alpha.scad"
     stl = tmp_path / "alpha.stl"
 
-    assert build_stl._should_skip(
+    skip = build_stl._should_skip(
         stale,
         stl,
         force=False,
-    ) is False
+    )
+
+    assert skip is False
 
 
 def test_run_openscad_invocation(
@@ -185,7 +193,14 @@ def test_run_openscad_invocation(
 
     build_stl._run_openscad("openscad", scad, stl)
 
-    assert called_with == [["openscad", "-o", str(stl), str(scad)]]
+    assert called_with == [
+        [
+            "openscad",
+            "-o",
+            str(stl),
+            str(scad),
+        ]
+    ]
     assert stl.parent.exists()
 
 
