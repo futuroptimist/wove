@@ -19,8 +19,9 @@ Keep the repository healthy by ensuring `pre-commit run --all-files`,
 
 USER:
 1. Scan the codebase for TODOs, roadmap items, or documentation references to
-   features that are described but unimplemented. Randomly select one that is
-   still relevant and within a single PR scope.
+   features that are described but unimplemented. Include design docs such as
+   `docs/wove-v1c-design.md` and note actionable roadmap items. Randomly select
+   one that is still relevant and within a single PR scope.
 2. Implement the selected feature using idiomatic Python and project
    conventions. Touch only the files necessary to ship the feature.
 3. Add or update documentation so the promised behavior is now accurately
@@ -40,6 +41,9 @@ final diff in a fenced block.
 ## Usage notes
 
 - Favor features that unblock existing documentation or tests.
+- Treat design doc roadmap items as high-priority work once prerequisites are
+  in place. Coordinate with the Design Doc Upgrade prompt when requirements
+  shift or need clarification.
 - Prefer minimal, vertical slices that can be reviewed quickly.
 - Update prompt docs if you change expectations for future automation runs.
 - Keep commit messages focused; capture context in the PR description.
