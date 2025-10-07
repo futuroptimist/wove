@@ -31,7 +31,9 @@ STANDOFF_MODE=printed ./scripts/openscad_render.sh cad/tension_post.scad
   Raise `clearance` if insertion feels tight.
 - `spacer`: Cylindrical spacer with an optional chamfer.
   Ensure `height >= 2 * chamfer` before rendering.
-- `stepper_mount`: Plate that positions a stepper motor with editable hole spacing.
+- `stepper_mount`: Plate that positions a stepper motor with editable hole spacing via
+  the `hole_spacing` parameter (default 31 mm for NEMA17) and screw hole diameter via
+  `hole_diameter`.
 - `tension_post`: Upright post that manages yarn tension and pairs with the yarn guide.
 - `washer`: Flat washer with optional chamfers for smoother edges.
 - `yarn_guide`: Routes yarn through the carriage.
