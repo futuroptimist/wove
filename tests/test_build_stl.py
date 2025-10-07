@@ -210,7 +210,10 @@ def test_format_define_value_trims_whitespace() -> None:
 
 
 def test_parse_define_trims_key_and_value() -> None:
-    assert build_stl._parse_define("  HEIGHT_MM  =  12.5  ") == ("HEIGHT_MM", "12.5")
+    assert build_stl._parse_define("  HEIGHT_MM  =  12.5  ") == (
+        "HEIGHT_MM",
+        "12.5",
+    )
 
 
 def test_parse_define_requires_equals() -> None:
