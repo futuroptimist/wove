@@ -16,10 +16,6 @@ DEFAULT_STANDOFF_MODE = "heatset"
 METADATA_SUFFIX = ".metadata.json"
 
 
-def _current_standoff_mode() -> str:
-    return os.environ.get("STANDOFF_MODE") or DEFAULT_STANDOFF_MODE
-
-
 def _stl_metadata_path(stl_path: Path) -> Path:
     return stl_path.with_name(stl_path.name + METADATA_SUFFIX)
 
@@ -183,15 +179,17 @@ def _openscad_args(
     defines: Sequence[Definition] | None = None,
 ) -> List[str]:
     """Construct the OpenSCAD command with environment-aware defines."""
+    provided_defines = list(defines or ())
     command: List[str] = [openscad]
-    for key, raw_value in defines or ():
+    provided_keys = {key for key, _ in provided_defines}
+    for key, raw_value in provided_defines:
         value = _format_define_value(raw_value)
         command.extend(["-D", f"{key}={value}"])
-    # Include STANDOFF_MODE automatically if defined
-    standoff_mode = _current_standoff_mode()
-    if standoff_mode:
-        quoted = json.dumps(standoff_mode)
-        command.extend(["-D", f"STANDOFF_MODE={quoted}"])
+    if "STANDOFF_MODE" not in provided_keys:
+        standoff_mode = _current_standoff_mode()
+        if standoff_mode:
+            quoted = json.dumps(standoff_mode)
+            command.extend(["-D", f"STANDOFF_MODE={quoted}"])
     command.extend(["-o", str(stl_path), str(scad_path)])
     return command
 

@@ -87,7 +87,7 @@ Key modules include:
 ## Bill of Materials (Initial Release)
 | Subsystem | Component | Qty | Notes |
 |-----------|-----------|-----|-------|
-| Frame | 20×20 mm aluminum extrusion, 300 mm | 6 | Pre-cut lengths | 
+| Frame | 20×20 mm aluminum extrusion, 300 mm | 6 | Pre-cut lengths |
 | Frame | M5 × 10 mm button head screws | 24 | For extrusion joints |
 | Motion | NEMA 17 stepper (1.5 A) | 3 | X, Y, Z axes |
 | Motion | GT2 6 mm belt (loop) | 2 | 1.5 m each |
@@ -171,4 +171,3 @@ Key modules include:
 - Phase 1: Capture mechanical sketches and calibration metrics in the repository.
 - Phase 3: Add yarn-specific tension profiles and test results.
 - Phase 5: Finalize assembly guide, troubleshooting FAQ, and firmware configuration templates.
-

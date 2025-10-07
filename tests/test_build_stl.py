@@ -255,6 +255,8 @@ def test_run_openscad_invocation(
     assert called_with == [
         [
             "openscad",
+            "-D",
+            'STANDOFF_MODE="heatset"',
             "-o",
             str(stl),
             str(scad),
@@ -294,10 +296,10 @@ def test_run_openscad_includes_standoff_mode_when_set(
     assert called_with == [
         [
             "openscad",
-            "-o",
-            str(stl),
             "-D",
             'STANDOFF_MODE="printed"',
+            "-o",
+            str(stl),
             str(scad),
         ]
     ]
