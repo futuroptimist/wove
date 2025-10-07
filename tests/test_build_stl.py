@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 from typing import List, Tuple
@@ -204,6 +205,10 @@ def test_run_openscad_invocation(
             str(scad),
         ]
     ]
+    metadata_path = build_stl._stl_metadata_path(stl)
+    assert json.loads(metadata_path.read_text(encoding="utf-8")) == {
+        "standoff_mode": build_stl.DEFAULT_STANDOFF_MODE,
+    }
 
 
 def test_run_openscad_includes_standoff_mode_when_set(
@@ -242,6 +247,41 @@ def test_run_openscad_includes_standoff_mode_when_set(
         ]
     ]
     assert stl.parent.exists()
+    metadata_path = build_stl._stl_metadata_path(stl)
+    assert json.loads(metadata_path.read_text(encoding="utf-8")) == {
+        "standoff_mode": "printed",
+    }
+
+
+def test_should_skip_rebuilds_when_standoff_mode_changes(
+    monkeypatch: pytest.MonkeyPatch,
+    scad_project: Path,
+    tmp_path: Path,
+) -> None:
+    scad = scad_project / "alpha.scad"
+    stl = tmp_path / "alpha.stl"
+    stl.write_text("existing", encoding="utf-8")
+    build_stl._write_metadata(stl, {"standoff_mode": "printed"})
+    monkeypatch.delenv("STANDOFF_MODE", raising=False)
+
+    skip = build_stl._should_skip(scad, stl, force=False)
+
+    assert skip is False
+
+
+def test_should_skip_defaults_to_heatset_when_missing_metadata(
+    monkeypatch: pytest.MonkeyPatch,
+    scad_project: Path,
+    tmp_path: Path,
+) -> None:
+    scad = scad_project / "alpha.scad"
+    stl = tmp_path / "alpha.stl"
+    stl.write_text("existing", encoding="utf-8")
+    monkeypatch.setenv("STANDOFF_MODE", "printed")
+
+    skip = build_stl._should_skip(scad, stl, force=False)
+
+    assert skip is False
 
 
 def test_render_stls_handles_skips(

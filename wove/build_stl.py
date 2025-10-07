@@ -7,11 +7,36 @@ import json
 import os
 import subprocess
 from pathlib import Path
-from typing import Iterable, List, Sequence
+from typing import Dict, Iterable, List, Sequence
 
 DEFAULT_SCAD_DIR = Path(os.environ.get("SCAD_DIR", "cad"))
 DEFAULT_STL_DIR = Path(os.environ.get("STL_DIR", "stl"))
 DEFAULT_OPENSCAD = os.environ.get("OPENSCAD", "openscad")
+DEFAULT_STANDOFF_MODE = "heatset"
+METADATA_SUFFIX = ".metadata.json"
+
+
+def _current_standoff_mode() -> str:
+    return os.environ.get("STANDOFF_MODE") or DEFAULT_STANDOFF_MODE
+
+
+def _stl_metadata_path(stl_path: Path) -> Path:
+    return stl_path.with_name(stl_path.name + METADATA_SUFFIX)
+
+
+def _load_metadata(stl_path: Path) -> Dict[str, str]:
+    try:
+        with _stl_metadata_path(stl_path).open(encoding="utf-8") as handle:
+            return json.load(handle)
+    except FileNotFoundError:
+        return {}
+    except json.JSONDecodeError:
+        return {}
+
+
+def _write_metadata(stl_path: Path, metadata: Dict[str, str]) -> None:
+    metadata_path = _stl_metadata_path(stl_path)
+    metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -94,6 +119,14 @@ def _should_skip(scad_path: Path, stl_path: Path, force: bool) -> bool:
         return False
     if not stl_path.exists():
         return False
+    metadata = _load_metadata(stl_path)
+    requested_mode = _current_standoff_mode()
+    previous_mode = metadata.get("standoff_mode")
+    if previous_mode is None:
+        if requested_mode != DEFAULT_STANDOFF_MODE:
+            return False
+    elif previous_mode != requested_mode:
+        return False
     return stl_path.stat().st_mtime >= scad_path.stat().st_mtime
 
 
@@ -117,6 +150,10 @@ def _run_openscad(openscad: str, scad_path: Path, stl_path: Path) -> None:
     subprocess.run(
         _openscad_args(openscad, scad_path, stl_path),
         check=True,
+    )
+    _write_metadata(
+        stl_path,
+        {"standoff_mode": _current_standoff_mode()},
     )
 
 
