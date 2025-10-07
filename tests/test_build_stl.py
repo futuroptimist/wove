@@ -176,6 +176,7 @@ def test_run_openscad_invocation(
     scad_project: Path,
     tmp_path: Path,
 ) -> None:
+    monkeypatch.delenv("STANDOFF_MODE", raising=False)
     called_with: List[List[str]] = []
 
     def fake_run(
@@ -200,6 +201,43 @@ def test_run_openscad_invocation(
             "openscad",
             "-o",
             str(stl),
+            str(scad),
+        ]
+    ]
+
+
+def test_run_openscad_includes_standoff_mode_when_set(
+    monkeypatch: pytest.MonkeyPatch,
+    scad_project: Path,
+    tmp_path: Path,
+) -> None:
+    called_with: List[List[str]] = []
+
+    def fake_run(
+        args: List[str],
+        check: bool,
+    ) -> None:  # type: ignore[override]
+        called_with.append(args)
+
+    monkeypatch.setattr(
+        build_stl.subprocess,
+        "run",
+        fake_run,
+    )  # type: ignore[arg-type]
+    monkeypatch.setenv("STANDOFF_MODE", "printed")
+
+    scad = scad_project / "alpha.scad"
+    stl = tmp_path / "alpha.stl"
+
+    build_stl._run_openscad("openscad", scad, stl)
+
+    assert called_with == [
+        [
+            "openscad",
+            "-o",
+            str(stl),
+            "-D",
+            'STANDOFF_MODE="printed"',
             str(scad),
         ]
     ]

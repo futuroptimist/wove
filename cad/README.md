@@ -16,6 +16,7 @@ Use `scripts/build_stl.sh` (a thin wrapper around `python -m wove.build_stl`) fo
 python -m wove.build_stl --force --stl-dir build-stl cad/spacer.scad
 
 # Render the tension post with printed standoffs
+STANDOFF_MODE=printed python -m wove.build_stl cad/tension_post.scad
 STANDOFF_MODE=printed ./scripts/openscad_render.sh cad/tension_post.scad
 ```
 
@@ -33,6 +34,8 @@ STANDOFF_MODE=printed ./scripts/openscad_render.sh cad/tension_post.scad
   Ensure `height >= 2 * chamfer` before rendering.
 - `stepper_mount`: Plate that positions a stepper motor with editable hole spacing.
 - `tension_post`: Upright post that manages yarn tension and pairs with the yarn guide.
+  Set `STANDOFF_MODE=heatset` (default) to create insert cutouts or `STANDOFF_MODE=printed`
+  to add printable standoffs.
 - `washer`: Flat washer with optional chamfers for smoother edges.
 - `yarn_guide`: Routes yarn through the carriage.
   Adjust the loop to match the yarn weight.

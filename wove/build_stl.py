@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import subprocess
 from pathlib import Path
@@ -96,10 +97,25 @@ def _should_skip(scad_path: Path, stl_path: Path, force: bool) -> bool:
     return stl_path.stat().st_mtime >= scad_path.stat().st_mtime
 
 
+def _openscad_args(
+    openscad: str,
+    scad_path: Path,
+    stl_path: Path,
+) -> List[str]:
+    command = [openscad, "-o", str(stl_path)]
+    standoff_mode = os.environ.get("STANDOFF_MODE")
+    if standoff_mode:
+        quoted = json.dumps(standoff_mode)
+        define = f"STANDOFF_MODE={quoted}"
+        command.extend(["-D", define])
+    command.append(str(scad_path))
+    return command
+
+
 def _run_openscad(openscad: str, scad_path: Path, stl_path: Path) -> None:
     stl_path.parent.mkdir(parents=True, exist_ok=True)
     subprocess.run(
-        [openscad, "-o", str(stl_path), str(scad_path)],
+        _openscad_args(openscad, scad_path, stl_path),
         check=True,
     )
 
