@@ -92,3 +92,140 @@ def test_skip_up_to_date_file(
             stl_dir / "alpha.stl",
         )
     ]
+
+
+def test_resolve_targets_raises_when_scad_dir_missing(tmp_path: Path) -> None:
+    missing_dir = tmp_path / "cad"
+
+    with pytest.raises(FileNotFoundError):
+        build_stl._resolve_targets(missing_dir, ())
+
+
+def test_resolve_targets_with_directory_argument(scad_project: Path) -> None:
+    targets = build_stl._resolve_targets(scad_project, [str(scad_project)])
+
+    assert targets == [
+        scad_project / "alpha.scad",
+        scad_project / "nested" / "beta.scad",
+    ]
+
+
+def test_resolve_targets_rejects_non_scad(scad_project: Path) -> None:
+    with pytest.raises(ValueError):
+        build_stl._resolve_targets(scad_project, ["not_a_scad.txt"])
+
+
+def test_resolve_targets_missing_file(scad_project: Path) -> None:
+    target = scad_project / "missing.scad"
+    with pytest.raises(FileNotFoundError):
+        build_stl._resolve_targets(scad_project, [str(target)])
+
+
+def test_stl_path_for_outside_scad_dir(tmp_path: Path, scad_project: Path) -> None:
+    stl_dir = tmp_path / "stl"
+    outside = scad_project.parent / "external.scad"
+    outside.write_text("// ext", encoding="utf-8")
+
+    result = build_stl._stl_path_for(scad_project, stl_dir, outside)
+
+    assert result == stl_dir / "external.stl"
+
+
+def test_should_skip_force_overrides(scad_project: Path, tmp_path: Path) -> None:
+    stale = scad_project / "alpha.scad"
+    stl = tmp_path / "alpha.stl"
+    stl.write_text("existing", encoding="utf-8")
+
+    assert build_stl._should_skip(stale, stl, force=True) is False
+
+
+def test_should_skip_without_output(scad_project: Path, tmp_path: Path) -> None:
+    stale = scad_project / "alpha.scad"
+    stl = tmp_path / "alpha.stl"
+
+    assert build_stl._should_skip(stale, stl, force=False) is False
+
+
+def test_run_openscad_invocation(monkeypatch: pytest.MonkeyPatch, scad_project: Path, tmp_path: Path) -> None:
+    called_with: List[List[str]] = []
+
+    def fake_run(args: List[str], check: bool) -> None:  # type: ignore[override]
+        called_with.append(args)
+
+    monkeypatch.setattr(build_stl.subprocess, "run", fake_run)  # type: ignore[arg-type]
+
+    scad = scad_project / "alpha.scad"
+    stl = tmp_path / "alpha.stl"
+
+    build_stl._run_openscad("openscad", scad, stl)
+
+    assert called_with == [["openscad", "-o", str(stl), str(scad)]]
+    assert stl.parent.exists()
+
+
+def test_render_stls_handles_skips(
+    monkeypatch: pytest.MonkeyPatch,
+    scad_project: Path,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    calls = _recorded_calls(monkeypatch)
+    stl_dir = tmp_path / "out"
+    stl_dir.mkdir()
+
+    up_to_date = stl_dir / "nested" / "beta.stl"
+    up_to_date.parent.mkdir(parents=True, exist_ok=True)
+    up_to_date.write_text("fresh", encoding="utf-8")
+
+    mtime = (scad_project / "nested" / "beta.scad").stat().st_mtime
+    os.utime(up_to_date, (mtime + 50, mtime + 50))
+
+    build_stl.render_stls(
+        scad_project,
+        stl_dir,
+        [
+            scad_project / "alpha.scad",
+            scad_project / "nested" / "beta.scad",
+        ],
+        "openscad",
+    )
+
+    captured = capsys.readouterr()
+    assert "Skipping" in captured.out
+    assert calls == [
+        (
+            "openscad",
+            scad_project / "alpha.scad",
+            stl_dir / "alpha.stl",
+        )
+    ]
+
+
+def test_main_handles_errors(scad_project: Path, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    bad_target = scad_project / "missing.scad"
+
+    exit_code = build_stl.main([
+        "--scad-dir",
+        str(scad_project),
+        str(bad_target),
+    ])
+
+    captured = capsys.readouterr()
+    assert exit_code == 1
+    assert "does not exist" in captured.out
+
+
+def test_main_reports_no_targets(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    empty_scad = tmp_path / "cad"
+    empty_scad.mkdir()
+
+    exit_code = build_stl.main([
+        "--scad-dir",
+        str(empty_scad),
+        "--stl-dir",
+        str(tmp_path / "stl"),
+    ])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "No .scad files found" in captured.out
