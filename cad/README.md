@@ -15,6 +15,9 @@ Use `scripts/build_stl.sh` (a thin wrapper around `python -m wove.build_stl`) fo
 # Force a rebuild into a custom output directory
 python -m wove.build_stl --force --stl-dir build-stl cad/spacer.scad
 
+# Render with custom OpenSCAD variables, e.g., select a standoff mode
+python -m wove.build_stl --define STANDOFF_MODE=printed cad/tension_post.scad
+
 # Render the tension post with printed standoffs
 STANDOFF_MODE=printed python -m wove.build_stl cad/tension_post.scad
 STANDOFF_MODE=printed ./scripts/openscad_render.sh cad/tension_post.scad
@@ -32,7 +35,9 @@ STANDOFF_MODE=printed ./scripts/openscad_render.sh cad/tension_post.scad
   Raise `clearance` if insertion feels tight.
 - `spacer`: Cylindrical spacer with an optional chamfer.
   Ensure `height >= 2 * chamfer` before rendering.
-- `stepper_mount`: Plate that positions a stepper motor with editable hole spacing.
+- `stepper_mount`: Plate that positions a stepper motor with editable hole spacing via
+  the `hole_spacing` parameter (default 31 mm for NEMA17) and screw hole diameter via
+  `hole_diameter`.
 - `tension_post`: Upright post that manages yarn tension and pairs with the yarn guide.
   Set `STANDOFF_MODE=heatset` (default) to create insert cutouts or `STANDOFF_MODE=printed`
   to add printable standoffs.

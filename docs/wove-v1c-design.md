@@ -1,0 +1,174 @@
+# Wove v1c Mechanical Crochet System Design
+
+## Vision and Goals
+- Deliver an open-source, mechanically actuated crochet device that hobbyists can build with
+  consumer-grade 3D printers and widely available hardware.
+- Provide a modular platform that evolves into the knitting-focused v1k variant while sharing
+  control electronics, firmware foundations, and community documentation.
+- Optimize for reproducibility, safety, and maintainability so contributors can iterate on
+  specific subsystems without destabilizing the whole machine.
+
+## System Overview
+The v1c system combines a 3D-printed frame, modular motion assemblies, yarn-management features,
+open firmware, and desktop control tools. A single-board microcontroller drives NEMA 17 steppers
+and hobby servos to reproduce the hand motions required for crochet stitches. Optional sensors for
+limit detection and yarn tension improve repeatability while remaining optional for early builds.
+
+Key modules include:
+- **Hook Actuation Gantry** – X/Y motion with interchangeable Z-axis carriage supporting a rotary or
+  oscillating crochet hook end-effector.
+- **Yarn Feed and Tensioner** – Spring-loaded tension post and guide ring combination that maintains
+  constant feed resistance without damaging yarn.
+- **Workpiece Support Bed** – Removable plate with magnetic anchors to hold fabric while enabling
+  easy removal between runs.
+- **Electronics Bay** – Enclosed mount for controller, stepper drivers, wiring harness, and cooling.
+- **Safety Interlocks** – Mechanical end stops, emergency stop button, and firmware-based motion
+  limits.
+
+## Mechanical Subsystem
+### Hook Motion Assembly
+- **Axes**: CoreXY belt layout for fast X/Y travel using two GT2 belts and idler pulleys. Optional
+  linear rail upgrade path; default uses 8 mm smooth rods with LM8UU bearings to minimize cost.
+- **Hook Carriage**: Modular interface accepting either a rotary hook drive (geared stepper) or a
+  cam-based oscillation module (MG90S metal gear servo). 20 mm fan mount supports passive cooling
+  of the actuator.
+- **Z Motion**: Leadscrew-driven lift (T8x2) moved by a compact stepper to set hook penetration
+  depth. Anti-backlash nut and printed flexures reduce play.
+
+### Yarn Handling
+- **Tension Post**: Dual-post design with printed spring clip for quick yarn swaps. Replaceable
+  felt pads prevent abrasion.
+- **Guide Path**: PTFE tube segments route yarn from spool to hook while allowing low-friction
+  motion. Optional filament sensor monitors breaks for advanced builds.
+
+### Frame and Build Volume
+- **Frame**: 20x20 mm aluminum extrusion perimeter with printed corner cubes and feet. Designed for
+  250 mm × 250 mm working area; printable parts cap at 220 mm to fit standard beds.
+- **Bed**: Magnetic stainless sheet bonded to a printed base with embedded M3 heat-set inserts for
+  accessory mounting.
+
+### Safety Features
+- Full-travel physical end stops on X, Y, and Z with printable housings.
+- Snap-on belt guards protect against accidental entanglement.
+- Firmware-configurable soft limits and homing sequences prevent overtravel.
+- Optional polycarbonate shield with hinged access door for production environments.
+
+## Electronics and Control
+### Control Board
+- Recommend the BigTreeTech SKR Mini E3 V3 or comparable 32-bit board with TMC2209 drivers for
+  quiet, sensorless-homing-capable motion.
+- Alternate path: RAMPS 1.4 + Arduino Mega for builders using legacy hardware (documented in v1c
+  appendix).
+
+### Motors and Actuators
+- **X/Y**: Two NEMA 17 42 × 40 mm steppers, 1.5 A max current.
+- **Z**: One compact NEMA 17 or NEMA 14 stepper with integrated lead screw coupler.
+- **Hook**: High-speed NEMA 11 stepper (rotary) or MG90S servo (oscillation).
+- **Tensioner**: Optional micro-servo for automated yarn feed adjustments.
+
+### Sensors and Switches
+- Mechanical limit switches on each axis (Omron D2F or similar).
+- Optional hall-effect sensor for yarn tension measurement via flexible arm deflection.
+- Emergency stop wired in series with board power.
+- Thermistor channel reserved for future heated bed accessory.
+
+### Power and Wiring
+- 24 V, 10 A supply for steppers; onboard 5 V regulator powers sensors and servos.
+- JST-XH harnesses for modular axis replacement; printed cable chains keep wiring tidy.
+- Provide wiring schematics and harness length tables for standard build sizes.
+
+### Firmware and Software
+- Base firmware forked from Klipper for flexible motion control and macro scripting.
+- Default config files define axis scaling, stepper currents, and safety limits.
+- Companion Python CLI handles pattern translation from .SVG or custom stitch description to
+  G-code-like motion sequences.
+- Future roadmap: integrate with browser-based planner for interactive pattern design.
+
+## Bill of Materials (Initial Release)
+| Subsystem | Component | Qty | Notes |
+|-----------|-----------|-----|-------|
+| Frame | 20×20 mm aluminum extrusion, 300 mm | 6 | Pre-cut lengths | 
+| Frame | M5 × 10 mm button head screws | 24 | For extrusion joints |
+| Motion | NEMA 17 stepper (1.5 A) | 3 | X, Y, Z axes |
+| Motion | GT2 6 mm belt (loop) | 2 | 1.5 m each |
+| Motion | 20-tooth GT2 pulley | 4 | For CoreXY layout |
+| Motion | T8x2 lead screw, 250 mm | 1 | Z axis |
+| Motion | LM8UU bearings | 8 | Linear motion |
+| Hook | NEMA 11 stepper | 1 | Rotary hook option |
+| Hook | MG90S servo | 1 | Oscillation option |
+| Electronics | SKR Mini E3 V3 | 1 | Primary controller |
+| Electronics | 24 V 10 A PSU | 1 | Meanwell LRS-200-24 or similar |
+| Electronics | Emergency stop switch | 1 | Panel mount |
+| Electronics | JST-XH connector kit | 1 | 2-, 3-, 4-pin assortments |
+| Safety | Limit switch kit | 3 | Omron-style |
+| Materials | PTFE tubing, 4 mm OD | 1 m | Yarn guide |
+| Materials | Felt pads | 4 | Tensioner |
+
+(See appendices for full fastener counts and optional upgrades.)
+
+## Manufacturing Plan
+### 3D-Printed Parts
+- Provide STL and SCAD sources for the frame joints, carriage, hook modules, belt guards, wire
+  clips, and electronics mounts.
+- Default print settings: 0.2 mm layer height, 40% infill, PETG or ABS for structural parts,
+  flexible TPU for tensioner pads.
+- Include print orientation diagrams to reduce support usage and post-processing.
+
+### Purchased Hardware
+- Source extrusions, bearings, and fasteners from vendors with global distribution (Misumi,
+  OpenBuilds, Amazon). Provide alternates for EU and APAC builders.
+- Document cost ranges and bundle suggestions for community group buys.
+
+### Assembly Strategy
+1. Assemble frame on a flat surface using printed corner jigs and square-check procedure.
+2. Install linear motion hardware and belts; verify smooth travel before mounting steppers.
+3. Assemble and mount hook carriage; route PTFE yarn guide.
+4. Wire electronics bay, verify continuity, and route harnesses through cable chains.
+5. Load firmware configuration, perform homing, and calibrate step/mm.
+6. Run dry-run crochet pattern without yarn to confirm motion, then perform first sample stitch.
+
+## Testing and Validation
+- **Mechanical**: Measure backlash on each axis (<0.1 mm target) and run endurance loop for 1000
+  cycles to validate belt tension.
+- **Electronics**: Validate thermal performance under continuous duty; ensure drivers stay below
+  70 °C with passive cooling.
+- **Firmware**: Execute stitch test suites covering chain, single crochet, and slip stitch
+  sequences. Capture log files for regression.
+- **User Validation**: Conduct build-along with at least three community testers to collect
+  assembly and documentation feedback.
+
+## Documentation and Community Support
+- Maintain annotated exploded diagrams in the `cad/` directory and printable bill of materials in
+  `docs/`.
+- Produce step-by-step build guides with photographs and QR codes linking to video walkthroughs.
+- Encourage contributors to submit field reports detailing yarn types, hook sizes, and stitch
+  recipes tested.
+- License hardware under CERN-OHL-P and software under GPLv3 to ensure derivatives remain open.
+
+## Roadmap
+| Phase | Focus | Key Deliverables | Owner(s) |
+|-------|-------|------------------|----------|
+| 0. Discovery (Weeks 1-2) | Research & benchmarking | Comparative study of existing crochet machines, requirements doc | Core design team |
+| 1. Motion Prototype (Weeks 3-6) | Mechanical validation | Printed frame mockup, CoreXY motion demo, hook carriage v0.1 | Mechanical subgroup |
+| 2. Electronics Integration (Weeks 5-8) | Control system | Controller selection report, wiring harness draft, firmware baseline | Electronics subgroup |
+| 3. Yarn Handling (Weeks 7-10) | Feed & tension | Adjustable tensioner prototype, yarn guide validation tests | Materials subgroup |
+| 4. Full Assembly Alpha (Weeks 9-12) | System bring-up | Assembly manual v0.5, dry-run stitch tests, BOM freeze | Cross-functional |
+| 5. Beta Validation (Weeks 12-16) | User testing | Community build feedback, issue tracker triage, documentation polish | Community leads |
+| 6. Release Candidate (Weeks 16-18) | Packaging | Final CAD/STL bundle, firmware v1.0 configs, sourcing guide, marketing launch plan | Release manager |
+
+### Risk Mitigation
+- Maintain weekly design reviews to track dependencies between mechanical and electronics teams.
+- Keep alternative components listed for high-risk supply chain items (steppers, controller).
+- Document lessons learned per phase to accelerate v1k planning.
+
+### Materials Sourcing Checklist
+- Confirm extrusions and fasteners availability before launching community builds.
+- Validate that recommended PSUs meet safety certifications (UL, CE).
+- Provide printing filament alternatives with temperature and mechanical ratings.
+- Publish vendor-neutral BOM spreadsheet to encourage localized sourcing.
+
+### Documentation Deliverables per Phase
+- Phase 1: Capture mechanical sketches and calibration metrics in the repository.
+- Phase 3: Add yarn-specific tension profiles and test results.
+- Phase 5: Finalize assembly guide, troubleshooting FAQ, and firmware configuration templates.
+

@@ -7,7 +7,7 @@ import json
 import os
 import subprocess
 from pathlib import Path
-from typing import Dict, Iterable, List, Sequence
+from typing import Dict, Iterable, List, Sequence, Tuple
 
 DEFAULT_SCAD_DIR = Path(os.environ.get("SCAD_DIR", "cad"))
 DEFAULT_STL_DIR = Path(os.environ.get("STL_DIR", "stl"))
@@ -39,6 +39,9 @@ def _write_metadata(stl_path: Path, metadata: Dict[str, str]) -> None:
     metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
 
 
+Definition = Tuple[str, str]
+
+
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Render OpenSCAD sources to STL files",
@@ -67,6 +70,16 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--openscad",
         default=DEFAULT_OPENSCAD,
         help="OpenSCAD executable to invoke (default: %(default)s).",
+    )
+    parser.add_argument(
+        "--define",
+        action="append",
+        default=[],
+        metavar="KEY=VALUE",
+        help=(
+            "Pass an OpenSCAD variable definition (KEY=VALUE). "
+            "Repeat the flag to set multiple values."
+        ),
     )
     parser.add_argument(
         "--force",
@@ -130,27 +143,68 @@ def _should_skip(scad_path: Path, stl_path: Path, force: bool) -> bool:
     return stl_path.stat().st_mtime >= scad_path.stat().st_mtime
 
 
+def _parse_define(raw: str) -> Definition:
+    if "=" not in raw:
+        raise ValueError("Definitions must be in KEY=VALUE format")
+    key, value = raw.split("=", 1)
+    key = key.strip()
+    value = value.strip()
+    if not key:
+        raise ValueError("Definition key must be non-empty")
+    return key, value
+
+
+def _format_define_value(value: str) -> str:
+    stripped = value.strip()
+    if not stripped:
+        return '""'
+    if stripped[0] in {'"', "'"} and stripped[-1] == stripped[0]:
+        return stripped
+    lowered = stripped.lower()
+    if lowered in {"true", "false"}:
+        return lowered
+    try:
+        float(stripped)
+    except ValueError:
+        escaped = stripped.replace("\\", "\\\\").replace('"', '\\"')
+        return f'"{escaped}"'
+    return stripped
+
+
+def _current_standoff_mode() -> str:
+    """Return the current standoff mode from environment or default."""
+    return os.environ.get("STANDOFF_MODE", DEFAULT_STANDOFF_MODE)
+
+
 def _openscad_args(
     openscad: str,
     scad_path: Path,
     stl_path: Path,
+    defines: Sequence[Definition] | None = None,
 ) -> List[str]:
-    command = [openscad, "-o", str(stl_path)]
-    standoff_mode = os.environ.get("STANDOFF_MODE")
+    """Construct the OpenSCAD command with environment-aware defines."""
+    command: List[str] = [openscad]
+    for key, raw_value in defines or ():
+        value = _format_define_value(raw_value)
+        command.extend(["-D", f"{key}={value}"])
+    # Include STANDOFF_MODE automatically if defined
+    standoff_mode = _current_standoff_mode()
     if standoff_mode:
         quoted = json.dumps(standoff_mode)
-        define = f"STANDOFF_MODE={quoted}"
-        command.extend(["-D", define])
-    command.append(str(scad_path))
+        command.extend(["-D", f"STANDOFF_MODE={quoted}"])
+    command.extend(["-o", str(stl_path), str(scad_path)])
     return command
 
 
-def _run_openscad(openscad: str, scad_path: Path, stl_path: Path) -> None:
+def _run_openscad(
+    openscad: str,
+    scad_path: Path,
+    stl_path: Path,
+    defines: Sequence[Definition] | None = None,
+) -> None:
+    """Run OpenSCAD and emit STL + metadata with standoff mode context."""
     stl_path.parent.mkdir(parents=True, exist_ok=True)
-    subprocess.run(
-        _openscad_args(openscad, scad_path, stl_path),
-        check=True,
-    )
+    subprocess.run(_openscad_args(openscad, scad_path, stl_path, defines), check=True)
     _write_metadata(
         stl_path,
         {"standoff_mode": _current_standoff_mode()},
@@ -162,6 +216,8 @@ def render_stls(
     stl_dir: Path,
     targets: Iterable[Path],
     openscad: str,
+    *,
+    defines: Sequence[Definition] | None = None,
     force: bool = False,
 ) -> None:
     for scad_path in targets:
@@ -170,7 +226,7 @@ def render_stls(
             print(f"[INFO] Skipping {scad_path}; STL up to date")
             continue
         print(f"[INFO] Exporting {scad_path} -> {stl_path}")
-        _run_openscad(openscad, scad_path, stl_path)
+        _run_openscad(openscad, scad_path, stl_path, defines)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -178,6 +234,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         targets = _resolve_targets(args.scad_dir, args.targets)
     except (FileNotFoundError, ValueError) as error:
+        print(f"[ERROR] {error}")
+        return 1
+
+    try:
+        defines = [_parse_define(raw) for raw in args.define]
+    except ValueError as error:
         print(f"[ERROR] {error}")
         return 1
 
@@ -190,6 +252,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.stl_dir,
         targets,
         args.openscad,
+        defines=defines,
         force=args.force,
     )
     return 0
