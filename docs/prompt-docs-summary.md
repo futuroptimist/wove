@@ -17,6 +17,10 @@ Update `dict/prompt-doc-repos.txt` to control which repositories appear.
 - **Codex Implement Prompt** (`evergreen`) — `docs/prompts/codex/implement.md`
   Use this prompt when you want an automated agent to deliver a production-ready
 
+- **Codex Design Doc Upgrade Prompt** (`evergreen`) — `docs/prompts/codex/design-doc-upgrade.md`
+  Use this prompt to tighten architecture documents, simplify assemblies, and
+  document follow-up tasks for implementers.
+
 - **Codex Prompt Propagation Guide** (`evergreen`) — `docs/prompts/codex/propagate.md`
   Use this guide when copying Wove's Codex prompt catalog into another repository or
 

@@ -6,6 +6,7 @@
 knitting-basics
 crochet-basics
 crochet-tools
+wove-v1c-design
 robotic-knitting-machine
 gauge
 learning-resources
@@ -16,6 +17,7 @@ styleguides/python
 styleguides/markdown
 prompts/codex/automation
 prompts/codex/implement
+prompts/codex/design-doc-upgrade
 prompts/codex/cad
 prompts/codex/docs
 prompts/codex/propagate
