@@ -19,6 +19,10 @@ Gauge keeps your project at the intended size; even small stitch differences
 can grow into inches on larger pieces. Swatching ensures your fabric matches
 the pattern's expectations.
 
+If your swatch doesn't match the pattern, use
+`width_difference_for_stitches` and `height_difference_for_rows` to see how
+far the finished fabric would drift before knitting the entire piece.
+
 1. Cast on enough stitches for a 4 in / 10 cm square in your pattern.
 2. Knit until the swatch reaches 4 in / 10 cm tall.
 3. Block the swatch, then measure stitches and rows in the center.

@@ -11,6 +11,7 @@ from wove import (
     cm_to_meters,
     meters_for_rows,
     meters_for_stitches,
+    height_difference_for_rows,
     rows_per_yard,
     stitches_per_yard,
     rows_per_meter,
@@ -46,6 +47,7 @@ from wove import (
     stitches_for_inches,
     stitches_for_meters,
     stitches_for_yards,
+    width_difference_for_stitches,
     stitches_per_cm,
     stitches_per_inch,
     per_yard_to_per_cm,
@@ -571,3 +573,53 @@ def test_stitches_for_yards_half_up():
 
 def test_rows_for_meters_half_up():
     assert rows_for_meters(2.0, 0.25) == 1
+
+
+def test_width_difference_for_stitches_positive():
+    diff = width_difference_for_stitches(100, 4.5, 5.0)
+    expected = (100 / 4.5) - (100 / 5.0)
+    assert diff == pytest.approx(expected)
+
+
+def test_width_difference_for_stitches_negative():
+    diff = width_difference_for_stitches(80, 6.0, 5.5)
+    expected = (80 / 6.0) - (80 / 5.5)
+    assert diff == pytest.approx(expected)
+
+
+@pytest.mark.parametrize(
+    "stitches, actual, target",
+    [
+        (0, 4.5, 5.0),
+        (100, 0, 5.0),
+        (100, 4.5, 0),
+    ],
+)
+def test_width_difference_for_stitches_invalid(stitches, actual, target):
+    with pytest.raises(ValueError):
+        width_difference_for_stitches(stitches, actual, target)
+
+
+def test_height_difference_for_rows_positive():
+    diff = height_difference_for_rows(150, 6.0, 6.5)
+    expected = (150 / 6.0) - (150 / 6.5)
+    assert diff == pytest.approx(expected)
+
+
+def test_height_difference_for_rows_negative():
+    diff = height_difference_for_rows(120, 8.0, 7.5)
+    expected = (120 / 8.0) - (120 / 7.5)
+    assert diff == pytest.approx(expected)
+
+
+@pytest.mark.parametrize(
+    "rows_count, actual, target",
+    [
+        (0, 6.0, 6.5),
+        (120, 0, 6.5),
+        (120, 6.0, 0),
+    ],
+)
+def test_height_difference_for_rows_invalid(rows_count, actual, target):
+    with pytest.raises(ValueError):
+        height_difference_for_rows(rows_count, actual, target)

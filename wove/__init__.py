@@ -46,6 +46,8 @@ from .gauge import (
     per_yard_to_per_cm,
     per_yard_to_per_inch,
     per_yard_to_per_meter,
+    height_difference_for_rows,
+    width_difference_for_stitches,
     yards_to_inches,
     yards_to_meters,
 )
@@ -97,6 +99,8 @@ __all__ = [
     "rows_for_cm",
     "rows_for_yards",
     "rows_for_meters",
+    "height_difference_for_rows",
+    "width_difference_for_stitches",
     "yards_to_inches",
     "yards_to_meters",
 ]

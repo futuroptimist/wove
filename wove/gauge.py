@@ -946,3 +946,67 @@ def meters_for_rows(rows: int, gauge: float) -> float:
     if gauge <= 0:
         raise ValueError("gauge must be positive")
     return rows / gauge
+
+
+def width_difference_for_stitches(
+    stitches: int, actual_gauge: float, target_gauge: float
+) -> float:
+    """Return the width delta between actual and target stitch gauges.
+
+    Args:
+        stitches: Number of stitches under consideration. Must be > 0.
+        actual_gauge: Measured stitch gauge for the knitter. Must be > 0.
+        target_gauge: Pattern stitch gauge. Must be > 0.
+
+    Returns:
+        The difference in width (actual minus target) using the unit associated
+        with the supplied gauge values. Positive values indicate the project
+        will knit wider than intended.
+
+    Raises:
+        ValueError: If ``stitches`` is not positive or if either gauge is not
+            positive.
+    """
+
+    if stitches <= 0:
+        raise ValueError("stitches must be positive")
+    if actual_gauge <= 0:
+        raise ValueError("actual_gauge must be positive")
+    if target_gauge <= 0:
+        raise ValueError("target_gauge must be positive")
+
+    actual_width = stitches / actual_gauge
+    target_width = stitches / target_gauge
+    return actual_width - target_width
+
+
+def height_difference_for_rows(
+    rows: int, actual_gauge: float, target_gauge: float
+) -> float:
+    """Return the height delta between actual and target row gauges.
+
+    Args:
+        rows: Number of rows under consideration. Must be > 0.
+        actual_gauge: Measured row gauge for the knitter. Must be > 0.
+        target_gauge: Pattern row gauge. Must be > 0.
+
+    Returns:
+        The difference in height (actual minus target) using the unit
+        associated with the supplied gauge values. Positive values indicate the
+        project will work taller than intended.
+
+    Raises:
+        ValueError: If ``rows`` is not positive or if either gauge is not
+            positive.
+    """
+
+    if rows <= 0:
+        raise ValueError("rows must be positive")
+    if actual_gauge <= 0:
+        raise ValueError("actual_gauge must be positive")
+    if target_gauge <= 0:
+        raise ValueError("target_gauge must be positive")
+
+    actual_height = rows / actual_gauge
+    target_height = rows / target_gauge
+    return actual_height - target_height

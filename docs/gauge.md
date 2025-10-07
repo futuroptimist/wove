@@ -25,6 +25,13 @@ Values ending in `.5` are rounded up when using `stitches_for_inches`,
 `stitches_for_cm`, `stitches_for_yards`, `stitches_for_meters`,
 `rows_for_inches`, `rows_for_cm`, `rows_for_yards`, or `rows_for_meters`.
 
+When your swatch gauge differs from the pattern, use
+`width_difference_for_stitches` and `height_difference_for_rows` to estimate
+how far your project will drift from the intended dimensions. They report the
+difference between your gauge and the target gauge using the unit tied to the
+gauge measurement, making it easy to see if a cast-on will knit wider or taller
+than planned.
+
 To calculate gauge:
 
 1. Knit a swatch at least 4 in (10 cm) square.
@@ -84,6 +91,8 @@ from wove import (
     per_yard_to_per_cm,
     per_yard_to_per_inch,
     per_yard_to_per_meter,
+    width_difference_for_stitches,
+    height_difference_for_rows,
 )
 
 stitches_per_inch(20, 4)   # 5.0 stitches per inch
@@ -122,6 +131,8 @@ inches_for_stitches(35, 5.0)  # 7.0 inches for 35 stitches
 cm_for_stitches(20, 2.0)      # 10.0 cm for 20 stitches
 yards_for_stitches(90, 360)   # 0.25 yards for 90 stitches
 meters_for_stitches(200, 200) # 1.0 meter for 200 stitches
+width_difference_for_stitches(100, 4.5, 5.0)  # ~2.22 inches wider than target
+height_difference_for_rows(120, 6.0, 6.5)     # ~-1.54 cm shorter than target
 inches_to_cm(1.0)            # 2.54 cm
 cm_to_inches(2.54)          # 1.0 inch
 meters_to_cm(1.5)           # 150.0 cm
