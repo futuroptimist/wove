@@ -19,6 +19,7 @@ python -m wove.build_stl --force --stl-dir build-stl cad/spacer.scad
 python -m wove.build_stl --define STANDOFF_MODE=printed cad/tension_post.scad
 
 # Render the tension post with printed standoffs
+STANDOFF_MODE=printed python -m wove.build_stl cad/tension_post.scad
 STANDOFF_MODE=printed ./scripts/openscad_render.sh cad/tension_post.scad
 ```
 
@@ -38,6 +39,8 @@ STANDOFF_MODE=printed ./scripts/openscad_render.sh cad/tension_post.scad
   the `hole_spacing` parameter (default 31 mm for NEMA17) and screw hole diameter via
   `hole_diameter`.
 - `tension_post`: Upright post that manages yarn tension and pairs with the yarn guide.
+  Set `STANDOFF_MODE=heatset` (default) to create insert cutouts or `STANDOFF_MODE=printed`
+  to add printable standoffs.
 - `washer`: Flat washer with optional chamfers for smoother edges.
 - `yarn_guide`: Routes yarn through the carriage.
   Adjust the loop to match the yarn weight.

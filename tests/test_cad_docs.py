@@ -24,3 +24,9 @@ def test_cad_readme_lists_all_modules() -> None:
         missing_modules = ", ".join(missing)
         message = CAD_README_MISSING_MODULE_MSG.format(modules=missing_modules)
         pytest.fail(message)
+
+
+def test_tension_post_supports_standoff_modes() -> None:
+    content = (CAD_DIR / "tension_post.scad").read_text(encoding="utf-8")
+    assert "STANDOFF_MODE" in content
+    assert 'mode == "printed"' in content

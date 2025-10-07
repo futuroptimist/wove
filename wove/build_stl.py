@@ -3,14 +3,36 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import subprocess
 from pathlib import Path
-from typing import Iterable, List, Sequence, Tuple
+from typing import Dict, Iterable, List, Sequence, Tuple
 
 DEFAULT_SCAD_DIR = Path(os.environ.get("SCAD_DIR", "cad"))
 DEFAULT_STL_DIR = Path(os.environ.get("STL_DIR", "stl"))
 DEFAULT_OPENSCAD = os.environ.get("OPENSCAD", "openscad")
+DEFAULT_STANDOFF_MODE = "heatset"
+METADATA_SUFFIX = ".metadata.json"
+
+
+def _stl_metadata_path(stl_path: Path) -> Path:
+    return stl_path.with_name(stl_path.name + METADATA_SUFFIX)
+
+
+def _load_metadata(stl_path: Path) -> Dict[str, str]:
+    try:
+        with _stl_metadata_path(stl_path).open(encoding="utf-8") as handle:
+            return json.load(handle)
+    except FileNotFoundError:
+        return {}
+    except json.JSONDecodeError:
+        return {}
+
+
+def _write_metadata(stl_path: Path, metadata: Dict[str, str]) -> None:
+    metadata_path = _stl_metadata_path(stl_path)
+    metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
 
 
 Definition = Tuple[str, str]
@@ -106,6 +128,14 @@ def _should_skip(scad_path: Path, stl_path: Path, force: bool) -> bool:
         return False
     if not stl_path.exists():
         return False
+    metadata = _load_metadata(stl_path)
+    requested_mode = _current_standoff_mode()
+    previous_mode = metadata.get("standoff_mode")
+    if previous_mode is None:
+        if requested_mode != DEFAULT_STANDOFF_MODE:
+            return False
+    elif previous_mode != requested_mode:
+        return False
     return stl_path.stat().st_mtime >= scad_path.stat().st_mtime
 
 
@@ -137,19 +167,47 @@ def _format_define_value(value: str) -> str:
     return stripped
 
 
+def _current_standoff_mode() -> str:
+    """Return the current standoff mode from environment or default."""
+    return os.environ.get("STANDOFF_MODE", DEFAULT_STANDOFF_MODE)
+
+
+def _openscad_args(
+    openscad: str,
+    scad_path: Path,
+    stl_path: Path,
+    defines: Sequence[Definition] | None = None,
+) -> List[str]:
+    """Construct the OpenSCAD command with environment-aware defines."""
+    provided_defines = list(defines or ())
+    command: List[str] = [openscad]
+    provided_keys = {key for key, _ in provided_defines}
+    for key, raw_value in provided_defines:
+        value = _format_define_value(raw_value)
+        command.extend(["-D", f"{key}={value}"])
+    if "STANDOFF_MODE" not in provided_keys:
+        standoff_mode = _current_standoff_mode()
+        if standoff_mode:
+            quoted = json.dumps(standoff_mode)
+            command.extend(["-D", f"STANDOFF_MODE={quoted}"])
+    command.extend(["-o", str(stl_path), str(scad_path)])
+    return command
+
+
 def _run_openscad(
     openscad: str,
     scad_path: Path,
     stl_path: Path,
     defines: Sequence[Definition] | None = None,
 ) -> None:
+    """Run OpenSCAD and emit STL + metadata with standoff mode context."""
     stl_path.parent.mkdir(parents=True, exist_ok=True)
-    command: List[str] = [openscad]
-    for key, raw_value in defines or ():
-        value = _format_define_value(raw_value)
-        command.extend(["-D", f"{key}={value}"])
-    command.extend(["-o", str(stl_path), str(scad_path)])
+    command = _openscad_args(openscad, scad_path, stl_path, defines)
     subprocess.run(command, check=True)
+    _write_metadata(
+        stl_path,
+        {"standoff_mode": _current_standoff_mode()},
+    )
 
 
 def render_stls(

@@ -21,6 +21,8 @@ printing.
   smoother edges.
 - **Yarn guide** – directs yarn through the system and helps maintain tension.
 - **Tension post** – vertical pin with a base to anchor yarn tension.
+  Switch `STANDOFF_MODE` between ``heatset`` (cutouts for inserts) and ``printed``
+  (solid posts) before exporting.
 - **End cap** – covers rod ends to prevent snagging and now includes an optional
   chamfer for smoother edges.
 - **Alignment pin** – 5 mm cylinder for aligning stacked components with an optional
