@@ -139,7 +139,8 @@ def test_stl_path_for_outside_scad_dir(
 
 
 def test_should_skip_force_overrides(
-    scad_project: Path, tmp_path: Path
+    scad_project: Path,
+    tmp_path: Path,
 ) -> None:
     stale = scad_project / "alpha.scad"
     stl = tmp_path / "alpha.stl"
@@ -155,7 +156,8 @@ def test_should_skip_force_overrides(
 
 
 def test_should_skip_without_output(
-    scad_project: Path, tmp_path: Path
+    scad_project: Path,
+    tmp_path: Path,
 ) -> None:
     stale = scad_project / "alpha.scad"
     stl = tmp_path / "alpha.stl"
@@ -249,11 +251,13 @@ def test_main_handles_errors(
 ) -> None:
     bad_target = scad_project / "missing.scad"
 
-    exit_code = build_stl.main([
-        "--scad-dir",
-        str(scad_project),
-        str(bad_target),
-    ])
+    exit_code = build_stl.main(
+        [
+            "--scad-dir",
+            str(scad_project),
+            str(bad_target),
+        ]
+    )
 
     captured = capsys.readouterr()
     assert exit_code == 1
@@ -266,12 +270,14 @@ def test_main_reports_no_targets(
     empty_scad = tmp_path / "cad"
     empty_scad.mkdir()
 
-    exit_code = build_stl.main([
-        "--scad-dir",
-        str(empty_scad),
-        "--stl-dir",
-        str(tmp_path / "stl"),
-    ])
+    exit_code = build_stl.main(
+        [
+            "--scad-dir",
+            str(empty_scad),
+            "--stl-dir",
+            str(tmp_path / "stl"),
+        ]
+    )
 
     captured = capsys.readouterr()
     assert exit_code == 0
