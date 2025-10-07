@@ -209,6 +209,20 @@ def test_format_define_value_trims_whitespace() -> None:
     assert build_stl._format_define_value("  name  ") == '"name"'
 
 
+def test_parse_define_trims_key_and_value() -> None:
+    assert build_stl._parse_define("  HEIGHT_MM  =  12.5  ") == ("HEIGHT_MM", "12.5")
+
+
+def test_parse_define_requires_equals() -> None:
+    with pytest.raises(ValueError):
+        build_stl._parse_define("HEIGHT_MM")
+
+
+def test_parse_define_requires_non_empty_key() -> None:
+    with pytest.raises(ValueError):
+        build_stl._parse_define(" = 12.5")
+
+
 def test_run_openscad_invocation(
     monkeypatch: pytest.MonkeyPatch,
     scad_project: Path,
