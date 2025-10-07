@@ -202,7 +202,8 @@ def _run_openscad(
 ) -> None:
     """Run OpenSCAD and emit STL + metadata with standoff mode context."""
     stl_path.parent.mkdir(parents=True, exist_ok=True)
-    subprocess.run(_openscad_args(openscad, scad_path, stl_path, defines), check=True)
+    command = _openscad_args(openscad, scad_path, stl_path, defines)
+    subprocess.run(command, check=True)
     _write_metadata(
         stl_path,
         {"standoff_mode": _current_standoff_mode()},
