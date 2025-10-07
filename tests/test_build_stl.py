@@ -184,6 +184,31 @@ def test_should_skip_without_output(
     assert skip is False
 
 
+@pytest.mark.parametrize(
+    "raw, expected",
+    [
+        ("", '""'),
+        ("   ", '""'),
+        ("'quoted'", "'quoted'"),
+        ('"quoted"', '"quoted"'),
+        ("true", "true"),
+        ("FALSE", "false"),
+        ("42", "42"),
+        ("3.14", "3.14"),
+        (
+            'needs "escaping" \\ backslash',
+            '"needs \\"escaping\\" \\\\ backslash"',
+        ),
+    ],
+)
+def test_format_define_value_handles_types(raw: str, expected: str) -> None:
+    assert build_stl._format_define_value(raw) == expected
+
+
+def test_format_define_value_trims_whitespace() -> None:
+    assert build_stl._format_define_value("  name  ") == '"name"'
+
+
 def test_run_openscad_invocation(
     monkeypatch: pytest.MonkeyPatch,
     scad_project: Path,
