@@ -29,7 +29,10 @@ After knitting and blocking your swatch, count the stitches across and rows
 down in the center. Use the [gauge utilities](gauge.md) to convert between
 units or estimate how many stitches you need for a project.
 `width_difference_for_stitches` and `height_difference_for_rows` show how far an
-off-gauge swatch will push a project's width or height.
+off-gauge swatch will push a project's width or height. Use
+`stitch_adjustment_for_width` and `row_adjustment_for_height` to translate that
+gap into concrete stitch or row adjustments so the finished piece stays on
+size.
 
 Continue experimenting with gauge and patterns as you grow more comfortable.
 
@@ -45,6 +48,8 @@ from wove import (
     stitches_per_inch,
     width_difference_for_stitches,
     height_difference_for_rows,
+    stitch_adjustment_for_width,
+    row_adjustment_for_height,
 )
 
 stitches_per_inch(20, 4)  # 5.0 stitches per inch
@@ -57,6 +62,8 @@ inches_to_cm(1)  # 2.54 cm
 cm_to_inches(2.54)  # 1.0 in
 width_difference_for_stitches(180, 20, 22)  # ~-0.82 units (narrower fabric)
 height_difference_for_rows(220, 30, 28)     # ~0.52 units (taller fabric)
+stitch_adjustment_for_width(90, 4.5, 5.025)  # 11 extra stitches keep width
+row_adjustment_for_height(120, 6.0, 6.5)     # 10 extra rows keep height
 ```
 
 Translate gauge between yards and meters with helpers such as
