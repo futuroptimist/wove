@@ -177,3 +177,33 @@ def test_collect_prompt_docs_with_missing_metadata_and_repo_display(
     summary = module.render_summary(docs)
     assert "## ." in summary
     assert "`docs/prompts/fallback.md`" in summary
+
+
+def test_description_strips_markdown_links(tmp_path):
+    module = load_module()
+    repo_root = tmp_path / "repo"
+    prompt_dir = repo_root / "docs" / "prompts"
+    prompt_dir.mkdir(parents=True)
+
+    prompt_dir.joinpath("links.md").write_text(
+        "\n".join(
+            [
+                "# Link Prompt",
+                "Type: evergreen",
+                "",
+                "Use alongside [propagate.md](propagate.md) to keep summaries stable.",
+                "External docs live at [Wove](https://wove.space).",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    doc = module.collect_prompt_docs([repo_root])[0]
+    assert doc.description == (
+        "Use alongside propagate.md to keep summaries stable. "
+        "External docs live at Wove."
+    )
+
+    summary = module.render_summary([doc])
+    assert "[propagate.md](" not in summary
+    assert "External docs live at Wove." in " ".join(summary.split())

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import itertools
+import re
 import textwrap
 from dataclasses import dataclass
 from pathlib import Path
@@ -170,7 +171,16 @@ def _extract_description(lines: List[str]) -> str | None:
         paragraph.append(stripped)
     if not paragraph:
         return None
-    return " ".join(paragraph)
+    return _normalize_description_text(" ".join(paragraph))
+
+
+_MARKDOWN_LINK_PATTERN = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
+
+
+def _normalize_description_text(text: str) -> str:
+    """Return ``text`` with inline markdown links stripped to plain text."""
+
+    return _MARKDOWN_LINK_PATTERN.sub(r"\1", text)
 
 
 def render_summary(docs: Sequence[PromptDoc]) -> str:

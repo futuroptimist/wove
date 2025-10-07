@@ -10,7 +10,7 @@ Update `dict/prompt-doc-repos.txt` to control which repositories appear.
   agents) to contribute to the Wove repository. Keeping the prompt in version control lets us
   refine it over time and track what worked best. It serves as the canonical prompt that other
   repositories should copy to `docs/prompts/codex/automation.md` for consistent automation. For
-  propagation instructions, see [propagate.md](propagate.md).
+  propagation instructions, see propagate.md.
 
 - **Codex CAD Prompt** (`evergreen`) — `docs/prompts/codex/cad.md`
   Use this prompt when generating or updating OpenSCAD modules for Wove. It keeps 3D assets and
