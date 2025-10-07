@@ -284,6 +284,14 @@ def test_should_skip_defaults_to_heatset_when_missing_metadata(
     assert skip is False
 
 
+def test_load_metadata_with_invalid_json(tmp_path: Path) -> None:
+    stl = tmp_path / "alpha.stl"
+    metadata_path = build_stl._stl_metadata_path(stl)
+    metadata_path.write_text("not valid json", encoding="utf-8")
+
+    assert build_stl._load_metadata(stl) == {}
+
+
 def test_render_stls_handles_skips(
     monkeypatch: pytest.MonkeyPatch,
     scad_project: Path,
