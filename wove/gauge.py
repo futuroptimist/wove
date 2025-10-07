@@ -1010,3 +1010,67 @@ def height_difference_for_rows(
     target_height = rows / target_gauge
     actual_height = rows / actual_gauge
     return actual_height - target_height
+
+
+def stitch_adjustment_for_width(
+    stitches: int, target_gauge: float, actual_gauge: float
+) -> int:
+    """Return the stitch adjustment needed to preserve target width.
+
+    Args:
+        stitches: Stitch count expected by the pattern. Must be > 0.
+        target_gauge: Intended stitch gauge in stitches per unit. Must be > 0.
+        actual_gauge: Measured stitch gauge in stitches per unit. Must be > 0.
+
+    Returns:
+        The difference in stitches (``adjusted - stitches``) required to knit
+        the original width using ``actual_gauge``. Positive values indicate
+        adding stitches; negative values mean removing stitches.
+
+    Raises:
+        ValueError: If ``stitches`` is not positive or either gauge is not
+            positive.
+    """
+
+    if stitches <= 0:
+        raise ValueError("stitches must be positive")
+    if target_gauge <= 0:
+        raise ValueError("target_gauge must be positive")
+    if actual_gauge <= 0:
+        raise ValueError("actual_gauge must be positive")
+
+    target_width = stitches / target_gauge
+    adjusted_stitches = _round_half_up(actual_gauge * target_width)
+    return adjusted_stitches - stitches
+
+
+def row_adjustment_for_height(
+    rows: int, target_gauge: float, actual_gauge: float
+) -> int:
+    """Return the row adjustment needed to preserve target height.
+
+    Args:
+        rows: Row count expected by the pattern. Must be > 0.
+        target_gauge: Intended row gauge in rows per unit. Must be > 0.
+        actual_gauge: Measured row gauge in rows per unit. Must be > 0.
+
+    Returns:
+        The difference in rows (``adjusted - rows``) required to knit the
+        original height using ``actual_gauge``. Positive values indicate adding
+        rows; negative values mean knitting fewer rows.
+
+    Raises:
+        ValueError: If ``rows`` is not positive or either gauge is not
+            positive.
+    """
+
+    if rows <= 0:
+        raise ValueError("rows must be positive")
+    if target_gauge <= 0:
+        raise ValueError("target_gauge must be positive")
+    if actual_gauge <= 0:
+        raise ValueError("actual_gauge must be positive")
+
+    target_height = rows / target_gauge
+    adjusted_rows = _round_half_up(actual_gauge * target_height)
+    return adjusted_rows - rows
