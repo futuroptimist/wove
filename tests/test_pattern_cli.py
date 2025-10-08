@@ -51,14 +51,19 @@ def test_translate_pattern_basic():
     turn_index = text.index("G0 X0.00 Y11.00 F1200 ; turn to next row")
     expected_plunge = "G1 Z-2.00 F600 ; single stitch 1 of 1: plunge"
     assert text[turn_index + 1] == expected_plunge
-    assert text[-1] == "G0 X4.50 Y11.00 F1200 ; single stitch 1 of 1: advance"
+    assert text[-1] == (
+        "G0 X4.50 Y11.00 F1200 ; single stitch 1 of 1: advance"
+    )
 
 
 def test_translate_pattern_ignores_comments_and_blank_lines():
     pattern = "\n".join(["", "# comment", "CHAIN 1"])
     translator = PatternTranslator()
     lines = translator.translate(pattern)
-    assert any("chain stitch 1 of 1: advance" in line.as_text() for line in lines)
+    assert any(
+        "chain stitch 1 of 1: advance" in line.as_text()
+        for line in lines
+    )
 
 
 @pytest.mark.parametrize(
@@ -87,7 +92,9 @@ def test_turn_without_argument_uses_default_height():
     pattern = "\n".join(["CHAIN 1", "TURN", "CHAIN 1"])
     lines = translate_pattern(pattern)
     text = _as_text(lines)
-    default_turn = f"G0 X0.00 Y{DEFAULT_ROW_HEIGHT:.2f} F1200 ; turn to next row"
+    default_turn = (
+        f"G0 X0.00 Y{DEFAULT_ROW_HEIGHT:.2f} F1200 ; turn to next row"
+    )
     assert default_turn in text
     assert text[-1].startswith("G0 X5.00 Y6.00 F1200")
 
@@ -104,7 +111,8 @@ def test_write_output_handles_files(tmp_path):
     gcode_lines = [GCodeLine("G21"), GCodeLine("G90", "absolute positioning")]
     gcode_path = tmp_path / "pattern.gcode"
     _write_output(gcode_lines, gcode_path, "gcode")
-    assert gcode_path.read_text(encoding="utf-8") == "G21\nG90 ; absolute positioning\n"
+    expected = "G21\nG90 ; absolute positioning\n"
+    assert gcode_path.read_text(encoding="utf-8") == expected
 
     json_path = tmp_path / "pattern.json"
     _write_output(gcode_lines, json_path, "json")
@@ -144,7 +152,9 @@ def test_write_output_stdout_gcode(capsys):
 def test_parse_args_variants():
     defaults = parse_args([])
     assert defaults.format == "gcode"
-    args = parse_args(["pattern.txt", "--format", "json", "--output", "out.gcode"])
+    args = parse_args(
+        ["pattern.txt", "--format", "json", "--output", "out.gcode"]
+    )
     assert str(args.pattern) == "pattern.txt"
     assert args.format == "json"
     assert str(args.output).endswith("out.gcode")
