@@ -37,3 +37,7 @@ Run the script without arguments to update every model while skipping up-to-date
 Store the exported models alongside their sources to keep hardware and code in sync.
 
 Generated G-code or custom instructions will drive these parts to knit automatically.
+Use [`wove.pattern_cli`](pattern-cli.md) to translate lightweight stitch
+descriptions into G-code-like motion while firmware prototypes are still in
+flux. The CLI complements hardware experiments by showing how text patterns map
+to coordinated gantry moves.

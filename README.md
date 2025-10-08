@@ -21,6 +21,8 @@ Key features include:
   `rows_per_meter`), width estimators from stitch counts across those units, and
   simple unit conversion helpers.
   See [docs/gauge.md](docs/gauge.md) for examples.
+- A pattern translation CLI (`python -m wove.pattern_cli`) that turns a simple
+  stitch description into G-code-like motion for early crochet experiments.
 - LLM helpers described in [AGENTS.md](AGENTS.md).
 - Sample Codex prompts in [`docs/prompts/codex/automation.md`](docs/prompts/codex/automation.md).
 
@@ -63,3 +65,20 @@ See [AGENTS.md](AGENTS.md) for details on LLM helpers that keep this repo tidy. 
 
 [docs-badge]: https://github.com/futuroptimist/wove/actions/workflows/docs.yml/badge.svg
 [docs-workflow]: https://github.com/futuroptimist/wove/actions/workflows/docs.yml
+# Pattern translation CLI
+
+Use the companion CLI to convert a lightweight stitch description into
+G-code-like motion suitable for early gantry experiments. Feed the CLI either a
+file path or inline text:
+
+```bash
+python -m wove.pattern_cli pattern.txt
+# or
+python -m wove.pattern_cli --text "CHAIN 2\nSINGLE 1" --format json
+```
+
+The DSL accepts commands such as `CHAIN <count>`, `SINGLE <count>`, `DOUBLE
+<count>`, `MOVE <x> <y>`, `TURN [height]`, and `PAUSE <seconds>`. The output is
+G-code-inspired: each stitch generates plunge, yarn-feed, raise, and travel
+moves with comments so you can import the sequence into firmware or simulation
+tools.

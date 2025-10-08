@@ -3,6 +3,7 @@ CLI
 CodeQL
 DEPENDABOT
 Dependabot
+DSL
 DoS
 ESLint
 JS
@@ -43,6 +44,7 @@ js
 macOS
 md
 npm
+nSINGLE
 pipx
 pre
 prettierrc
