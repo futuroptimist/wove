@@ -124,8 +124,8 @@ weights.
 - **Spacer/washer consolidation:** The spacer and washer share geometry—prefer the spacer model and
   vary `thickness` to eliminate redundant inventory.
 - **Integrated yarn guide and tension post:** When only a single yarn path is needed, print the yarn
-  guide with the tension post by enabling the `integrated_post` parameter (to be added) and remove
-  two fasteners from the stack.
+  guide with the tension post by enabling the `integrated_post` parameter on `yarn_guide.scad` and
+  remove two fasteners from the stack.
 - **Stepper mount datum tabs:** Print datum tabs directly on the mount rather than using alignment
   pins when the frame is square; this removes two separate pins per axis.
 - **Electronics sled:** Replace individual brackets with a single electronics sled that slides into
