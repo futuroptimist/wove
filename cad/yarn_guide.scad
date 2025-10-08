@@ -13,7 +13,9 @@ module yarn_guide(
 ) {
     outer_radius = radius + thickness;
     slot_height = ring_height + 2;
-    offset = is_undef(post_offset) ? outer_radius : post_offset;
+    offset = is_undef(post_offset)
+        ? outer_radius + base_diameter / 2
+        : post_offset;
 
     module ring() {
         difference() {

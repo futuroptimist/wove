@@ -44,8 +44,9 @@ STANDOFF_MODE=printed ./scripts/openscad_render.sh cad/tension_post.scad
 - `washer`: Flat washer with optional chamfers for smoother edges.
 - `yarn_guide`: Routes yarn through the carriage.
   Adjust the loop to match the yarn weight, or enable `integrated_post=true` to fuse the
-  guide with a matching tension post and base in a single print. Override `post_offset`
-  when you need to shift the base relative to the guide's centerline.
+  guide with a matching tension post and base in a single print. The default offset seats
+  the base outside the ring, and you can override `post_offset` when you need a different
+  alignment.
 
 Open any `.scad` file in the OpenSCAD GUI to preview geometry or tweak parameters. After editing,
 rebuild the STL so downstream assemblies stay accurate.
