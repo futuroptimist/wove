@@ -77,6 +77,13 @@ python -m wove.pattern_cli pattern.txt
 python -m wove.pattern_cli --text "CHAIN 2\nSINGLE 1" --format json
 ```
 
+Trace simple SVG sketches by passing a polyline or polygon. Adjust scale and offsets to fit your
+workspace:
+
+```bash
+python -m wove.pattern_cli --svg sketch.svg --svg-scale 2 --svg-offset-x 10 --svg-offset-y 5
+```
+
 The DSL accepts commands such as `CHAIN <count>`, `SINGLE <count>`, `DOUBLE
 <count>`, `MOVE <x> <y>`, `TURN [height]`, and `PAUSE <seconds>`. The output is
 G-code-inspired: each stitch generates plunge, yarn-feed, raise, and travel

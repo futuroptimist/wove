@@ -14,6 +14,10 @@ from wove.pattern_cli import (
     GCodeLine,
     PatternTranslator,
     _load_pattern,
+    _parse_points_attribute,
+    _pattern_from_svg,
+    _points_from_svg,
+    _strip_namespace,
     _write_output,
     main,
     parse_args,
@@ -141,6 +145,38 @@ def test_load_pattern_reads_stdin(monkeypatch):
     assert _load_pattern(None, None) == "CHAIN 1\n"
 
 
+def test_load_pattern_rejects_multiple_sources(tmp_path):
+    svg_path = tmp_path / "shape.svg"
+    svg_path.write_text("<svg></svg>", encoding="utf-8")
+    with pytest.raises(ValueError):
+        _load_pattern(tmp_path / "pattern.txt", "CHAIN 1", svg=svg_path)
+
+
+def test_load_pattern_uses_svg_source(monkeypatch, tmp_path):
+    svg_path = tmp_path / "shape.svg"
+    svg_path.write_text("<svg></svg>", encoding="utf-8")
+    recorded_args: list[tuple] = []
+
+    def fake_pattern_from_svg(path, scale, offset_x, offset_y):
+        recorded_args.append((path, scale, offset_x, offset_y))
+        return "MOVE 0.000 0.000"
+
+    monkeypatch.setattr(
+        "wove.pattern_cli._pattern_from_svg",
+        fake_pattern_from_svg,
+    )
+    result = _load_pattern(
+        path=None,
+        pattern=None,
+        svg=svg_path,
+        svg_scale=2.0,
+        svg_offset_x=1.5,
+        svg_offset_y=-3.0,
+    )
+    assert result == "MOVE 0.000 0.000"
+    assert recorded_args == [(svg_path, 2.0, 1.5, -3.0)]
+
+
 def test_write_output_stdout_gcode(capsys):
     lines = [GCodeLine("G21")]
     _write_output(lines, None, "gcode")
@@ -258,3 +294,141 @@ def test_pattern_cli_text_input():
     payload = json.loads(completed.stdout)
     pause = next(line for line in payload if line["command"].startswith("G4"))
     assert pause["comment"] == "pause for 0.250 s"
+
+
+def test_pattern_cli_svg_polyline(tmp_path):
+    svg_path = tmp_path / "shape.svg"
+    svg_path.write_text(
+        (
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            '<polyline points="0,0 5,0 5,5"/>'
+            "</svg>"
+        ),
+        encoding="utf-8",
+    )
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "wove.pattern_cli",
+            "--svg",
+            str(svg_path),
+            "--svg-scale",
+            "2",
+            "--svg-offset-x",
+            "1",
+            "--svg-offset-y",
+            "0.5",
+            "--format",
+            "json",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    payload = json.loads(completed.stdout)
+    repositions: list[str] = []
+    for entry in payload:
+        command = entry["command"]
+        if command.startswith("G0 X"):
+            repositions.append(command)
+    assert repositions == [
+        "G0 X1.00 Y0.50 F1200",
+        "G0 X11.00 Y0.50 F1200",
+        "G0 X11.00 Y10.50 F1200",
+    ]
+
+
+def test_parse_points_attribute_parses_pairs():
+    points = _parse_points_attribute("0,0  5,0 5,5")
+    assert points == [(0.0, 0.0), (5.0, 0.0), (5.0, 5.0)]
+
+
+def test_parse_points_attribute_requires_even_values():
+    with pytest.raises(ValueError):
+        _parse_points_attribute("0,0 5")
+
+
+def test_strip_namespace_returns_tag_when_missing_braces():
+    assert _strip_namespace("polyline") == "polyline"
+
+
+def test_points_from_svg_reads_polyline(tmp_path):
+    svg_path = tmp_path / "shape.svg"
+    svg_path.write_text(
+        (
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            "<g>"
+            "<polygon/>"
+            '<polyline points="2,2 3,2 3,3"/>'
+            "</g>"
+            "</svg>"
+        ),
+        encoding="utf-8",
+    )
+    assert _points_from_svg(svg_path) == [(2.0, 2.0), (3.0, 2.0), (3.0, 3.0)]
+
+
+def test_points_from_svg_polygon_drops_duplicate_endpoint(tmp_path):
+    svg_path = tmp_path / "shape.svg"
+    svg_path.write_text(
+        (
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            '<polygon points="0,0 1,0 1,1 0,0"/>'
+            "</svg>"
+        ),
+        encoding="utf-8",
+    )
+    assert _points_from_svg(svg_path) == [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0)]
+
+
+def test_points_from_svg_requires_polyline_or_polygon(tmp_path):
+    svg_path = tmp_path / "shape.svg"
+    svg_path.write_text(
+        (
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            '<rect x="0" y="0" width="1" height="1"/>'
+            "</svg>"
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError):
+        _points_from_svg(svg_path)
+
+
+def test_pattern_from_svg_scales_and_offsets(tmp_path):
+    svg_path = tmp_path / "shape.svg"
+    svg_path.write_text(
+        (
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            '<polyline points="0,0 1,1"/>'
+            "</svg>"
+        ),
+        encoding="utf-8",
+    )
+    result = _pattern_from_svg(
+        svg_path,
+        scale=2.0,
+        offset_x=1.0,
+        offset_y=-1.5,
+    )
+    assert result.splitlines() == [
+        "MOVE 1.000 -1.500",
+        "MOVE 3.000 0.500",
+    ]
+
+
+def test_pattern_from_svg_requires_coordinates(monkeypatch, tmp_path):
+    svg_path = tmp_path / "shape.svg"
+    svg_path.write_text("<svg></svg>", encoding="utf-8")
+
+    def fake_points_from_svg(path):
+        assert path == svg_path
+        return []
+
+    monkeypatch.setattr(
+        "wove.pattern_cli._points_from_svg",
+        fake_points_from_svg,
+    )
+    with pytest.raises(ValueError):
+        _pattern_from_svg(svg_path, scale=1.0, offset_x=0.0, offset_y=0.0)

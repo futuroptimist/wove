@@ -7,7 +7,8 @@ import json
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, List, Sequence
+from typing import Iterable, List, Sequence, Tuple
+from xml.etree import ElementTree as ET
 
 SAFE_Z_MM = 4.0
 FABRIC_PLANE_Z_MM = 0.0
@@ -260,9 +261,90 @@ def translate_pattern(source: str) -> List[GCodeLine]:
     return translator.translate(source)
 
 
-def _load_pattern(path: Path | None, pattern: str | None) -> str:
+def _strip_namespace(tag: str) -> str:
+    """Return the local element name without any XML namespace."""
+
+    if "}" in tag:
+        return tag.split("}", 1)[1]
+    return tag
+
+
+def _parse_points_attribute(raw: str) -> List[Tuple[float, float]]:
+    """Parse an SVG ``points`` attribute into coordinate tuples."""
+
+    tokens = raw.replace(",", " ").split()
+    if len(tokens) % 2 != 0:
+        message = "SVG points attribute must contain coordinate pairs"
+        raise ValueError(message)
+    points: List[Tuple[float, float]] = []
+    for index in range(0, len(tokens), 2):
+        try:
+            x_value = float(tokens[index])
+            y_value = float(tokens[index + 1])
+        except ValueError as error:  # pragma: no cover - defensive
+            message = "Invalid numeric value in SVG points attribute"
+            raise ValueError(message) from error
+        points.append((x_value, y_value))
+    return points
+
+
+def _points_from_svg(svg_path: Path) -> List[Tuple[float, float]]:
+    """Extract polyline or polygon coordinates from an SVG file."""
+
+    document = ET.parse(svg_path)
+    root = document.getroot()
+    for element in root.iter():
+        if _strip_namespace(element.tag) not in {"polyline", "polygon"}:
+            continue
+        points_attr = element.get("points")
+        if not points_attr:
+            continue
+        points = _parse_points_attribute(points_attr)
+        if _strip_namespace(element.tag) == "polygon" and len(points) > 1:
+            first_point = points[0]
+            last_point = points[-1]
+            if first_point == last_point:
+                points = points[:-1]
+        if points:
+            return points
+    message = "SVG file does not contain a polyline or polygon with points"
+    raise ValueError(message)
+
+
+def _pattern_from_svg(
+    svg_path: Path,
+    scale: float,
+    offset_x: float,
+    offset_y: float,
+) -> str:
+    """Convert SVG polyline coordinates into MOVE commands."""
+
+    points = _points_from_svg(svg_path)
+    if not points:
+        raise ValueError("SVG source did not provide any coordinates")
+    commands = []
+    for x_value, y_value in points:
+        x_mm = x_value * scale + offset_x
+        y_mm = y_value * scale + offset_y
+        commands.append(f"MOVE {x_mm:.3f} {y_mm:.3f}")
+    return "\n".join(commands)
+
+
+def _load_pattern(
+    path: Path | None,
+    pattern: str | None,
+    svg: Path | None = None,
+    svg_scale: float = 1.0,
+    svg_offset_x: float = 0.0,
+    svg_offset_y: float = 0.0,
+) -> str:
+    if svg is not None and (pattern is not None or path is not None):
+        message = "Provide SVG input without additional pattern text or files"
+        raise ValueError(message)
     if pattern is not None:
         return pattern
+    if svg is not None:
+        return _pattern_from_svg(svg, svg_scale, svg_offset_x, svg_offset_y)
     if path is not None:
         return path.read_text(encoding="utf-8")
     return sys.stdin.read()
@@ -295,6 +377,34 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--text",
         help="Inline pattern text. Overrides the positional file if provided.",
+    )
+    parser.add_argument(
+        "--svg",
+        type=Path,
+        help=" ".join(
+            [
+                "Path to an SVG polyline or polygon to convert into MOVE",
+                "commands.",
+            ]
+        ),
+    )
+    parser.add_argument(
+        "--svg-scale",
+        type=float,
+        default=1.0,
+        help="Scale factor applied to SVG coordinates before conversion.",
+    )
+    parser.add_argument(
+        "--svg-offset-x",
+        type=float,
+        default=0.0,
+        help="X offset (mm) applied after scaling SVG coordinates.",
+    )
+    parser.add_argument(
+        "--svg-offset-y",
+        type=float,
+        default=0.0,
+        help="Y offset (mm) applied after scaling SVG coordinates.",
     )
     parser.add_argument(
         "--output",
@@ -331,7 +441,14 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
     pattern_path = Path(args.pattern) if args.pattern else None
-    pattern_text = _load_pattern(pattern_path, args.text)
+    pattern_text = _load_pattern(
+        pattern_path,
+        args.text,
+        args.svg,
+        args.svg_scale,
+        args.svg_offset_x,
+        args.svg_offset_y,
+    )
     if args.require_home and args.home_state != "homed":
         message = (
             "Refusing to generate motion: home state is "

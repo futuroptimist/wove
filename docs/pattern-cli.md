@@ -81,3 +81,15 @@ python -m wove.pattern_cli pattern.txt --require-home --home-state homed
 
 If you skip ``--home-state homed`` while ``--require-home`` is present, the CLI
 aborts with an explanatory error instead of generating G-code.
+
+## Importing SVG polylines
+
+Provide an SVG file containing a `polyline` or `polygon` element to trace its vertices as travel
+moves. The CLI emits `MOVE` commands for each vertex after applying optional scaling and offsets:
+
+```bash
+python -m wove.pattern_cli --svg sketch.svg --svg-scale 1.5 --svg-offset-x 10 --svg-offset-y 5
+```
+
+This limited importer focuses on quick mechanical experiments, so it ignores curves and other path
+commands. Clean up artwork so only the desired polyline or polygon remains before converting it.
