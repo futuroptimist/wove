@@ -135,6 +135,7 @@ TODOs
 APAC
 BigTreeTech
 BOM
+GRBL
 CoreXY
 CERN
 Discoverable
@@ -162,14 +163,18 @@ effector
 flexures
 implementers
 leadscrew
+microstepping
 microcontroller
 mockup
 overtravel
+READMEs
 polycarbonate
 reproducibility
+delamination
 sensorless
 tensioner
 thermistor
+MicroFit
 walkthroughs
 Tensioner
 XH
