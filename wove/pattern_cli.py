@@ -307,7 +307,8 @@ def _points_from_svg(svg_path: Path) -> List[Tuple[float, float]]:
                 points = points[:-1]
         if points:
             return points
-    raise ValueError("SVG file does not contain a polyline or polygon with points")
+    message = "SVG file does not contain a polyline or polygon with points"
+    raise ValueError(message)
 
 
 def _pattern_from_svg(
@@ -380,7 +381,12 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--svg",
         type=Path,
-        help=("Path to an SVG polyline or polygon to convert into MOVE " "commands."),
+        help=" ".join(
+            [
+                "Path to an SVG polyline or polygon to convert into MOVE",
+                "commands.",
+            ]
+        ),
     )
     parser.add_argument(
         "--svg-scale",

@@ -159,7 +159,10 @@ def test_load_pattern_uses_svg_source(monkeypatch, tmp_path):
         recorded_args.append((path, scale, offset_x, offset_y))
         return "MOVE 0.000 0.000"
 
-    monkeypatch.setattr("wove.pattern_cli._pattern_from_svg", fake_pattern_from_svg)
+    monkeypatch.setattr(
+        "wove.pattern_cli._pattern_from_svg",
+        fake_pattern_from_svg,
+    )
     result = _load_pattern(
         path=None,
         pattern=None,
@@ -396,6 +399,9 @@ def test_pattern_from_svg_requires_coordinates(monkeypatch, tmp_path):
         assert path == svg_path
         return []
 
-    monkeypatch.setattr("wove.pattern_cli._points_from_svg", fake_points_from_svg)
+    monkeypatch.setattr(
+        "wove.pattern_cli._points_from_svg",
+        fake_points_from_svg,
+    )
     with pytest.raises(ValueError):
         _pattern_from_svg(svg_path, scale=1.0, offset_x=0.0, offset_y=0.0)
