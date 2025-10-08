@@ -8,6 +8,7 @@ crochet-basics
 crochet-tools
 wove-v1c-design
 robotic-knitting-machine
+pattern-cli
 gauge
 learning-resources
 testing
