@@ -51,19 +51,16 @@ def test_translate_pattern_basic():
     turn_index = text.index("G0 X0.00 Y11.00 F1200 ; turn to next row")
     expected_plunge = "G1 Z-2.00 F600 ; single stitch 1 of 1: plunge"
     assert text[turn_index + 1] == expected_plunge
-    assert text[-1] == (
-        "G0 X4.50 Y11.00 F1200 ; single stitch 1 of 1: advance"
-    )
+    final_step = "G0 X4.50 Y11.00 F1200 ; single stitch 1 of 1: advance"
+    assert text[-1] == final_step
 
 
 def test_translate_pattern_ignores_comments_and_blank_lines():
     pattern = "\n".join(["", "# comment", "CHAIN 1"])
     translator = PatternTranslator()
     lines = translator.translate(pattern)
-    assert any(
-        "chain stitch 1 of 1: advance" in line.as_text()
-        for line in lines
-    )
+    target_comment = "chain stitch 1 of 1: advance"
+    assert any(target_comment in line.as_text() for line in lines)
 
 
 @pytest.mark.parametrize(
@@ -92,8 +89,8 @@ def test_turn_without_argument_uses_default_height():
     pattern = "\n".join(["CHAIN 1", "TURN", "CHAIN 1"])
     lines = translate_pattern(pattern)
     text = _as_text(lines)
-    default_turn = (
-        f"G0 X0.00 Y{DEFAULT_ROW_HEIGHT:.2f} F1200 ; turn to next row"
+    default_turn = ("G0 X0.00 Y{height:.2f} F1200 ; turn to next row").format(
+        height=DEFAULT_ROW_HEIGHT
     )
     assert default_turn in text
     assert text[-1].startswith("G0 X5.00 Y6.00 F1200")
@@ -153,7 +150,13 @@ def test_parse_args_variants():
     defaults = parse_args([])
     assert defaults.format == "gcode"
     args = parse_args(
-        ["pattern.txt", "--format", "json", "--output", "out.gcode"]
+        [
+            "pattern.txt",
+            "--format",
+            "json",
+            "--output",
+            "out.gcode",
+        ]
     )
     assert str(args.pattern) == "pattern.txt"
     assert args.format == "json"
@@ -169,12 +172,14 @@ def test_main_stdout_json(capsys):
 
 def test_main_writes_output_file(tmp_path):
     output_path = tmp_path / "pattern.gcode"
-    exit_code = main([
-        "--text",
-        "CHAIN 1",
-        "--output",
-        str(output_path),
-    ])
+    exit_code = main(
+        [
+            "--text",
+            "CHAIN 1",
+            "--output",
+            str(output_path),
+        ]
+    )
     assert exit_code == 0
     assert output_path.read_text(encoding="utf-8").startswith("G21")
 
