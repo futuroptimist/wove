@@ -138,7 +138,8 @@ trade-offs remain visible to firmware and tooling contributors.
 
 - Firmware should expose a JSON or YAML profile describing microstepping, steps-per-mm, and travel
   limits for each axis so pattern planners can consume the data directly.
-- Home-before-run is required; the pattern CLI can block execution if limit switch states are
+- Home-before-run is required; run the pattern CLI with ``--require-home`` and
+  ``--home-state homed`` so it blocks execution when limit switch states are
   unknown.
 - Maintain a shared definition of carriage payload mass for acceleration planning (target ≤250 g).
 

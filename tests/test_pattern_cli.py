@@ -1,3 +1,5 @@
+# isort: skip_file
+
 from __future__ import annotations
 
 import io
@@ -149,6 +151,8 @@ def test_write_output_stdout_gcode(capsys):
 def test_parse_args_variants():
     defaults = parse_args([])
     assert defaults.format == "gcode"
+    assert defaults.home_state == "unknown"
+    assert defaults.require_home is False
     args = parse_args(
         [
             "pattern.txt",
@@ -156,11 +160,14 @@ def test_parse_args_variants():
             "json",
             "--output",
             "out.gcode",
+            "--home-state",
+            "homed",
         ]
     )
     assert str(args.pattern) == "pattern.txt"
     assert args.format == "json"
     assert str(args.output).endswith("out.gcode")
+    assert args.home_state == "homed"
 
 
 def test_main_stdout_json(capsys):
@@ -182,6 +189,26 @@ def test_main_writes_output_file(tmp_path):
     )
     assert exit_code == 0
     assert output_path.read_text(encoding="utf-8").startswith("G21")
+
+
+def test_main_requires_homed_guard(capsys):
+    exit_code = main(["--text", "CHAIN 1", "--require-home"])
+    assert exit_code == 1
+    captured = capsys.readouterr()
+    assert "Refusing to generate motion" in captured.err
+
+
+def test_main_allows_homed_guard_when_homed(capsys):
+    exit_code = main(
+        [
+            "--text",
+            "CHAIN 1",
+            "--require-home",
+            "--home-state",
+            "homed",
+        ]
+    )
+    assert exit_code == 0
 
 
 @pytest.mark.parametrize("fmt", ["json", "gcode"])
