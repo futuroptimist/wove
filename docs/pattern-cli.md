@@ -68,6 +68,20 @@ pipelines:
 python -m wove.pattern_cli --text "CHAIN 1\nDOUBLE 1" --format json
 ```
 
+## Homing guard
+
+The robotic crochet design doc stresses that the gantry must be homed before
+running motion. Pass ``--require-home`` to enforce this guard at translation
+time. The CLI refuses to emit motion commands when the reported homing state is
+``unknown``; set ``--home-state homed`` after completing a homing cycle:
+
+```bash
+python -m wove.pattern_cli pattern.txt --require-home --home-state homed
+```
+
+If you skip ``--home-state homed`` while ``--require-home`` is present, the CLI
+aborts with an explanatory error instead of generating G-code.
+
 ## Importing SVG polylines
 
 Provide an SVG file containing a `polyline` or `polygon` element to trace its vertices as travel

@@ -418,6 +418,23 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default="gcode",
         help="Output format (default: gcode).",
     )
+    parser.add_argument(
+        "--home-state",
+        choices=("unknown", "homed"),
+        default="unknown",
+        help=(
+            "Reported homing state of the motion system (default: unknown). "
+            "Set to 'homed' after completing a homing cycle."
+        ),
+    )
+    parser.add_argument(
+        "--require-home",
+        action="store_true",
+        help=(
+            "Abort translation if the reported homing state is not 'homed'. "
+            "Enforces the home-before-run guard from the design docs."
+        ),
+    )
     return parser.parse_args(argv)
 
 
@@ -432,6 +449,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.svg_offset_x,
         args.svg_offset_y,
     )
+    if args.require_home and args.home_state != "homed":
+        message = (
+            "Refusing to generate motion: home state is "
+            f"'{args.home_state}' (expected 'homed').\n"
+        )
+        sys.stderr.write(message)
+        guidance = "Run the machine homing sequence or omit --require-home.\n"
+        sys.stderr.write(guidance)
+        return 1
     lines = translate_pattern(pattern_text)
     _write_output(lines, args.output, args.format)
     return 0

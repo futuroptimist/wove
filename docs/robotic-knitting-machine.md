@@ -124,8 +124,8 @@ weights.
 - **Spacer/washer consolidation:** The spacer and washer share geometry—prefer the spacer model and
   vary `thickness` to eliminate redundant inventory.
 - **Integrated yarn guide and tension post:** When only a single yarn path is needed, print the yarn
-  guide with the tension post by enabling the `integrated_post` parameter (to be added) and remove
-  two fasteners from the stack.
+  guide with the tension post by enabling the `integrated_post` parameter on `yarn_guide.scad` and
+  remove two fasteners from the stack.
 - **Stepper mount datum tabs:** Print datum tabs directly on the mount rather than using alignment
   pins when the frame is square; this removes two separate pins per axis.
 - **Electronics sled:** Replace individual brackets with a single electronics sled that slides into
@@ -138,7 +138,8 @@ trade-offs remain visible to firmware and tooling contributors.
 
 - Firmware should expose a JSON or YAML profile describing microstepping, steps-per-mm, and travel
   limits for each axis so pattern planners can consume the data directly.
-- Home-before-run is required; the pattern CLI can block execution if limit switch states are
+- Home-before-run is required; run the pattern CLI with ``--require-home`` and
+  ``--home-state homed`` so it blocks execution when limit switch states are
   unknown.
 - Maintain a shared definition of carriage payload mass for acceleration planning (target ≤250 g).
 
