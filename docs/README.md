@@ -16,7 +16,8 @@ Then open `docs/_build/html/index.html` in a browser.
 - [Knitting Basics](knitting-basics.md)
 - [Crochet Basics](crochet-basics.md)
 - [Wove v1c Mechanical Crochet System Design](wove-v1c-design.md)
-- [Robotic Knitting Machine](robotic-knitting-machine.md)
+- [Robotic Knitting Machine](robotic-knitting-machine.md) – architecture, module parameters, and
+  assembly simplifications for the automated knitting platform.
 - [Pattern translation CLI](pattern-cli.md)
 - [Gauge utilities](gauge.md)
 - [Python Style Guide](styleguides/python.md)
