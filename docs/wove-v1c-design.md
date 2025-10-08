@@ -81,7 +81,8 @@ Key modules include:
 - Base firmware forked from Klipper for flexible motion control and macro scripting.
 - Default config files define axis scaling, stepper currents, and safety limits.
 - Companion Python CLI handles pattern translation from custom stitch descriptions to
-  G-code-like motion sequences (initial DSL implementation complete; .SVG import remains future work).
+  G-code-like motion sequences. Initial DSL support is complete, and a lightweight SVG polyline
+  importer converts sketches into travel moves for rapid prototyping.
 - Future roadmap: integrate with browser-based planner for interactive pattern design.
 
 ## Bill of Materials (Initial Release)

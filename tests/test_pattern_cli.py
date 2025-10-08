@@ -139,6 +139,13 @@ def test_load_pattern_reads_stdin(monkeypatch):
     assert _load_pattern(None, None) == "CHAIN 1\n"
 
 
+def test_load_pattern_rejects_multiple_sources(tmp_path):
+    svg_path = tmp_path / "shape.svg"
+    svg_path.write_text("<svg></svg>", encoding="utf-8")
+    with pytest.raises(ValueError):
+        _load_pattern(tmp_path / "pattern.txt", "CHAIN 1", svg=svg_path)
+
+
 def test_write_output_stdout_gcode(capsys):
     lines = [GCodeLine("G21")]
     _write_output(lines, None, "gcode")
@@ -231,3 +238,46 @@ def test_pattern_cli_text_input():
     payload = json.loads(completed.stdout)
     pause = next(line for line in payload if line["command"].startswith("G4"))
     assert pause["comment"] == "pause for 0.250 s"
+
+
+def test_pattern_cli_svg_polyline(tmp_path):
+    svg_path = tmp_path / "shape.svg"
+    svg_path.write_text(
+        (
+            "<svg xmlns=\"http://www.w3.org/2000/svg\">"
+            "<polyline points=\"0,0 5,0 5,5\"/>"
+            "</svg>"
+        ),
+        encoding="utf-8",
+    )
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "wove.pattern_cli",
+            "--svg",
+            str(svg_path),
+            "--svg-scale",
+            "2",
+            "--svg-offset-x",
+            "1",
+            "--svg-offset-y",
+            "0.5",
+            "--format",
+            "json",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    payload = json.loads(completed.stdout)
+    repositions: list[str] = []
+    for entry in payload:
+        command = entry["command"]
+        if command.startswith("G0 X"):
+            repositions.append(command)
+    assert repositions == [
+        "G0 X1.00 Y0.50 F1200",
+        "G0 X11.00 Y0.50 F1200",
+        "G0 X11.00 Y10.50 F1200",
+    ]

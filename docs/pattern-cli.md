@@ -67,3 +67,15 @@ pipelines:
 ```bash
 python -m wove.pattern_cli --text "CHAIN 1\nDOUBLE 1" --format json
 ```
+
+## Importing SVG polylines
+
+Provide an SVG file containing a `polyline` or `polygon` element to trace its vertices as travel
+moves. The CLI emits `MOVE` commands for each vertex after applying optional scaling and offsets:
+
+```bash
+python -m wove.pattern_cli --svg sketch.svg --svg-scale 1.5 --svg-offset-x 10 --svg-offset-y 5
+```
+
+This limited importer focuses on quick mechanical experiments, so it ignores curves and other path
+commands. Clean up artwork so only the desired polyline or polygon remains before converting it.
