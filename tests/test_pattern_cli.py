@@ -335,7 +335,12 @@ def test_pattern_from_svg_scales_and_offsets(tmp_path):
         ),
         encoding="utf-8",
     )
-    result = _pattern_from_svg(svg_path, scale=2.0, offset_x=1.0, offset_y=-1.5)
+    result = _pattern_from_svg(
+        svg_path,
+        scale=2.0,
+        offset_x=1.0,
+        offset_y=-1.5,
+    )
     assert result.splitlines() == [
         "MOVE 1.000 -1.500",
         "MOVE 3.000 0.500",
