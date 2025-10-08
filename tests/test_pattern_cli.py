@@ -12,6 +12,9 @@ from wove.pattern_cli import (
     GCodeLine,
     PatternTranslator,
     _load_pattern,
+    _parse_points_attribute,
+    _pattern_from_svg,
+    _points_from_svg,
     _write_output,
     main,
     parse_args,
@@ -280,4 +283,60 @@ def test_pattern_cli_svg_polyline(tmp_path):
         "G0 X1.00 Y0.50 F1200",
         "G0 X11.00 Y0.50 F1200",
         "G0 X11.00 Y10.50 F1200",
+    ]
+
+
+def test_parse_points_attribute_parses_pairs():
+    points = _parse_points_attribute("0,0  5,0 5,5")
+    assert points == [(0.0, 0.0), (5.0, 0.0), (5.0, 5.0)]
+
+
+def test_parse_points_attribute_requires_even_values():
+    with pytest.raises(ValueError):
+        _parse_points_attribute("0,0 5")
+
+
+def test_points_from_svg_reads_polyline(tmp_path):
+    svg_path = tmp_path / "shape.svg"
+    svg_path.write_text(
+        (
+            "<svg xmlns=\"http://www.w3.org/2000/svg\">"
+            "<g>"
+            "<polygon/>"
+            "<polyline points=\"2,2 3,2 3,3\"/>"
+            "</g>"
+            "</svg>"
+        ),
+        encoding="utf-8",
+    )
+    assert _points_from_svg(svg_path) == [(2.0, 2.0), (3.0, 2.0), (3.0, 3.0)]
+
+
+def test_points_from_svg_polygon_drops_duplicate_endpoint(tmp_path):
+    svg_path = tmp_path / "shape.svg"
+    svg_path.write_text(
+        (
+            "<svg xmlns=\"http://www.w3.org/2000/svg\">"
+            "<polygon points=\"0,0 1,0 1,1 0,0\"/>"
+            "</svg>"
+        ),
+        encoding="utf-8",
+    )
+    assert _points_from_svg(svg_path) == [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0)]
+
+
+def test_pattern_from_svg_scales_and_offsets(tmp_path):
+    svg_path = tmp_path / "shape.svg"
+    svg_path.write_text(
+        (
+            "<svg xmlns=\"http://www.w3.org/2000/svg\">"
+            "<polyline points=\"0,0 1,1\"/>"
+            "</svg>"
+        ),
+        encoding="utf-8",
+    )
+    result = _pattern_from_svg(svg_path, scale=2.0, offset_x=1.0, offset_y=-1.5)
+    assert result.splitlines() == [
+        "MOVE 1.000 -1.500",
+        "MOVE 3.000 0.500",
     ]
