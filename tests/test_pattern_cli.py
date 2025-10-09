@@ -9,6 +9,7 @@ import sys
 
 import pytest
 
+from wove.machine_profile import AxisProfile, MachineProfile
 from wove.pattern_cli import (
     DEFAULT_ROW_HEIGHT,
     GCodeLine,
@@ -27,6 +28,22 @@ from wove.pattern_cli import (
 
 def _as_text(lines):
     return [line.as_text() for line in lines]
+
+
+def _sample_machine_profile(
+    *,
+    x_max: float = 120.0,
+    y_max: float = 120.0,
+    z_min: float = -10.0,
+    z_max: float = 15.0,
+) -> MachineProfile:
+    return MachineProfile(
+        axes={
+            "X": AxisProfile("X", 16, 80.0, 0.0, x_max),
+            "Y": AxisProfile("Y", 16, 80.0, 0.0, y_max),
+            "Z": AxisProfile("Z", 16, 400.0, z_min, z_max),
+        }
+    )
 
 
 def test_translate_pattern_basic():
@@ -67,6 +84,33 @@ def test_translate_pattern_ignores_comments_and_blank_lines():
     lines = translator.translate(pattern)
     target_comment = "chain stitch 1 of 1: advance"
     assert any(target_comment in line.as_text() for line in lines)
+
+
+def test_translate_pattern_respects_axis_limits():
+    profile = _sample_machine_profile(x_max=9.0)
+    translator = PatternTranslator(machine_profile=profile)
+    with pytest.raises(ValueError) as excinfo:
+        translator.translate("CHAIN 2")
+    assert "Axis X position" in str(excinfo.value)
+
+
+def test_translate_pattern_respects_z_limits():
+    profile = _sample_machine_profile(z_min=-1.0)
+    translator = PatternTranslator(machine_profile=profile)
+    with pytest.raises(ValueError) as excinfo:
+        translator.translate("DOUBLE 1")
+    assert "Axis Z position" in str(excinfo.value)
+
+
+def test_translate_pattern_with_profile_argument():
+    profile = _sample_machine_profile()
+    lines = translate_pattern("CHAIN 1", machine_profile=profile)
+    found = False
+    for comment in (line.comment for line in lines):
+        if comment and "chain stitch" in comment:
+            found = True
+            break
+    assert found
 
 
 @pytest.mark.parametrize(
@@ -196,14 +240,19 @@ def test_parse_args_variants():
             "json",
             "--output",
             "out.gcode",
+            "--machine-profile",
+            "profile.yaml",
             "--home-state",
             "homed",
+            "--require-home",
         ]
     )
     assert str(args.pattern) == "pattern.txt"
     assert args.format == "json"
     assert str(args.output).endswith("out.gcode")
+    assert str(args.machine_profile).endswith("profile.yaml")
     assert args.home_state == "homed"
+    assert args.require_home is True
 
 
 def test_main_stdout_json(capsys):
@@ -245,6 +294,88 @@ def test_main_allows_homed_guard_when_homed(capsys):
         ]
     )
     assert exit_code == 0
+
+
+def test_main_accepts_machine_profile(tmp_path):
+    profile_path = tmp_path / "profile.json"
+    profile_path.write_text(
+        json.dumps(
+            {
+                "axes": {
+                    "X": {
+                        "microstepping": 16,
+                        "steps_per_mm": 80,
+                        "travel_min_mm": 0,
+                        "travel_max_mm": 200,
+                    },
+                    "Y": {
+                        "microstepping": 16,
+                        "steps_per_mm": 80,
+                        "travel_min_mm": 0,
+                        "travel_max_mm": 200,
+                    },
+                    "Z": {
+                        "microstepping": 16,
+                        "steps_per_mm": 400,
+                        "travel_min_mm": -10,
+                        "travel_max_mm": 15,
+                    },
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    exit_code = main(
+        [
+            "--text",
+            "CHAIN 1",
+            "--machine-profile",
+            str(profile_path),
+        ]
+    )
+    assert exit_code == 0
+
+
+def test_main_reports_machine_profile_limit_errors(tmp_path, capsys):
+    profile_path = tmp_path / "profile.json"
+    profile_path.write_text(
+        json.dumps(
+            {
+                "axes": {
+                    "X": {
+                        "microstepping": 16,
+                        "steps_per_mm": 80,
+                        "travel_min_mm": 0,
+                        "travel_max_mm": 5,
+                    },
+                    "Y": {
+                        "microstepping": 16,
+                        "steps_per_mm": 80,
+                        "travel_min_mm": 0,
+                        "travel_max_mm": 200,
+                    },
+                    "Z": {
+                        "microstepping": 16,
+                        "steps_per_mm": 400,
+                        "travel_min_mm": -10,
+                        "travel_max_mm": 15,
+                    },
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    exit_code = main(
+        [
+            "--text",
+            "CHAIN 2",
+            "--machine-profile",
+            str(profile_path),
+        ]
+    )
+    assert exit_code == 1
+    captured = capsys.readouterr()
+    assert "Axis X position" in captured.err
 
 
 @pytest.mark.parametrize("fmt", ["json", "gcode"])
