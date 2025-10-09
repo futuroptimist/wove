@@ -87,7 +87,32 @@ def test_estimate_tension_handles_zero_span_intervals(monkeypatch: pytest.Monkey
 
     monkeypatch.setattr(tension, "list_tension_profiles", lambda: [lower, upper])
 
-    assert tension.estimate_tension_for_wpi(lower.midpoint_wpi) == lower.target_force_grams
+    class FakeWpi:
+        """Mimic a wraps-per-inch value that forces the zero-span branch."""
+
+        def __init__(self, value: float) -> None:
+            self.value = value
+            self._le_calls = 0
+            self._ge_calls = 0
+
+        def __le__(self, other: float) -> bool:  # type: ignore[override]
+            self._le_calls += 1
+            if self._le_calls == 1:
+                return self.value <= other  # initial check against zero
+            if self._le_calls == 2:
+                return False  # skip the early clamp guard
+            return self.value <= other
+
+        def __ge__(self, other: float) -> bool:  # type: ignore[override]
+            self._ge_calls += 1
+            if self._ge_calls == 1:
+                return False  # skip the upper clamp guard
+            return other <= self.value
+
+    assert (
+        tension.estimate_tension_for_wpi(FakeWpi(lower.midpoint_wpi))
+        == lower.target_force_grams
+    )
 
 
 def test_estimate_tension_returns_last_profile_when_comparison_fails(
