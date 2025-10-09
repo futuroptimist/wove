@@ -41,6 +41,29 @@ Key modules include:
 - **Guide Path**: PTFE tube segments route yarn from spool to hook while allowing low-friction
   motion. Optional filament sensor monitors breaks for advanced builds.
 
+#### Tension Profiles and Bench Tests
+
+Phase 3 of the documentation roadmap now ships an initial catalog of yarn tension profiles. The
+`wove.tension` module records bench tests for lace through super bulky weights, including target
+pull force, recommended feed rate, and the measured variation during a 60-second feed trial. Use
+the helpers to look up a tested profile or estimate tension for in-between yarns:
+
+```python
+from wove import estimate_tension_for_wpi, get_tension_profile
+
+# Retrieve a documented profile (case-insensitive lookup)
+worsted = get_tension_profile("Worsted")
+print(worsted.target_force_grams)  # -> 65.0 grams of pull force
+
+# Interpolate for a yarn that falls between fingering and sport weights
+target_force = estimate_tension_for_wpi(17.5)
+print(round(target_force, 1))  # -> 42.1 grams (approx)
+```
+
+Profiles are sorted from lightest to heaviest yarns so the automation stack can feed the data into
+future calibration scripts. Each entry captures the wraps-per-inch range and highlights how evenly
+the passive tensioner maintained feed force during testing.
+
 ### Frame and Build Volume
 - **Frame**: 20x20 mm aluminum extrusion perimeter with printed corner cubes and feet. Designed for
   250 mm × 250 mm working area; printable parts cap at 220 mm to fit standard beds.
@@ -152,7 +175,7 @@ Key modules include:
 | 0. Discovery (Weeks 1-2) | Research & benchmarking | Comparative study of existing crochet machines, requirements doc | Core design team |
 | 1. Motion Prototype (Weeks 3-6) | Mechanical validation | Printed frame mockup, CoreXY motion demo, hook carriage v0.1 | Mechanical subgroup |
 | 2. Electronics Integration (Weeks 5-8) | Control system | Controller selection report, wiring harness draft, firmware baseline | Electronics subgroup |
-| 3. Yarn Handling (Weeks 7-10) | Feed & tension | Adjustable tensioner prototype, yarn guide validation tests | Materials subgroup |
+| 3. Yarn Handling (Weeks 7-10) | Feed & tension | Adjustable tensioner prototype, yarn guide validation tests, published tension profiles | Materials subgroup |
 | 4. Full Assembly Alpha (Weeks 9-12) | System bring-up | Assembly manual v0.5, dry-run stitch tests, BOM freeze | Cross-functional |
 | 5. Beta Validation (Weeks 12-16) | User testing | Community build feedback, issue tracker triage, documentation polish | Community leads |
 | 6. Release Candidate (Weeks 16-18) | Packaging | Final CAD/STL bundle, firmware v1.0 configs, sourcing guide, marketing launch plan | Release manager |
