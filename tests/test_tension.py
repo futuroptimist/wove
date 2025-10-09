@@ -69,7 +69,9 @@ def test_catalog_contains_expected_weights() -> None:
     assert expected == set(tension.TENSION_PROFILES)
 
 
-def test_estimate_tension_handles_zero_span_intervals(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_estimate_tension_handles_zero_span_intervals(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     lower = tension.TensionProfile(
         weight="custom-low",
         wraps_per_inch=(12, 12),
@@ -85,7 +87,11 @@ def test_estimate_tension_handles_zero_span_intervals(monkeypatch: pytest.Monkey
         pull_variation_percent=3.0,
     )
 
-    monkeypatch.setattr(tension, "list_tension_profiles", lambda: [lower, upper])
+    monkeypatch.setattr(
+        tension,
+        "list_tension_profiles",
+        lambda: [lower, upper],
+    )
 
     class FakeWpi:
         """Mimic a wraps-per-inch value that forces the zero-span branch."""
@@ -133,7 +139,11 @@ def test_estimate_tension_returns_last_profile_when_comparison_fails(
         pull_variation_percent=4.0,
     )
 
-    monkeypatch.setattr(tension, "list_tension_profiles", lambda: [heavy, light])
+    monkeypatch.setattr(
+        tension,
+        "list_tension_profiles",
+        lambda: [heavy, light],
+    )
 
     result = tension.estimate_tension_for_wpi(float("nan"))
 
