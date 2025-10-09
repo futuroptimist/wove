@@ -10,6 +10,8 @@ from pathlib import Path
 from typing import Iterable, List, Sequence, Tuple
 from xml.etree import ElementTree as ET
 
+from .machine_profile import MachineProfile, load_machine_profile
+
 SAFE_Z_MM = 4.0
 FABRIC_PLANE_Z_MM = 0.0
 TRAVEL_FEED_RATE = 1200
@@ -72,12 +74,13 @@ STITCH_PROFILES = {
 class PatternTranslator:
     """Translate pattern lines into a list of :class:`GCodeLine` objects."""
 
-    def __init__(self) -> None:
+    def __init__(self, machine_profile: MachineProfile | None = None) -> None:
         self._lines: List[GCodeLine] = []
         self._x_mm = 0.0
         self._y_mm = 0.0
         self._z_mm = SAFE_Z_MM
         self._extrusion_mm = 0.0
+        self._machine_profile = machine_profile
 
     def translate(self, source: str) -> List[GCodeLine]:
         """Translate a stitch description into motion commands."""
@@ -97,7 +100,7 @@ class PatternTranslator:
                     command,
                 )
                 profile = STITCH_PROFILES[command]
-                self._emit_stitches(profile, count)
+                self._emit_stitches(profile, count, line_number)
             elif command == "MOVE":
                 self._handle_move(arguments, line_number)
             elif command == "PAUSE":
@@ -127,6 +130,17 @@ class PatternTranslator:
 
     def _emit(self, command: str, comment: str | None = None) -> None:
         self._lines.append(GCodeLine(command, comment))
+
+    def _ensure_within_limits(
+        self, axis: str, position: float, *, line_number: int | None = None
+    ) -> None:
+        if self._machine_profile is None:
+            return
+        self._machine_profile.ensure_within(
+            axis,
+            position,
+            line_number=line_number,
+        )
 
     def _parse_positive_int(
         self, arguments: Sequence[str], line_number: int, command: str
@@ -167,14 +181,18 @@ class PatternTranslator:
 
     def _ensure_safe_height(self) -> None:
         if self._z_mm != SAFE_Z_MM:
+            self._ensure_within_limits("Z", SAFE_Z_MM)
             command = f"G1 Z{SAFE_Z_MM:.2f} F{PLUNGE_FEED_RATE}"
             self._emit(command, "raise to safe height")
             self._z_mm = SAFE_Z_MM
 
-    def _emit_stitches(self, profile: StitchProfile, count: int) -> None:
+    def _emit_stitches(
+        self, profile: StitchProfile, count: int, line_number: int
+    ) -> None:
         for index in range(1, count + 1):
             stitch_label = f"{profile.name.lower()} stitch {index} of {count}"
             plunge_z = FABRIC_PLANE_Z_MM - profile.plunge_depth_mm
+            self._ensure_within_limits("Z", plunge_z, line_number=line_number)
             self._emit(
                 f"G1 Z{plunge_z:.2f} F{PLUNGE_FEED_RATE}",
                 f"{stitch_label}: plunge",
@@ -190,7 +208,10 @@ class PatternTranslator:
                 f"{stitch_label}: raise",
             )
             self._z_mm = SAFE_Z_MM
-            self._x_mm += profile.spacing_mm
+            self._ensure_within_limits("Z", SAFE_Z_MM, line_number=line_number)
+            new_x = self._x_mm + profile.spacing_mm
+            self._ensure_within_limits("X", new_x, line_number=line_number)
+            self._x_mm = new_x
             self._emit(
                 f"G0 X{self._x_mm:.2f} Y{self._y_mm:.2f} F{TRAVEL_FEED_RATE}",
                 f"{stitch_label}: advance",
@@ -203,6 +224,8 @@ class PatternTranslator:
         self._ensure_safe_height()
         x_value = self._parse_float(arguments[0], line_number, "MOVE")
         y_value = self._parse_float(arguments[1], line_number, "MOVE")
+        self._ensure_within_limits("X", x_value, line_number=line_number)
+        self._ensure_within_limits("Y", y_value, line_number=line_number)
         self._x_mm = x_value
         self._y_mm = y_value
         self._emit(
@@ -246,18 +269,23 @@ class PatternTranslator:
                 line_number
             )
             raise ValueError(message)
+        self._ensure_within_limits("X", 0.0, line_number=line_number)
         self._x_mm = 0.0
-        self._y_mm += step
+        new_y = self._y_mm + step
+        self._ensure_within_limits("Y", new_y, line_number=line_number)
+        self._y_mm = new_y
         self._emit(
             f"G0 X{self._x_mm:.2f} Y{self._y_mm:.2f} F{TRAVEL_FEED_RATE}",
             "turn to next row",
         )
 
 
-def translate_pattern(source: str) -> List[GCodeLine]:
+def translate_pattern(
+    source: str, machine_profile: MachineProfile | None = None
+) -> List[GCodeLine]:
     """Convenience wrapper for :class:`PatternTranslator`."""
 
-    translator = PatternTranslator()
+    translator = PatternTranslator(machine_profile=machine_profile)
     return translator.translate(source)
 
 
@@ -419,6 +447,14 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="Output format (default: gcode).",
     )
     parser.add_argument(
+        "--machine-profile",
+        type=Path,
+        help=(
+            "Path to a JSON or YAML machine profile containing axis limits. "
+            "Generated moves are checked against those limits."
+        ),
+    )
+    parser.add_argument(
         "--home-state",
         choices=("unknown", "homed"),
         default="unknown",
@@ -449,6 +485,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.svg_offset_x,
         args.svg_offset_y,
     )
+    machine_profile: MachineProfile | None = None
+    if args.machine_profile is not None:
+        try:
+            machine_profile = load_machine_profile(args.machine_profile)
+        except ValueError as error:
+            sys.stderr.write(f"{error}\n")
+            return 1
     if args.require_home and args.home_state != "homed":
         message = (
             "Refusing to generate motion: home state is "
@@ -458,7 +501,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         guidance = "Run the machine homing sequence or omit --require-home.\n"
         sys.stderr.write(guidance)
         return 1
-    lines = translate_pattern(pattern_text)
+    try:
+        lines = translate_pattern(
+            pattern_text,
+            machine_profile=machine_profile,
+        )
+    except ValueError as error:
+        sys.stderr.write(f"{error}\n")
+        return 1
     _write_output(lines, args.output, args.format)
     return 0
 

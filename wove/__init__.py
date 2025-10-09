@@ -53,6 +53,7 @@ from .gauge import (
     yards_to_inches,
     yards_to_meters,
 )
+from .machine_profile import AxisProfile, MachineProfile, load_machine_profile
 
 __all__ = [
     "cm_for_stitches",
@@ -107,4 +108,7 @@ __all__ = [
     "rows_for_meters",
     "yards_to_inches",
     "yards_to_meters",
+    "AxisProfile",
+    "MachineProfile",
+    "load_machine_profile",
 ]

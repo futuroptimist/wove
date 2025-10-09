@@ -3,3 +3,4 @@ isort
 black
 pytest
 pre-commit
+pyyaml

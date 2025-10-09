@@ -82,6 +82,23 @@ python -m wove.pattern_cli pattern.txt --require-home --home-state homed
 If you skip ``--home-state homed`` while ``--require-home`` is present, the CLI
 aborts with an explanatory error instead of generating G-code.
 
+## Machine profiles and travel limits
+
+Load a JSON or YAML machine profile with ``--machine-profile`` to validate each
+generated move against the travel limits described in
+[`docs/wove-v1c-design.md`](wove-v1c-design.md). The file lists axis metadata
+such as microstepping, steps-per-millimeter, and minimum/maximum travel. The CLI
+aborts when a pattern would exceed those limits so hardware never receives
+commands outside its safe envelope.
+
+```bash
+python -m wove.pattern_cli pattern.txt --machine-profile machine-profile.json
+```
+
+Profiles accept either lowercase or uppercase axis names. When the CLI reports
+a violation it echoes the axis, attempted position, and allowed range so you
+can adjust the pattern or update the profile.
+
 ## Importing SVG polylines
 
 Provide an SVG file containing a `polyline` or `polygon` element to trace its vertices as travel
