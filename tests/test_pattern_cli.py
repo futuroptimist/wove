@@ -78,6 +78,15 @@ def test_translate_pattern_basic():
     assert text[-1] == final_step
 
 
+def test_translate_pattern_slip_stitches():
+    lines = translate_pattern("SLIP 2")
+    text = _as_text(lines)
+    assert "G1 Z-1.00 F600 ; slip stitch 1 of 2: plunge" in text
+    assert "G1 E0.30 F300 ; slip stitch 1 of 2: feed yarn" in text
+    assert "G0 X3.50 Y0.00 F1200 ; slip stitch 1 of 2: advance" in text
+    assert text[-1] == "G0 X7.00 Y0.00 F1200 ; slip stitch 2 of 2: advance"
+
+
 def test_translate_pattern_ignores_comments_and_blank_lines():
     pattern = "\n".join(["", "# comment", "CHAIN 1"])
     translator = PatternTranslator()

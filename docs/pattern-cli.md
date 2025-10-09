@@ -12,6 +12,7 @@ empty or start with `#` are ignored.
 
 | Command | Description |
 | --- | --- |
+| `SLIP <count>` | Emit slip stitches for compact joins without adding height. |
 | `CHAIN <count>` | Emit chain stitches spaced evenly along the X axis. |
 | `SINGLE <count>` | Emit single crochet stitches with a deeper plunge and additional yarn feed. |
 | `DOUBLE <count>` | Emit double crochet stitches with a taller pull-up motion. |
@@ -60,6 +61,15 @@ G1 E2.10 F300 ; single stitch 1 of 1: feed yarn
 G1 Z4.00 F600 ; single stitch 1 of 1: raise
 G0 X4.50 Y12.00 F1200 ; single stitch 1 of 1: advance
 ```
+
+Slip stitches are helpful for joining rounds or anchoring motifs without adding height. Emit them
+just like other stitches:
+
+```bash
+python -m wove.pattern_cli --text "SLIP 2\nCHAIN 1"
+```
+
+The output begins with compact slip stitch motions before advancing to the chain stitch.
 
 Use `--format json` to inspect a structured representation for downstream
 pipelines:
