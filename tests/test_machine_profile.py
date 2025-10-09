@@ -107,6 +107,15 @@ def test_load_machine_profile_rejects_invalid_range(tmp_path):
         load_machine_profile(profile_path)
 
 
+def test_load_machine_profile_requires_axes_mapping(tmp_path):
+    payload = {"axes": None}
+    profile_path = tmp_path / "machine.json"
+    profile_path.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(ValueError) as excinfo:
+        load_machine_profile(profile_path)
+    assert "must contain an 'axes' mapping" in str(excinfo.value)
+
+
 def test_machine_profile_requires_known_axis():
     profile = MachineProfile(axes={"X": AxisProfile("X", 16, 80, 0.0, 5.0)})
     with pytest.raises(ValueError) as excinfo:
