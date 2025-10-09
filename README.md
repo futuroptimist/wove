@@ -84,7 +84,7 @@ workspace:
 python -m wove.pattern_cli --svg sketch.svg --svg-scale 2 --svg-offset-x 10 --svg-offset-y 5
 ```
 
-The DSL accepts commands such as `CHAIN <count>`, `SINGLE <count>`, `DOUBLE
+The DSL accepts commands such as `SLIP <count>`, `CHAIN <count>`, `SINGLE <count>`, `DOUBLE
 <count>`, `MOVE <x> <y>`, `TURN [height]`, and `PAUSE <seconds>`. The output is
 G-code-inspired: each stitch generates plunge, yarn-feed, raise, and travel
 moves with comments so you can import the sequence into firmware or simulation

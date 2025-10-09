@@ -50,6 +50,12 @@ class StitchProfile:
 
 
 STITCH_PROFILES = {
+    "SLIP": StitchProfile(
+        "SLIP",
+        spacing_mm=3.5,
+        plunge_depth_mm=1.0,
+        yarn_feed_mm=0.3,
+    ),
     "CHAIN": StitchProfile(
         "CHAIN",
         spacing_mm=5.0,
