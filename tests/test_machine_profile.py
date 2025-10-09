@@ -88,6 +88,13 @@ def test_axis_profile_validate_range():
         axis.ensure_within(11.0, line_number=7)
 
 
+def test_axis_profile_reports_generated_command():
+    axis = AxisProfile("X", 16, 80, 0.0, 5.0)
+    with pytest.raises(ValueError) as excinfo:
+        axis.ensure_within(10.0)
+    assert "generated command" in str(excinfo.value)
+
+
 def test_load_machine_profile_rejects_invalid_range(tmp_path):
     payload = _profile_payload()
     payload["axes"]["X"]["travel_max_mm"] = -1
@@ -98,3 +105,36 @@ def test_load_machine_profile_rejects_invalid_range(tmp_path):
     )
     with pytest.raises(ValueError):
         load_machine_profile(profile_path)
+
+
+def test_machine_profile_requires_known_axis():
+    profile = MachineProfile(axes={"X": AxisProfile("X", 16, 80, 0.0, 5.0)})
+    with pytest.raises(ValueError) as excinfo:
+        profile.ensure_within("Y", 1.0)
+    assert "missing axis 'Y'" in str(excinfo.value)
+
+
+def test_load_machine_profile_requires_mapping_payload(tmp_path):
+    profile_path = tmp_path / "machine.json"
+    profile_path.write_text("[]", encoding="utf-8")
+    with pytest.raises(ValueError) as excinfo:
+        load_machine_profile(profile_path)
+    assert "top level" in str(excinfo.value)
+
+
+def test_load_machine_profile_validates_axis_mappings(tmp_path):
+    payload = {"axes": {"X": [1, 2, 3]}}
+    profile_path = tmp_path / "machine.json"
+    profile_path.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(ValueError) as excinfo:
+        load_machine_profile(profile_path)
+    assert "must map to an object" in str(excinfo.value)
+
+
+def test_load_machine_profile_rejects_empty_axes(tmp_path):
+    payload = {"axes": {}}
+    profile_path = tmp_path / "machine.json"
+    profile_path.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(ValueError) as excinfo:
+        load_machine_profile(profile_path)
+    assert "define at least one axis" in str(excinfo.value)

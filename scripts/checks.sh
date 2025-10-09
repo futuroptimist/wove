@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -e
 
+# Ensure runtime dependencies are installed for the checks below.
+if [ -f requirements.txt ]; then
+  python -m pip install --disable-pip-version-check -r requirements.txt >/dev/null
+fi
+
 # python checks
 flake8 . --exclude=.venv || true
 isort --check-only . --skip .venv || true

@@ -378,6 +378,22 @@ def test_main_reports_machine_profile_limit_errors(tmp_path, capsys):
     assert "Axis X position" in captured.err
 
 
+def test_main_reports_machine_profile_load_errors(tmp_path, capsys):
+    profile_path = tmp_path / "profile.json"
+    profile_path.write_text("[]", encoding="utf-8")
+    exit_code = main(
+        [
+            "--text",
+            "CHAIN 1",
+            "--machine-profile",
+            str(profile_path),
+        ]
+    )
+    assert exit_code == 1
+    captured = capsys.readouterr()
+    assert "Machine profile file must contain an object" in captured.err
+
+
 @pytest.mark.parametrize("fmt", ["json", "gcode"])
 def test_pattern_cli_formats(tmp_path, fmt):
     pattern_path = tmp_path / "pattern.txt"
