@@ -11,7 +11,9 @@ import pytest
 
 from wove.pattern_cli import (
     DEFAULT_ROW_HEIGHT,
+    AxisProfile,
     GCodeLine,
+    MachineProfile,
     PatternTranslator,
     _load_pattern,
     _parse_points_attribute,
@@ -19,6 +21,7 @@ from wove.pattern_cli import (
     _points_from_svg,
     _strip_namespace,
     _write_output,
+    load_machine_profile,
     main,
     parse_args,
     translate_pattern,
@@ -120,8 +123,9 @@ def test_write_output_handles_files(tmp_path):
     json_path = tmp_path / "pattern.json"
     _write_output(gcode_lines, json_path, "json")
     payload = json.loads(json_path.read_text(encoding="utf-8"))
-    assert payload[0]["command"] == "G21"
-    assert payload[1]["comment"] == "absolute positioning"
+    assert payload["commands"][0]["command"] == "G21"
+    assert payload["commands"][1]["comment"] == "absolute positioning"
+    assert "machine_profile" not in payload
 
 
 def test_load_pattern_prefers_inline(tmp_path):
@@ -184,11 +188,139 @@ def test_write_output_stdout_gcode(capsys):
     assert captured.out == "G21\n"
 
 
+def _profile_payload() -> dict:
+    return {
+        "axes": {
+            "x": {
+                "min_mm": 0.0,
+                "max_mm": 150.0,
+                "microstepping": 16,
+                "steps_per_mm": 80.0,
+            },
+            "y": {
+                "min_mm": 0.0,
+                "max_mm": 120.0,
+                "microstepping": 16,
+                "steps_per_mm": 80.0,
+            },
+            "z": {
+                "min_mm": -5.0,
+                "max_mm": 60.0,
+                "microstepping": 16,
+                "steps_per_mm": 400.0,
+            },
+        }
+    }
+
+
+def test_load_machine_profile_json(tmp_path):
+    profile_path = tmp_path / "profile.json"
+    profile_path.write_text(
+        json.dumps(_profile_payload()),
+        encoding="utf-8",
+    )
+    profile = load_machine_profile(profile_path)
+    assert profile.axis("x").max_mm == 150.0
+    assert profile.as_dict()["z"]["min_mm"] == -5.0
+
+
+def test_load_machine_profile_yaml(tmp_path):
+    profile_path = tmp_path / "profile.yaml"
+    profile_path.write_text(
+        "\n".join(
+            [
+                "axes:",
+                "  x:",
+                "    min_mm: 0",
+                "    max_mm: 90",
+                "    microstepping: 32",
+                "    steps_per_mm: 100",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    profile = load_machine_profile(profile_path)
+    x_axis = profile.axis("x")
+    assert x_axis is not None
+    assert x_axis.microstepping == 32
+    assert x_axis.max_mm == 90.0
+
+
+def test_translate_pattern_respects_machine_limits():
+    profile = MachineProfile(
+        axes={
+            "x": AxisProfile(0.0, 6.0, 16, 80.0),
+            "y": AxisProfile(0.0, 30.0, 16, 80.0),
+            "z": AxisProfile(-3.0, 10.0, 16, 400.0),
+        }
+    )
+    pattern = "CHAIN 2"
+    with pytest.raises(ValueError) as excinfo:
+        translate_pattern(pattern, machine_profile=profile)
+    assert "X value" in str(excinfo.value)
+
+
+def test_translate_pattern_honors_limits_during_moves():
+    profile = MachineProfile(
+        axes={
+            "x": AxisProfile(0.0, 50.0, 16, 80.0),
+            "y": AxisProfile(0.0, 40.0, 16, 80.0),
+            "z": AxisProfile(-5.0, 10.0, 16, 400.0),
+        }
+    )
+    pattern = "\n".join(["CHAIN 1", "MOVE 30 15", "TURN 10"])
+    lines = translate_pattern(pattern, machine_profile=profile)
+    assert lines[-1].command.startswith("G0 X0.00 Y25.00 F1200")
+
+
+def test_main_includes_machine_profile_metadata_json(tmp_path, capsys):
+    profile_path = tmp_path / "profile.json"
+    profile_path.write_text(
+        json.dumps(_profile_payload()),
+        encoding="utf-8",
+    )
+    exit_code = main(
+        [
+            "--text",
+            "CHAIN 1",
+            "--format",
+            "json",
+            "--machine-profile",
+            str(profile_path),
+        ]
+    )
+    assert exit_code == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["commands"][0]["command"] == "G21"
+    assert payload["machine_profile"]["x"]["max_mm"] == 150.0
+
+
+def test_main_includes_machine_profile_comment_gcode(tmp_path, capsys):
+    profile_path = tmp_path / "profile.json"
+    profile_path.write_text(
+        json.dumps(_profile_payload()),
+        encoding="utf-8",
+    )
+    exit_code = main(
+        [
+            "--text",
+            "CHAIN 1",
+            "--machine-profile",
+            str(profile_path),
+        ]
+    )
+    assert exit_code == 0
+    output_lines = capsys.readouterr().out.strip().splitlines()
+    assert output_lines[0].startswith("; machine profile: X: 0.00–150.00 mm")
+    assert output_lines[1] == "G21 ; use millimeters"
+
+
 def test_parse_args_variants():
     defaults = parse_args([])
     assert defaults.format == "gcode"
     assert defaults.home_state == "unknown"
     assert defaults.require_home is False
+    assert defaults.machine_profile is None
     args = parse_args(
         [
             "pattern.txt",
@@ -204,13 +336,16 @@ def test_parse_args_variants():
     assert args.format == "json"
     assert str(args.output).endswith("out.gcode")
     assert args.home_state == "homed"
+    assert args.machine_profile is None
+    args_with_profile = parse_args(["--machine-profile", "machine.yaml"])
+    assert str(args_with_profile.machine_profile).endswith("machine.yaml")
 
 
 def test_main_stdout_json(capsys):
     exit_code = main(["--text", "CHAIN 1", "--format", "json"])
     assert exit_code == 0
     payload = json.loads(capsys.readouterr().out)
-    assert payload[0]["command"] == "G21"
+    assert payload["commands"][0]["command"] == "G21"
 
 
 def test_main_writes_output_file(tmp_path):
@@ -268,8 +403,10 @@ def test_pattern_cli_formats(tmp_path, fmt):
     assert completed.returncode == 0
     if fmt == "json":
         payload = json.loads(completed.stdout)
-        assert payload[0]["command"] == "G21"
-        assert payload[-1]["comment"].startswith("chain")
+        commands = payload["commands"]
+        assert commands[0]["command"] == "G21"
+        assert commands[-1]["comment"].startswith("chain")
+        assert "machine_profile" not in payload
     else:
         output_lines = completed.stdout.strip().splitlines()
         assert output_lines[0] == "G21 ; use millimeters"
@@ -292,7 +429,8 @@ def test_pattern_cli_text_input():
         text=True,
     )
     payload = json.loads(completed.stdout)
-    pause = next(line for line in payload if line["command"].startswith("G4"))
+    commands = payload["commands"]
+    pause = next(line for line in commands if line["command"].startswith("G4"))
     assert pause["comment"] == "pause for 0.250 s"
 
 
@@ -327,8 +465,9 @@ def test_pattern_cli_svg_polyline(tmp_path):
         text=True,
     )
     payload = json.loads(completed.stdout)
+    commands = payload["commands"]
     repositions: list[str] = []
-    for entry in payload:
+    for entry in commands:
         command = entry["command"]
         if command.startswith("G0 X"):
             repositions.append(command)

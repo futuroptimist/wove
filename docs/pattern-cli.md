@@ -82,6 +82,29 @@ python -m wove.pattern_cli pattern.txt --require-home --home-state homed
 If you skip ``--home-state homed`` while ``--require-home`` is present, the CLI
 aborts with an explanatory error instead of generating G-code.
 
+## Machine profile validation
+
+Supply ``--machine-profile`` with a JSON or YAML file to share firmware
+calibration data (microstepping, steps-per-mm, and travel limits) with the
+translator. The CLI validates every stitch, move, and turn against the declared
+limits and emits a helpful error if a command would exceed the available travel.
+
+```json
+{
+  "axes": {
+    "x": {"min_mm": 0, "max_mm": 200, "microstepping": 16, "steps_per_mm": 80},
+    "y": {"min_mm": 0, "max_mm": 150, "microstepping": 16, "steps_per_mm": 80},
+    "z": {"min_mm": -5, "max_mm": 60, "microstepping": 16, "steps_per_mm": 400}
+  }
+}
+```
+
+When the profile is provided, JSON output includes the decoded profile under the
+``machine_profile`` key and G-code output receives a header comment summarizing
+the same limits for reference. This keeps downstream planners aligned with the
+same calibration data that firmware exposes, as called for in the knitting
+machine design specification.
+
 ## Importing SVG polylines
 
 Provide an SVG file containing a `polyline` or `polygon` element to trace its vertices as travel

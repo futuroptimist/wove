@@ -7,8 +7,10 @@ import json
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, List, Sequence, Tuple
+from typing import Any, Dict, Iterable, List, Sequence, Tuple
 from xml.etree import ElementTree as ET
+
+import yaml
 
 SAFE_Z_MM = 4.0
 FABRIC_PLANE_Z_MM = 0.0
@@ -47,6 +49,48 @@ class StitchProfile:
     yarn_feed_mm: float
 
 
+@dataclass(frozen=True)
+class AxisProfile:
+    """Travel and calibration data for a single axis."""
+
+    min_mm: float
+    max_mm: float
+    microstepping: int
+    steps_per_mm: float
+
+    def ensure_within(self, axis_label: str, value: float) -> None:
+        if value < self.min_mm or value > self.max_mm:
+            message = (
+                f"{axis_label} value {value:.2f} mm exceeds allowed range "
+                f"{self.min_mm:.2f}–{self.max_mm:.2f} mm from machine profile"
+            )
+            raise ValueError(message)
+
+    def as_dict(self) -> Dict[str, float | int]:
+        return {
+            "min_mm": self.min_mm,
+            "max_mm": self.max_mm,
+            "microstepping": self.microstepping,
+            "steps_per_mm": self.steps_per_mm,
+        }
+
+
+@dataclass(frozen=True)
+class MachineProfile:
+    """Machine calibration profile describing each axis."""
+
+    axes: Dict[str, AxisProfile]
+
+    def axis(self, name: str) -> AxisProfile | None:
+        return self.axes.get(name.lower())
+
+    def as_dict(self) -> Dict[str, Dict[str, float | int]]:
+        result: Dict[str, Dict[str, float | int]] = {}
+        for axis, profile in sorted(self.axes.items()):
+            result[axis] = profile.as_dict()
+        return result
+
+
 STITCH_PROFILES = {
     "CHAIN": StitchProfile(
         "CHAIN",
@@ -69,15 +113,125 @@ STITCH_PROFILES = {
 }
 
 
+def load_machine_profile(path: Path) -> MachineProfile:
+    """Load a machine profile from JSON or YAML."""
+
+    raw_mapping = _read_machine_profile_mapping(path)
+    axes_data = raw_mapping.get("axes")
+    if not isinstance(axes_data, dict) or not axes_data:
+        message = f"Machine profile {path} must define an 'axes' mapping"
+        raise ValueError(message)
+    axes: Dict[str, AxisProfile] = {}
+    for axis_name, raw_axis in axes_data.items():
+        if not isinstance(raw_axis, dict):
+            message = f"Axis '{axis_name}' in {path} must be a mapping"
+            raise ValueError(message)
+        min_raw = raw_axis.get("min_mm", 0.0)
+        try:
+            max_raw = raw_axis["max_mm"]
+            microstepping_raw = raw_axis["microstepping"]
+            steps_per_mm_raw = raw_axis["steps_per_mm"]
+        except KeyError as error:
+            missing = error.args[0]
+            message = "Axis '{}' in {} is missing '{}'".format(
+                axis_name,
+                path,
+                missing,
+            )
+            raise ValueError(message) from error
+        try:
+            min_mm = float(min_raw)
+            max_mm = float(max_raw)
+            steps_per_mm = float(steps_per_mm_raw)
+        except (TypeError, ValueError) as error:
+            message = (
+                f"Axis '{axis_name}' in {path} must provide numeric limits "
+                "and steps_per_mm"
+            )
+            raise ValueError(message) from error
+        try:
+            microstepping = int(microstepping_raw)
+        except (TypeError, ValueError) as error:
+            message = (
+                f"Axis '{axis_name}' in {path} must provide an integer "
+                "microstepping value"
+            )
+            raise ValueError(message) from error
+        if microstepping <= 0:
+            template = "Axis '{}' in {} must declare positive microstepping"
+            message = template.format(axis_name, path)
+            raise ValueError(message)
+        if steps_per_mm <= 0:
+            template = "Axis '{}' in {} must declare positive steps_per_mm"
+            message = template.format(axis_name, path)
+            raise ValueError(message)
+        if max_mm <= min_mm:
+            template = "Axis '{}' in {} must have max_mm greater than min_mm"
+            message = template.format(axis_name, path)
+            raise ValueError(message)
+        axes[axis_name.lower()] = AxisProfile(
+            min_mm=min_mm,
+            max_mm=max_mm,
+            microstepping=microstepping,
+            steps_per_mm=steps_per_mm,
+        )
+    return MachineProfile(axes=axes)
+
+
+def _read_machine_profile_mapping(path: Path) -> Dict[str, Any]:
+    text = path.read_text(encoding="utf-8")
+    suffix = path.suffix.lower()
+    if suffix in {".yaml", ".yml"}:
+        try:
+            data = yaml.safe_load(text)
+        except yaml.YAMLError as error:  # pragma: no cover
+            message = f"Failed to parse YAML machine profile {path}"
+            raise ValueError(message) from error
+    else:
+        try:
+            data = json.loads(text)
+        except json.JSONDecodeError:
+            try:
+                data = yaml.safe_load(text)
+            except yaml.YAMLError as yaml_error:
+                message = f"Machine profile {path} is not valid JSON or YAML"
+                raise ValueError(message) from yaml_error
+            else:
+                if data is None:
+                    message = f"Machine profile {path} is empty"
+                    raise ValueError(message)
+        else:
+            if data is None:
+                message = f"Machine profile {path} is empty"
+                raise ValueError(message)
+    if not isinstance(data, dict):
+        message = f"Machine profile {path} must decode to a mapping"
+        raise ValueError(message)
+    return data
+
+
+def _format_machine_profile_comment(machine_profile: MachineProfile) -> str:
+    parts = []
+    for axis_name, axis_profile in sorted(machine_profile.axes.items()):
+        span = f"{axis_profile.min_mm:.2f}–{axis_profile.max_mm:.2f} mm"
+        calibration = (
+            f"{axis_profile.steps_per_mm:g} steps/mm @ "
+            f"{axis_profile.microstepping}x"
+        )
+        parts.append(f"{axis_name.upper()}: {span}, {calibration}")
+    return "; machine profile: " + "; ".join(parts)
+
+
 class PatternTranslator:
     """Translate pattern lines into a list of :class:`GCodeLine` objects."""
 
-    def __init__(self) -> None:
+    def __init__(self, machine_profile: MachineProfile | None = None) -> None:
         self._lines: List[GCodeLine] = []
         self._x_mm = 0.0
         self._y_mm = 0.0
         self._z_mm = SAFE_Z_MM
         self._extrusion_mm = 0.0
+        self._machine_profile = machine_profile
 
     def translate(self, source: str) -> List[GCodeLine]:
         """Translate a stitch description into motion commands."""
@@ -112,6 +266,11 @@ class PatternTranslator:
     # Internal helpers -------------------------------------------------
 
     def _reset_state(self) -> None:
+        self._x_mm = 0.0
+        self._y_mm = 0.0
+        self._z_mm = SAFE_Z_MM
+        self._extrusion_mm = 0.0
+        self._validate_position()
         self._lines = [
             GCodeLine("G21", "use millimeters"),
             GCodeLine("G90", "absolute positioning"),
@@ -120,10 +279,6 @@ class PatternTranslator:
                 "zero axes",
             ),
         ]
-        self._x_mm = 0.0
-        self._y_mm = 0.0
-        self._z_mm = SAFE_Z_MM
-        self._extrusion_mm = 0.0
 
     def _emit(self, command: str, comment: str | None = None) -> None:
         self._lines.append(GCodeLine(command, comment))
@@ -166,6 +321,7 @@ class PatternTranslator:
             raise ValueError(message) from error
 
     def _ensure_safe_height(self) -> None:
+        self._check_axis("z", SAFE_Z_MM)
         if self._z_mm != SAFE_Z_MM:
             command = f"G1 Z{SAFE_Z_MM:.2f} F{PLUNGE_FEED_RATE}"
             self._emit(command, "raise to safe height")
@@ -175,6 +331,7 @@ class PatternTranslator:
         for index in range(1, count + 1):
             stitch_label = f"{profile.name.lower()} stitch {index} of {count}"
             plunge_z = FABRIC_PLANE_Z_MM - profile.plunge_depth_mm
+            self._check_axis("z", plunge_z)
             self._emit(
                 f"G1 Z{plunge_z:.2f} F{PLUNGE_FEED_RATE}",
                 f"{stitch_label}: plunge",
@@ -191,6 +348,7 @@ class PatternTranslator:
             )
             self._z_mm = SAFE_Z_MM
             self._x_mm += profile.spacing_mm
+            self._check_axis("x", self._x_mm)
             self._emit(
                 f"G0 X{self._x_mm:.2f} Y{self._y_mm:.2f} F{TRAVEL_FEED_RATE}",
                 f"{stitch_label}: advance",
@@ -203,6 +361,8 @@ class PatternTranslator:
         self._ensure_safe_height()
         x_value = self._parse_float(arguments[0], line_number, "MOVE")
         y_value = self._parse_float(arguments[1], line_number, "MOVE")
+        self._check_axis("x", x_value)
+        self._check_axis("y", y_value)
         self._x_mm = x_value
         self._y_mm = y_value
         self._emit(
@@ -246,18 +406,36 @@ class PatternTranslator:
                 line_number
             )
             raise ValueError(message)
+        new_y = self._y_mm + step
+        self._check_axis("x", 0.0)
+        self._check_axis("y", new_y)
         self._x_mm = 0.0
-        self._y_mm += step
+        self._y_mm = new_y
         self._emit(
             f"G0 X{self._x_mm:.2f} Y{self._y_mm:.2f} F{TRAVEL_FEED_RATE}",
             "turn to next row",
         )
 
+    def _check_axis(self, axis: str, value: float) -> None:
+        if self._machine_profile is None:
+            return
+        axis_profile = self._machine_profile.axis(axis)
+        if axis_profile is None:
+            return
+        axis_profile.ensure_within(axis.upper(), value)
 
-def translate_pattern(source: str) -> List[GCodeLine]:
+    def _validate_position(self) -> None:
+        self._check_axis("x", self._x_mm)
+        self._check_axis("y", self._y_mm)
+        self._check_axis("z", self._z_mm)
+
+
+def translate_pattern(
+    source: str, machine_profile: MachineProfile | None = None
+) -> List[GCodeLine]:
     """Convenience wrapper for :class:`PatternTranslator`."""
 
-    translator = PatternTranslator()
+    translator = PatternTranslator(machine_profile=machine_profile)
     return translator.translate(source)
 
 
@@ -354,11 +532,22 @@ def _write_output(
     lines: Iterable[GCodeLine],
     output_path: Path | None,
     fmt: str,
+    machine_profile: MachineProfile | None = None,
 ) -> None:
+    materialized = list(lines)
     if fmt == "gcode":
-        text = "\n".join(line.as_text() for line in lines) + "\n"
+        output_lines = [line.as_text() for line in materialized]
+        if machine_profile is not None:
+            output_lines.insert(
+                0,
+                _format_machine_profile_comment(machine_profile),
+            )
+        text = "\n".join(output_lines) + "\n"
     else:
-        payload = [line.as_dict() for line in lines]
+        commands = [line.as_dict() for line in materialized]
+        payload: Dict[str, Any] = {"commands": commands}
+        if machine_profile is not None:
+            payload["machine_profile"] = machine_profile.as_dict()
         text = json.dumps(payload, indent=2)
     if output_path is None:
         sys.stdout.write(text)
@@ -419,6 +608,14 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="Output format (default: gcode).",
     )
     parser.add_argument(
+        "--machine-profile",
+        type=Path,
+        help=(
+            "Path to a JSON or YAML machine profile describing axis travel "
+            "limits, microstepping, and steps-per-mm."
+        ),
+    )
+    parser.add_argument(
         "--home-state",
         choices=("unknown", "homed"),
         default="unknown",
@@ -458,8 +655,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         guidance = "Run the machine homing sequence or omit --require-home.\n"
         sys.stderr.write(guidance)
         return 1
-    lines = translate_pattern(pattern_text)
-    _write_output(lines, args.output, args.format)
+    machine_profile = None
+    if args.machine_profile is not None:
+        machine_profile = load_machine_profile(args.machine_profile)
+    lines = translate_pattern(pattern_text, machine_profile=machine_profile)
+    _write_output(
+        lines,
+        args.output,
+        args.format,
+        machine_profile=machine_profile,
+    )
     return 0
 
 

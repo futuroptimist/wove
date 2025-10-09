@@ -23,6 +23,8 @@ Key features include:
   See [docs/gauge.md](docs/gauge.md) for examples.
 - A pattern translation CLI (`python -m wove.pattern_cli`) that turns a simple
   stitch description into G-code-like motion for early crochet experiments.
+- Optional machine-profile validation so the CLI enforces axis travel limits
+  and shares firmware calibration data in its JSON output.
 - LLM helpers described in [AGENTS.md](AGENTS.md).
 - Sample Codex prompts in [`docs/prompts/codex/automation.md`](docs/prompts/codex/automation.md).
 
