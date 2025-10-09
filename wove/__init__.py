@@ -54,6 +54,13 @@ from .gauge import (
     yards_to_meters,
 )
 from .machine_profile import AxisProfile, MachineProfile, load_machine_profile
+from .tension import (
+    TENSION_PROFILES,
+    TensionProfile,
+    estimate_tension_for_wpi,
+    get_tension_profile,
+    list_tension_profiles,
+)
 
 __all__ = [
     "cm_for_stitches",
@@ -111,4 +118,9 @@ __all__ = [
     "AxisProfile",
     "MachineProfile",
     "load_machine_profile",
+    "TensionProfile",
+    "TENSION_PROFILES",
+    "estimate_tension_for_wpi",
+    "get_tension_profile",
+    "list_tension_profiles",
 ]
