@@ -192,7 +192,10 @@ def test_estimate_profile_handles_zero_span_intervals(
     # Ensure non-spoofed values still delegate to the original ``isclose``.
     assert tension.math.isclose(12.0, 12.0)
 
-    estimated = tension.estimate_profile_for_wpi(FakeWpi(lower.midpoint_wpi))
+    fake_wpi = FakeWpi(lower.midpoint_wpi)
+    assert float(fake_wpi) == lower.midpoint_wpi  # exercise the conversion helper
+
+    estimated = tension.estimate_profile_for_wpi(fake_wpi)
 
     assert estimated.heavier_weight == lower.weight
     assert estimated.lighter_weight == upper.weight
