@@ -49,7 +49,11 @@ pull force, recommended feed rate, and the measured variation during a 60-second
 the helpers to look up a tested profile or estimate tension for in-between yarns:
 
 ```python
-from wove import estimate_tension_for_wpi, get_tension_profile
+from wove import (
+    estimate_profile_for_wpi,
+    estimate_tension_for_wpi,
+    get_tension_profile,
+)
 
 # Retrieve a documented profile (case-insensitive lookup)
 worsted = get_tension_profile("Worsted")
@@ -58,11 +62,19 @@ print(worsted.target_force_grams)  # -> 65.0 grams of pull force
 # Interpolate for a yarn that falls between fingering and sport weights
 target_force = estimate_tension_for_wpi(17.5)
 print(round(target_force, 1))  # -> 42.1 grams (approx)
+
+# Inspect interpolated feed-rate guidance and bounding weights
+profile = estimate_profile_for_wpi(17.5)
+print(profile.feed_rate_mm_s, profile.heavier_weight, profile.lighter_weight)
 ```
 
 Profiles are sorted from lightest to heaviest yarns so the automation stack can feed the data into
 future calibration scripts. Each entry captures the wraps-per-inch range and highlights how evenly
 the passive tensioner maintained feed force during testing.
+
+`estimate_profile_for_wpi` returns interpolated values along with the heavier and lighter catalog
+weights that bound the requested wraps-per-inch. Use those labels to surface which tested yarns the
+estimate derived from during calibration reports.
 
 ### Frame and Build Volume
 - **Frame**: 20x20 mm aluminum extrusion perimeter with printed corner cubes and feet. Designed for
