@@ -193,7 +193,8 @@ def test_estimate_profile_handles_zero_span_intervals(
     assert tension.math.isclose(12.0, 12.0)
 
     fake_wpi = FakeWpi(lower.midpoint_wpi)
-    assert float(fake_wpi) == lower.midpoint_wpi  # exercise the conversion helper
+    # Exercise the conversion helper.
+    assert float(fake_wpi) == lower.midpoint_wpi
 
     estimated = tension.estimate_profile_for_wpi(fake_wpi)
 
