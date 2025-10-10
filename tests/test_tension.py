@@ -56,6 +56,158 @@ def test_estimate_tension_rejects_non_positive_values() -> None:
         tension.estimate_tension_for_wpi(0)
 
 
+def test_estimate_profile_for_exact_weight() -> None:
+    profile = tension.get_tension_profile("dk")
+    estimated = tension.estimate_profile_for_wpi(profile.midpoint_wpi)
+
+    assert estimated.wraps_per_inch == profile.midpoint_wpi
+    assert estimated.heavier_weight == profile.weight
+    assert estimated.lighter_weight == profile.weight
+    assert math.isclose(
+        estimated.target_force_grams,
+        profile.target_force_grams,
+    )
+    assert math.isclose(estimated.feed_rate_mm_s, profile.feed_rate_mm_s)
+    assert math.isclose(
+        estimated.pull_variation_percent,
+        profile.pull_variation_percent,
+    )
+
+
+def test_estimate_profile_interpolates_between_weights() -> None:
+    fingering = tension.get_tension_profile("fingering")
+    sport = tension.get_tension_profile("sport")
+    midpoint = (fingering.midpoint_wpi + sport.midpoint_wpi) / 2.0
+
+    estimated = tension.estimate_profile_for_wpi(midpoint)
+
+    assert estimated.heavier_weight == sport.weight
+    assert estimated.lighter_weight == fingering.weight
+    assert (
+        min(fingering.target_force_grams, sport.target_force_grams)
+        < estimated.target_force_grams
+        < max(fingering.target_force_grams, sport.target_force_grams)
+    )
+    assert (
+        min(fingering.feed_rate_mm_s, sport.feed_rate_mm_s)
+        < estimated.feed_rate_mm_s
+        < max(fingering.feed_rate_mm_s, sport.feed_rate_mm_s)
+    )
+    assert (
+        min(
+            fingering.pull_variation_percent,
+            sport.pull_variation_percent,
+        )
+        < estimated.pull_variation_percent
+        < max(
+            fingering.pull_variation_percent,
+            sport.pull_variation_percent,
+        )
+    )
+
+
+def test_estimate_profile_clamps_to_bounds() -> None:
+    lace = tension.get_tension_profile("lace")
+    super_bulky = tension.get_tension_profile("super bulky")
+
+    low = tension.estimate_profile_for_wpi(lace.midpoint_wpi * 2)
+    high = tension.estimate_profile_for_wpi(super_bulky.midpoint_wpi / 2)
+
+    assert low.heavier_weight == lace.weight
+    assert low.lighter_weight == lace.weight
+    assert math.isclose(low.target_force_grams, lace.target_force_grams)
+
+    assert high.heavier_weight == super_bulky.weight
+    assert high.lighter_weight == super_bulky.weight
+    assert math.isclose(
+        high.target_force_grams,
+        super_bulky.target_force_grams,
+    )
+
+
+def test_estimate_profile_requires_positive_wpi() -> None:
+    with pytest.raises(ValueError):
+        tension.estimate_profile_for_wpi(0)
+
+
+def test_estimate_profile_handles_zero_span_intervals(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    lower = tension.TensionProfile(
+        weight="custom-low",
+        wraps_per_inch=(12, 12),
+        target_force_grams=50.0,
+        feed_rate_mm_s=30.0,
+        pull_variation_percent=3.0,
+    )
+    upper = tension.TensionProfile(
+        weight="custom-high",
+        wraps_per_inch=(12, 12),
+        target_force_grams=55.0,
+        feed_rate_mm_s=32.0,
+        pull_variation_percent=2.5,
+    )
+
+    monkeypatch.setattr(
+        tension,
+        "list_tension_profiles",
+        lambda: [lower, upper],
+    )
+
+    class FakeWpi:
+        """Force the zero-span interpolation branch for profile estimation."""
+
+        def __init__(self, value: float) -> None:
+            self.value = value
+            self._le_calls = 0
+            self._ge_calls = 0
+
+        def __float__(self) -> float:
+            return self.value
+
+        def __le__(self, other: float) -> bool:  # type: ignore[override]
+            self._le_calls += 1
+            if self._le_calls in (1, 2):
+                return False  # skip the positive check and lower clamp guard
+            return self.value <= other
+
+        def __ge__(self, other: float) -> bool:  # type: ignore[override]
+            self._ge_calls += 1
+            if self._ge_calls == 1:
+                return False  # skip the upper clamp guard
+            return other <= self.value
+
+    original_isclose = tension.math.isclose
+    monkeypatch.setattr(
+        tension.math,
+        "isclose",
+        lambda a, b, *args, **kwargs: (
+            False
+            if isinstance(a, FakeWpi) or isinstance(b, FakeWpi)
+            else original_isclose(a, b, *args, **kwargs)
+        ),
+        raising=False,
+    )
+
+    # Ensure non-spoofed values still delegate to the original ``isclose``.
+    assert tension.math.isclose(12.0, 12.0)
+
+    fake_wpi = FakeWpi(lower.midpoint_wpi)
+    # Exercise the conversion helper.
+    assert float(fake_wpi) == lower.midpoint_wpi
+
+    estimated = tension.estimate_profile_for_wpi(fake_wpi)
+
+    assert estimated.heavier_weight == lower.weight
+    assert estimated.lighter_weight == upper.weight
+    assert math.isclose(estimated.target_force_grams, lower.target_force_grams)
+    assert math.isclose(estimated.feed_rate_mm_s, lower.feed_rate_mm_s)
+    assert math.isclose(
+        estimated.pull_variation_percent,
+        lower.pull_variation_percent,
+    )
+
+
 def test_catalog_contains_expected_weights() -> None:
     expected = {
         "lace",
@@ -148,3 +300,39 @@ def test_estimate_tension_returns_last_profile_when_comparison_fails(
     result = tension.estimate_tension_for_wpi(float("nan"))
 
     assert result == light.target_force_grams
+
+
+def test_estimate_profile_returns_last_profile_when_comparison_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    heavy = tension.TensionProfile(
+        weight="heavy",
+        wraps_per_inch=(6, 6),
+        target_force_grams=90.0,
+        feed_rate_mm_s=28.0,
+        pull_variation_percent=2.5,
+    )
+    light = tension.TensionProfile(
+        weight="light",
+        wraps_per_inch=(20, 20),
+        target_force_grams=35.0,
+        feed_rate_mm_s=40.0,
+        pull_variation_percent=4.0,
+    )
+
+    monkeypatch.setattr(
+        tension,
+        "list_tension_profiles",
+        lambda: [heavy, light],
+    )
+
+    estimated = tension.estimate_profile_for_wpi(float("nan"))
+
+    assert estimated.heavier_weight == light.weight
+    assert estimated.lighter_weight == light.weight
+    assert math.isclose(estimated.target_force_grams, light.target_force_grams)
+    assert math.isclose(estimated.feed_rate_mm_s, light.feed_rate_mm_s)
+    assert math.isclose(
+        estimated.pull_variation_percent,
+        light.pull_variation_percent,
+    )
