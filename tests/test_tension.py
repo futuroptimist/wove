@@ -181,11 +181,16 @@ def test_estimate_profile_handles_zero_span_intervals(
     monkeypatch.setattr(
         tension.math,
         "isclose",
-        lambda a, b, *args, **kwargs: False
-        if isinstance(a, FakeWpi) or isinstance(b, FakeWpi)
-        else original_isclose(a, b, *args, **kwargs),
+        lambda a, b, *args, **kwargs: (
+            False
+            if isinstance(a, FakeWpi) or isinstance(b, FakeWpi)
+            else original_isclose(a, b, *args, **kwargs)
+        ),
         raising=False,
     )
+
+    # Ensure non-spoofed values still delegate to the original ``isclose``.
+    assert tension.math.isclose(12.0, 12.0)
 
     estimated = tension.estimate_profile_for_wpi(FakeWpi(lower.midpoint_wpi))
 
