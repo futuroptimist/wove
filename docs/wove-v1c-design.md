@@ -53,6 +53,7 @@ from wove import (
     estimate_profile_for_wpi,
     estimate_tension_for_wpi,
     find_tension_profile_for_wpi,
+    find_tension_profile_for_force,
     get_tension_profile,
 )
 
@@ -72,6 +73,10 @@ print(profile.trial_duration_seconds)  # -> 60.0-second trial window
 # Identify the documented profile that spans a measured wraps-per-inch value
 matched = find_tension_profile_for_wpi(18.0)
 print(matched.weight if matched else "no catalog match")
+
+# Map a measured pull force back to the catalog and inspect the difference
+force_match = find_tension_profile_for_force(68.0)
+print(force_match.profile.weight, force_match.difference_grams)
 ```
 
 Profiles are sorted from lightest to heaviest yarns so the automation stack can feed the data into

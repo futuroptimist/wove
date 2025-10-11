@@ -57,6 +57,21 @@ class EstimatedTension:
     trial_duration_seconds: float
 
 
+@dataclass(frozen=True)
+class ForceMatch:
+    """Nearest catalog entry for a measured pull force in grams.
+
+    Builders recording yarn tension on the bench can compare their measured
+    pull force against the documented catalog.  The mechanical roadmap calls
+    out those pull-force values as a key reference point, so returning the
+    closest recorded profile and how far off the measurement is keeps
+    calibration workflows simple.
+    """
+
+    profile: TensionProfile
+    difference_grams: float
+
+
 def _profiles() -> Dict[str, TensionProfile]:
     """Return the static catalog of yarn tension profiles."""
 
@@ -150,6 +165,36 @@ def get_tension_profile(weight: str) -> TensionProfile:
     except KeyError as error:
         message = f"Unknown yarn weight '{weight}'"
         raise ValueError(message) from error
+
+
+def find_tension_profile_for_force(force_grams: float) -> ForceMatch:
+    """Return the catalog entry closest to ``force_grams``.
+
+    Args:
+        force_grams: Measured pull force in grams. Must be positive and
+            finite.
+
+    Returns:
+        A :class:`ForceMatch` containing the nearest
+        :class:`TensionProfile` and the absolute difference in grams.
+
+    Raises:
+        ValueError: If ``force_grams`` is not a positive finite value.
+    """
+
+    if math.isnan(force_grams) or math.isinf(force_grams) or force_grams <= 0:
+        raise ValueError("force_grams must be a positive, finite value")
+
+    ordered = list(list_tension_profiles())
+    match = min(
+        ordered,
+        key=lambda profile: (
+            abs(profile.target_force_grams - force_grams),
+            profile.target_force_grams,
+        ),
+    )
+    difference = abs(match.target_force_grams - force_grams)
+    return ForceMatch(profile=match, difference_grams=difference)
 
 
 def estimate_tension_for_wpi(wraps_per_inch: float) -> float:
@@ -325,7 +370,9 @@ __all__ = [
     "DEFAULT_TRIAL_DURATION_SECONDS",
     "TensionProfile",
     "EstimatedTension",
+    "ForceMatch",
     "TENSION_PROFILES",
+    "find_tension_profile_for_force",
     "estimate_tension_for_wpi",
     "estimate_profile_for_wpi",
     "find_tension_profile_for_wpi",
