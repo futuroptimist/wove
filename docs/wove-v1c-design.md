@@ -65,7 +65,12 @@ print(round(target_force, 1))  # -> 42.1 grams (approx)
 
 # Inspect interpolated feed-rate guidance and bounding weights
 profile = estimate_profile_for_wpi(17.5)
-print(profile.feed_rate_mm_s, profile.heavier_weight, profile.lighter_weight)
+print(
+    profile.recommended_weight,
+    profile.feed_rate_mm_s,
+    profile.heavier_weight,
+    profile.lighter_weight,
+)
 ```
 
 Profiles are sorted from lightest to heaviest yarns so the automation stack can feed the data into
@@ -74,7 +79,10 @@ the passive tensioner maintained feed force during testing.
 
 `estimate_profile_for_wpi` returns interpolated values along with the heavier and lighter catalog
 weights that bound the requested wraps-per-inch. Use those labels to surface which tested yarns the
-estimate derived from during calibration reports.
+estimate derived from during calibration reports. The
+``EstimatedTension.recommended_weight`` property highlights the nearer catalog
+weight so calibration dashboards can quote a single yarn label without
+duplicating midpoint comparisons.
 
 ### Frame and Build Volume
 - **Frame**: 20x20 mm aluminum extrusion perimeter with printed corner cubes and feet. Designed for

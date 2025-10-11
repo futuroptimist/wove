@@ -63,6 +63,7 @@ def test_estimate_profile_for_exact_weight() -> None:
     assert estimated.wraps_per_inch == profile.midpoint_wpi
     assert estimated.heavier_weight == profile.weight
     assert estimated.lighter_weight == profile.weight
+    assert estimated.recommended_weight == profile.weight
     assert math.isclose(
         estimated.target_force_grams,
         profile.target_force_grams,
@@ -83,6 +84,7 @@ def test_estimate_profile_interpolates_between_weights() -> None:
 
     assert estimated.heavier_weight == sport.weight
     assert estimated.lighter_weight == fingering.weight
+    assert estimated.recommended_weight == fingering.weight
     assert (
         min(fingering.target_force_grams, sport.target_force_grams)
         < estimated.target_force_grams
@@ -106,6 +108,18 @@ def test_estimate_profile_interpolates_between_weights() -> None:
     )
 
 
+def test_recommended_weight_prefers_nearest_midpoint() -> None:
+    fingering = tension.get_tension_profile("fingering")
+    sport = tension.get_tension_profile("sport")
+    near_sport = sport.midpoint_wpi + 0.5
+
+    estimated = tension.estimate_profile_for_wpi(near_sport)
+
+    assert estimated.heavier_weight == sport.weight
+    assert estimated.lighter_weight == fingering.weight
+    assert estimated.recommended_weight == sport.weight
+
+
 def test_estimate_profile_clamps_to_bounds() -> None:
     lace = tension.get_tension_profile("lace")
     super_bulky = tension.get_tension_profile("super bulky")
@@ -123,6 +137,7 @@ def test_estimate_profile_clamps_to_bounds() -> None:
         high.target_force_grams,
         super_bulky.target_force_grams,
     )
+    assert high.recommended_weight == super_bulky.weight
 
 
 def test_estimate_profile_requires_positive_wpi() -> None:
@@ -206,6 +221,7 @@ def test_estimate_profile_handles_zero_span_intervals(
         estimated.pull_variation_percent,
         lower.pull_variation_percent,
     )
+    assert estimated.recommended_weight == lower.weight
 
 
 def test_catalog_contains_expected_weights() -> None:
@@ -336,3 +352,4 @@ def test_estimate_profile_returns_last_profile_when_comparison_fails(
         estimated.pull_variation_percent,
         light.pull_variation_percent,
     )
+    assert estimated.recommended_weight == light.weight

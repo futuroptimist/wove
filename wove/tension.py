@@ -35,6 +35,51 @@ class EstimatedTension:
     pull_variation_percent: float
     heavier_weight: str
     lighter_weight: str
+    heavier_midpoint_wpi: float
+    lighter_midpoint_wpi: float
+
+    @property
+    def recommended_weight(self) -> str:
+        """Return the closest catalog weight for ``wraps_per_inch``.
+
+        The v1c design doc calls for calibration scripts to surface which
+        cataloged yarns informed an interpolated estimate. Returning the
+        nearest weight here keeps that reporting logic alongside the
+        interpolation math so downstream tools can simply read this property
+        instead of duplicating midpoint comparisons.
+        """
+
+        if self.heavier_weight == self.lighter_weight:
+            return self.heavier_weight
+
+        if math.isclose(self.heavier_midpoint_wpi, self.lighter_midpoint_wpi):
+            return self.heavier_weight
+
+        try:
+            wpi_value = float(self.wraps_per_inch)
+        except (TypeError, ValueError):
+            wpi_value = math.nan
+
+        heavier_distance = abs(wpi_value - self.heavier_midpoint_wpi)
+        lighter_distance = abs(wpi_value - self.lighter_midpoint_wpi)
+
+        if math.isfinite(heavier_distance) and math.isfinite(lighter_distance):
+            if heavier_distance < lighter_distance:
+                return self.heavier_weight
+            if lighter_distance < heavier_distance:
+                return self.lighter_weight
+            average_midpoint = (
+                self.heavier_midpoint_wpi + self.lighter_midpoint_wpi
+            ) / 2.0
+            if math.isfinite(wpi_value) and (wpi_value >= average_midpoint):
+                return self.lighter_weight
+            return self.heavier_weight
+
+        lighter_midpoint = self.lighter_midpoint_wpi
+        if math.isfinite(wpi_value) and math.isfinite(lighter_midpoint):
+            if wpi_value >= lighter_midpoint:
+                return self.lighter_weight
+        return self.heavier_weight
 
 
 def _profiles() -> Dict[str, TensionProfile]:
@@ -178,6 +223,7 @@ def estimate_profile_for_wpi(wraps_per_inch: float) -> EstimatedTension:
     )
     for profile in ordered:
         if math.isclose(wraps_per_inch, profile.midpoint_wpi):
+            midpoint = profile.midpoint_wpi
             return EstimatedTension(
                 wraps_per_inch=wraps_per_inch,
                 target_force_grams=profile.target_force_grams,
@@ -185,10 +231,13 @@ def estimate_profile_for_wpi(wraps_per_inch: float) -> EstimatedTension:
                 pull_variation_percent=profile.pull_variation_percent,
                 heavier_weight=profile.weight,
                 lighter_weight=profile.weight,
+                heavier_midpoint_wpi=midpoint,
+                lighter_midpoint_wpi=midpoint,
             )
     first = ordered[0]
     last = ordered[-1]
     if wraps_per_inch <= first.midpoint_wpi:
+        midpoint = first.midpoint_wpi
         return EstimatedTension(
             wraps_per_inch=wraps_per_inch,
             target_force_grams=first.target_force_grams,
@@ -196,8 +245,11 @@ def estimate_profile_for_wpi(wraps_per_inch: float) -> EstimatedTension:
             pull_variation_percent=first.pull_variation_percent,
             heavier_weight=first.weight,
             lighter_weight=first.weight,
+            heavier_midpoint_wpi=midpoint,
+            lighter_midpoint_wpi=midpoint,
         )
     if wraps_per_inch >= last.midpoint_wpi:
+        midpoint = last.midpoint_wpi
         return EstimatedTension(
             wraps_per_inch=wraps_per_inch,
             target_force_grams=last.target_force_grams,
@@ -205,6 +257,8 @@ def estimate_profile_for_wpi(wraps_per_inch: float) -> EstimatedTension:
             pull_variation_percent=last.pull_variation_percent,
             heavier_weight=last.weight,
             lighter_weight=last.weight,
+            heavier_midpoint_wpi=midpoint,
+            lighter_midpoint_wpi=midpoint,
         )
 
     for lower_profile, upper_profile in zip(ordered, ordered[1:]):
@@ -214,6 +268,7 @@ def estimate_profile_for_wpi(wraps_per_inch: float) -> EstimatedTension:
             span = upper_mid - lower_mid
             if span == 0:
                 variation = lower_profile.pull_variation_percent
+                midpoint = lower_profile.midpoint_wpi
                 return EstimatedTension(
                     wraps_per_inch=wraps_per_inch,
                     target_force_grams=lower_profile.target_force_grams,
@@ -221,6 +276,8 @@ def estimate_profile_for_wpi(wraps_per_inch: float) -> EstimatedTension:
                     pull_variation_percent=variation,
                     heavier_weight=lower_profile.weight,
                     lighter_weight=upper_profile.weight,
+                    heavier_midpoint_wpi=midpoint,
+                    lighter_midpoint_wpi=upper_profile.midpoint_wpi,
                 )
             ratio = (wraps_per_inch - lower_mid) / span
             return EstimatedTension(
@@ -242,6 +299,8 @@ def estimate_profile_for_wpi(wraps_per_inch: float) -> EstimatedTension:
                 ),
                 heavier_weight=lower_profile.weight,
                 lighter_weight=upper_profile.weight,
+                heavier_midpoint_wpi=lower_mid,
+                lighter_midpoint_wpi=upper_mid,
             )
     return EstimatedTension(
         wraps_per_inch=wraps_per_inch,
@@ -250,6 +309,8 @@ def estimate_profile_for_wpi(wraps_per_inch: float) -> EstimatedTension:
         pull_variation_percent=last.pull_variation_percent,
         heavier_weight=last.weight,
         lighter_weight=last.weight,
+        heavier_midpoint_wpi=last.midpoint_wpi,
+        lighter_midpoint_wpi=last.midpoint_wpi,
     )
 
 
