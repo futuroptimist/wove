@@ -51,6 +51,33 @@ def test_find_tension_profile_for_wpi_requires_positive_values() -> None:
         tension.find_tension_profile_for_wpi(float("nan"))
 
 
+def test_find_tension_profile_for_force_returns_nearest() -> None:
+    match = tension.find_tension_profile_for_force(67.0)
+    assert match.profile.weight == "worsted"
+    assert math.isclose(match.difference_grams, 2.0)
+
+
+def test_find_tension_profile_for_force_prefers_lower_force_on_tie() -> None:
+    match = tension.find_tension_profile_for_force(50.0)
+    assert match.profile.weight == "sport"
+    assert math.isclose(match.difference_grams, 5.0)
+
+
+def test_find_tension_profile_for_force_handles_extremes() -> None:
+    high = tension.find_tension_profile_for_force(120.0)
+    assert high.profile.weight == "super bulky"
+    assert high.difference_grams == pytest.approx(25.0)
+
+
+def test_find_tension_profile_for_force_validates_input() -> None:
+    with pytest.raises(ValueError):
+        tension.find_tension_profile_for_force(0.0)
+    with pytest.raises(ValueError):
+        tension.find_tension_profile_for_force(float("nan"))
+    with pytest.raises(ValueError):
+        tension.find_tension_profile_for_force(float("inf"))
+
+
 def test_estimate_tension_for_exact_profile() -> None:
     sport = tension.get_tension_profile("sport")
     target = tension.estimate_tension_for_wpi(sport.midpoint_wpi)
