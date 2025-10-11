@@ -6,16 +6,30 @@ import math
 from dataclasses import dataclass
 from typing import Dict, Iterable, Tuple
 
+DEFAULT_TRIAL_DURATION_SECONDS = 60.0
+
 
 @dataclass(frozen=True)
 class TensionProfile:
-    """Summarize test results for a yarn weight handled by the tensioner."""
+    """Summarize bench-test results for a yarn weight handled by the tensioner.
+
+    Attributes:
+        weight: Descriptive yarn weight label.
+        wraps_per_inch: Tuple of low/high wraps-per-inch measurements.
+        target_force_grams: Recommended pull force for the passive tensioner.
+        feed_rate_mm_s: Suggested yarn feed rate in millimeters per second.
+        pull_variation_percent:
+            Observed variation over the trial, expressed as a percentage.
+        trial_duration_seconds:
+            Duration of the feed trial used to capture the variation metric.
+    """
 
     weight: str
     wraps_per_inch: Tuple[int, int]
     target_force_grams: float
     feed_rate_mm_s: float
     pull_variation_percent: float
+    trial_duration_seconds: float
 
     @property
     def midpoint_wpi(self) -> float:
@@ -27,7 +41,12 @@ class TensionProfile:
 
 @dataclass(frozen=True)
 class EstimatedTension:
-    """Interpolated tension target for a wraps-per-inch value."""
+    """Interpolated tension target for a wraps-per-inch value.
+
+    The estimated profile mirrors the recorded data, including the trial
+    duration used to capture the variation metric so downstream tooling retains
+    the measurement context.
+    """
 
     wraps_per_inch: float
     target_force_grams: float
@@ -35,6 +54,7 @@ class EstimatedTension:
     pull_variation_percent: float
     heavier_weight: str
     lighter_weight: str
+    trial_duration_seconds: float
 
 
 def _profiles() -> Dict[str, TensionProfile]:
@@ -47,6 +67,7 @@ def _profiles() -> Dict[str, TensionProfile]:
             target_force_grams=20.0,
             feed_rate_mm_s=45.0,
             pull_variation_percent=6.0,
+            trial_duration_seconds=DEFAULT_TRIAL_DURATION_SECONDS,
         ),
         "fingering": TensionProfile(
             weight="fingering",
@@ -54,6 +75,7 @@ def _profiles() -> Dict[str, TensionProfile]:
             target_force_grams=35.0,
             feed_rate_mm_s=40.0,
             pull_variation_percent=4.5,
+            trial_duration_seconds=DEFAULT_TRIAL_DURATION_SECONDS,
         ),
         "sport": TensionProfile(
             weight="sport",
@@ -61,6 +83,7 @@ def _profiles() -> Dict[str, TensionProfile]:
             target_force_grams=45.0,
             feed_rate_mm_s=38.0,
             pull_variation_percent=4.0,
+            trial_duration_seconds=DEFAULT_TRIAL_DURATION_SECONDS,
         ),
         "dk": TensionProfile(
             weight="dk",
@@ -68,6 +91,7 @@ def _profiles() -> Dict[str, TensionProfile]:
             target_force_grams=55.0,
             feed_rate_mm_s=35.0,
             pull_variation_percent=3.5,
+            trial_duration_seconds=DEFAULT_TRIAL_DURATION_SECONDS,
         ),
         "worsted": TensionProfile(
             weight="worsted",
@@ -75,6 +99,7 @@ def _profiles() -> Dict[str, TensionProfile]:
             target_force_grams=65.0,
             feed_rate_mm_s=33.0,
             pull_variation_percent=3.0,
+            trial_duration_seconds=DEFAULT_TRIAL_DURATION_SECONDS,
         ),
         "bulky": TensionProfile(
             weight="bulky",
@@ -82,6 +107,7 @@ def _profiles() -> Dict[str, TensionProfile]:
             target_force_grams=80.0,
             feed_rate_mm_s=30.0,
             pull_variation_percent=2.5,
+            trial_duration_seconds=DEFAULT_TRIAL_DURATION_SECONDS,
         ),
         "super bulky": TensionProfile(
             weight="super bulky",
@@ -89,6 +115,7 @@ def _profiles() -> Dict[str, TensionProfile]:
             target_force_grams=95.0,
             feed_rate_mm_s=28.0,
             pull_variation_percent=2.0,
+            trial_duration_seconds=DEFAULT_TRIAL_DURATION_SECONDS,
         ),
     }
 
@@ -185,6 +212,7 @@ def estimate_profile_for_wpi(wraps_per_inch: float) -> EstimatedTension:
                 pull_variation_percent=profile.pull_variation_percent,
                 heavier_weight=profile.weight,
                 lighter_weight=profile.weight,
+                trial_duration_seconds=profile.trial_duration_seconds,
             )
     first = ordered[0]
     last = ordered[-1]
@@ -196,6 +224,7 @@ def estimate_profile_for_wpi(wraps_per_inch: float) -> EstimatedTension:
             pull_variation_percent=first.pull_variation_percent,
             heavier_weight=first.weight,
             lighter_weight=first.weight,
+            trial_duration_seconds=first.trial_duration_seconds,
         )
     if wraps_per_inch >= last.midpoint_wpi:
         return EstimatedTension(
@@ -205,6 +234,7 @@ def estimate_profile_for_wpi(wraps_per_inch: float) -> EstimatedTension:
             pull_variation_percent=last.pull_variation_percent,
             heavier_weight=last.weight,
             lighter_weight=last.weight,
+            trial_duration_seconds=last.trial_duration_seconds,
         )
 
     for lower_profile, upper_profile in zip(ordered, ordered[1:]):
@@ -214,6 +244,7 @@ def estimate_profile_for_wpi(wraps_per_inch: float) -> EstimatedTension:
             span = upper_mid - lower_mid
             if span == 0:
                 variation = lower_profile.pull_variation_percent
+                duration = lower_profile.trial_duration_seconds
                 return EstimatedTension(
                     wraps_per_inch=wraps_per_inch,
                     target_force_grams=lower_profile.target_force_grams,
@@ -221,6 +252,7 @@ def estimate_profile_for_wpi(wraps_per_inch: float) -> EstimatedTension:
                     pull_variation_percent=variation,
                     heavier_weight=lower_profile.weight,
                     lighter_weight=upper_profile.weight,
+                    trial_duration_seconds=duration,
                 )
             ratio = (wraps_per_inch - lower_mid) / span
             return EstimatedTension(
@@ -242,6 +274,11 @@ def estimate_profile_for_wpi(wraps_per_inch: float) -> EstimatedTension:
                 ),
                 heavier_weight=lower_profile.weight,
                 lighter_weight=upper_profile.weight,
+                trial_duration_seconds=_interpolate(
+                    lower_profile.trial_duration_seconds,
+                    upper_profile.trial_duration_seconds,
+                    ratio,
+                ),
             )
     return EstimatedTension(
         wraps_per_inch=wraps_per_inch,
@@ -250,6 +287,7 @@ def estimate_profile_for_wpi(wraps_per_inch: float) -> EstimatedTension:
         pull_variation_percent=last.pull_variation_percent,
         heavier_weight=last.weight,
         lighter_weight=last.weight,
+        trial_duration_seconds=last.trial_duration_seconds,
     )
 
 
@@ -284,6 +322,7 @@ def find_tension_profile_for_wpi(
 
 
 __all__ = [
+    "DEFAULT_TRIAL_DURATION_SECONDS",
     "TensionProfile",
     "EstimatedTension",
     "TENSION_PROFILES",
