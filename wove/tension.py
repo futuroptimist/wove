@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Dict, Iterable, Tuple
+from typing import Dict, Iterable, List, Tuple
 
 DEFAULT_TRIAL_DURATION_SECONDS = 60.0
 
@@ -139,6 +139,44 @@ def list_tension_profiles() -> Iterable[TensionProfile]:
             reverse=True,
         )
     ]
+
+
+def tension_profiles_table(
+    *, include_midpoint: bool = False
+) -> List[Dict[str, int | float | str]]:
+    """Return the catalog as dictionaries ready for automation scripts.
+
+    The v1c design roadmap highlights that calibration tooling should be able
+    to consume the yarn tension catalog without extra munging.  This helper
+    mirrors the structure in :class:`TensionProfile` while emitting primitive
+    types that can be serialized directly to JSON, CSV, or similar formats.
+
+    Args:
+        include_midpoint: When ``True`` include a ``wraps_per_inch_midpoint``
+            column for quick reference.
+
+    Returns:
+        A list of dictionaries ordered from lightest to heaviest yarn weights.
+        Each entry captures the wraps-per-inch range, target pull force,
+        recommended feed rate, observed variation, and trial duration.
+    """
+
+    rows: List[Dict[str, int | float | str]] = []
+    for profile in list_tension_profiles():
+        low, high = profile.wraps_per_inch
+        row: Dict[str, int | float | str] = {
+            "weight": profile.weight,
+            "wraps_per_inch_low": int(low),
+            "wraps_per_inch_high": int(high),
+            "target_force_grams": profile.target_force_grams,
+            "feed_rate_mm_s": profile.feed_rate_mm_s,
+            "pull_variation_percent": profile.pull_variation_percent,
+            "trial_duration_seconds": profile.trial_duration_seconds,
+        }
+        if include_midpoint:
+            row["wraps_per_inch_midpoint"] = profile.midpoint_wpi
+        rows.append(row)
+    return rows
 
 
 def get_tension_profile(weight: str) -> TensionProfile:
@@ -326,6 +364,7 @@ __all__ = [
     "TensionProfile",
     "EstimatedTension",
     "TENSION_PROFILES",
+    "tension_profiles_table",
     "estimate_tension_for_wpi",
     "estimate_profile_for_wpi",
     "find_tension_profile_for_wpi",

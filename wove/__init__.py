@@ -64,6 +64,7 @@ from .tension import (
     get_tension_profile,
     list_tension_profiles,
     EstimatedTension,
+    tension_profiles_table,
 )
 
 __all__ = [
@@ -126,6 +127,7 @@ __all__ = [
     "TensionProfile",
     "EstimatedTension",
     "TENSION_PROFILES",
+    "tension_profiles_table",
     "estimate_tension_for_wpi",
     "estimate_profile_for_wpi",
     "find_tension_profile_for_wpi",

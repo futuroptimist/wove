@@ -28,6 +28,46 @@ def test_list_tension_profiles_orders_light_to_heavy() -> None:
     assert midpoints == sorted(midpoints, reverse=True)
 
 
+def test_tension_profiles_table_matches_catalog() -> None:
+    table = tension.tension_profiles_table()
+    ordered = list(tension.list_tension_profiles())
+
+    weights = [row["weight"] for row in table]
+    assert weights == [profile.weight for profile in ordered]
+
+    first_row = table[0]
+    first_profile = ordered[0]
+    assert first_row["wraps_per_inch_low"] == first_profile.wraps_per_inch[0]
+    assert first_row["wraps_per_inch_high"] == first_profile.wraps_per_inch[1]
+    assert math.isclose(
+        first_row["target_force_grams"], first_profile.target_force_grams
+    )
+    assert math.isclose(
+        first_row["feed_rate_mm_s"],
+        first_profile.feed_rate_mm_s,
+    )
+    assert math.isclose(
+        first_row["pull_variation_percent"],
+        first_profile.pull_variation_percent,
+    )
+    assert math.isclose(
+        first_row["trial_duration_seconds"],
+        first_profile.trial_duration_seconds,
+    )
+
+
+def test_tension_profiles_table_optionally_includes_midpoint() -> None:
+    table = tension.tension_profiles_table(include_midpoint=True)
+    assert table
+    first_row = table[0]
+    assert "wraps_per_inch_midpoint" in first_row
+    profile = next(iter(tension.list_tension_profiles()))
+    assert math.isclose(
+        first_row["wraps_per_inch_midpoint"],
+        profile.midpoint_wpi,
+    )
+
+
 def test_find_tension_profile_for_wpi_matches_catalog_range() -> None:
     profile = tension.find_tension_profile_for_wpi(10.5)
     assert profile is not None

@@ -26,8 +26,9 @@ Key features include:
 - Yarn tension profile helpers (`wove.tension`) that document tested pull
   forces, trial durations, and feed rates for lace through super bulky yarns,
   plus `find_tension_profile_for_wpi` to map wraps-per-inch measurements to the
-  catalog and `estimate_profile_for_wpi` for interpolating guidance between
-  weights.
+  catalog, `estimate_profile_for_wpi` for interpolating guidance between
+  weights, and `tension_profiles_table` for exporting the catalog to automation
+  scripts.
 - LLM helpers described in [AGENTS.md](AGENTS.md).
 - Sample Codex prompts in [`docs/prompts/codex/automation.md`](docs/prompts/codex/automation.md).
 

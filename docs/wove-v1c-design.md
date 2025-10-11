@@ -54,6 +54,7 @@ from wove import (
     estimate_tension_for_wpi,
     find_tension_profile_for_wpi,
     get_tension_profile,
+    tension_profiles_table,
 )
 
 # Retrieve a documented profile (case-insensitive lookup)
@@ -72,11 +73,17 @@ print(profile.trial_duration_seconds)  # -> 60.0-second trial window
 # Identify the documented profile that spans a measured wraps-per-inch value
 matched = find_tension_profile_for_wpi(18.0)
 print(matched.weight if matched else "no catalog match")
+
+# Export the full catalog for calibration tooling
+for row in tension_profiles_table(include_midpoint=True):
+    print(row)
 ```
 
 Profiles are sorted from lightest to heaviest yarns so the automation stack can feed the data into
 future calibration scripts. Each entry captures the wraps-per-inch range, the 60-second trial
 duration, and highlights how evenly the passive tensioner maintained feed force during testing.
+`tension_profiles_table` emits the same catalog as plain dictionaries so tooling
+can serialize the data without worrying about dataclass conversions.
 
 `estimate_profile_for_wpi` returns interpolated values along with the heavier and lighter catalog
 weights that bound the requested wraps-per-inch. Use those labels to surface which tested yarns the
