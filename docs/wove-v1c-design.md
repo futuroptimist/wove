@@ -50,6 +50,7 @@ the helpers to look up a tested profile or estimate tension for in-between yarns
 
 ```python
 from wove import (
+    find_profile_for_wpi,
     estimate_profile_for_wpi,
     estimate_tension_for_wpi,
     get_tension_profile,
@@ -58,6 +59,10 @@ from wove import (
 # Retrieve a documented profile (case-insensitive lookup)
 worsted = get_tension_profile("Worsted")
 print(worsted.target_force_grams)  # -> 65.0 grams of pull force
+
+# Identify which catalog profile covers a measured wraps-per-inch value
+sport = find_profile_for_wpi(16.0)
+print(sport.weight)  # -> "sport"
 
 # Interpolate for a yarn that falls between fingering and sport weights
 target_force = estimate_tension_for_wpi(17.5)
@@ -72,9 +77,11 @@ Profiles are sorted from lightest to heaviest yarns so the automation stack can 
 future calibration scripts. Each entry captures the wraps-per-inch range and highlights how evenly
 the passive tensioner maintained feed force during testing.
 
-`estimate_profile_for_wpi` returns interpolated values along with the heavier and lighter catalog
-weights that bound the requested wraps-per-inch. Use those labels to surface which tested yarns the
-estimate derived from during calibration reports.
+`find_profile_for_wpi` raises an error when the requested wraps-per-inch falls outside the documented
+ranges, signaling that interpolation is required. `estimate_profile_for_wpi` then returns
+interpolated values along with the heavier and lighter catalog weights that bound the requested
+wraps-per-inch. Use those labels to surface which tested yarns the estimate derived from during
+calibration reports.
 
 ### Frame and Build Volume
 - **Frame**: 20x20 mm aluminum extrusion perimeter with printed corner cubes and feet. Designed for

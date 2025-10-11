@@ -18,6 +18,21 @@ def test_get_tension_profile_unknown_weight() -> None:
         tension.get_tension_profile("thread")
 
 
+def test_find_profile_for_wpi_within_range() -> None:
+    profile = tension.find_profile_for_wpi(16.2)
+    assert profile.weight == "sport"
+
+
+def test_find_profile_for_wpi_requires_positive_value() -> None:
+    with pytest.raises(ValueError):
+        tension.find_profile_for_wpi(0)
+
+
+def test_find_profile_for_wpi_requires_catalog_match() -> None:
+    with pytest.raises(ValueError):
+        tension.find_profile_for_wpi(24.0)
+
+
 def test_list_tension_profiles_orders_light_to_heavy() -> None:
     ordered = list(tension.list_tension_profiles())
     midpoints = [profile.midpoint_wpi for profile in ordered]

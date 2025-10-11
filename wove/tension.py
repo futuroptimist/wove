@@ -125,6 +125,24 @@ def get_tension_profile(weight: str) -> TensionProfile:
         raise ValueError(message) from error
 
 
+def find_profile_for_wpi(wraps_per_inch: float) -> TensionProfile:
+    """Return the catalog profile that covers ``wraps_per_inch``."""
+
+    if wraps_per_inch <= 0:
+        raise ValueError("wraps_per_inch must be positive")
+
+    for profile in list_tension_profiles():
+        lower, upper = profile.wraps_per_inch
+        if lower <= wraps_per_inch <= upper:
+            return profile
+
+    message = (
+        "No catalog tension profile covers wraps_per_inch={:.2f}. "
+        "Use estimate_profile_for_wpi for interpolation."
+    ).format(wraps_per_inch)
+    raise ValueError(message)
+
+
 def estimate_tension_for_wpi(wraps_per_inch: float) -> float:
     """Estimate the target tension (grams) for a wraps-per-inch value."""
 
@@ -257,6 +275,7 @@ __all__ = [
     "TensionProfile",
     "EstimatedTension",
     "TENSION_PROFILES",
+    "find_profile_for_wpi",
     "estimate_tension_for_wpi",
     "estimate_profile_for_wpi",
     "get_tension_profile",
