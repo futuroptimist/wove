@@ -11,6 +11,10 @@ def test_get_tension_profile_is_case_insensitive() -> None:
     profile = tension.get_tension_profile("Worsted")
     assert isinstance(profile, tension.TensionProfile)
     assert profile.weight == "worsted"
+    assert math.isclose(
+        profile.trial_duration_seconds,
+        tension.DEFAULT_TRIAL_DURATION_SECONDS,
+    )
 
 
 def test_get_tension_profile_unknown_weight() -> None:
@@ -72,6 +76,10 @@ def test_estimate_profile_for_exact_weight() -> None:
         estimated.pull_variation_percent,
         profile.pull_variation_percent,
     )
+    assert math.isclose(
+        estimated.trial_duration_seconds,
+        profile.trial_duration_seconds,
+    )
 
 
 def test_estimate_profile_interpolates_between_weights() -> None:
@@ -104,6 +112,13 @@ def test_estimate_profile_interpolates_between_weights() -> None:
             sport.pull_variation_percent,
         )
     )
+    expected_duration = (
+        fingering.trial_duration_seconds + sport.trial_duration_seconds
+    ) / 2.0
+    assert math.isclose(
+        estimated.trial_duration_seconds,
+        expected_duration,
+    )
 
 
 def test_estimate_profile_clamps_to_bounds() -> None:
@@ -123,6 +138,14 @@ def test_estimate_profile_clamps_to_bounds() -> None:
         high.target_force_grams,
         super_bulky.target_force_grams,
     )
+    assert math.isclose(
+        low.trial_duration_seconds,
+        lace.trial_duration_seconds,
+    )
+    assert math.isclose(
+        high.trial_duration_seconds,
+        super_bulky.trial_duration_seconds,
+    )
 
 
 def test_estimate_profile_requires_positive_wpi() -> None:
@@ -139,6 +162,7 @@ def test_estimate_profile_handles_zero_span_intervals(
         target_force_grams=50.0,
         feed_rate_mm_s=30.0,
         pull_variation_percent=3.0,
+        trial_duration_seconds=48.0,
     )
     upper = tension.TensionProfile(
         weight="custom-high",
@@ -146,6 +170,7 @@ def test_estimate_profile_handles_zero_span_intervals(
         target_force_grams=55.0,
         feed_rate_mm_s=32.0,
         pull_variation_percent=2.5,
+        trial_duration_seconds=52.0,
     )
 
     monkeypatch.setattr(
@@ -206,6 +231,10 @@ def test_estimate_profile_handles_zero_span_intervals(
         estimated.pull_variation_percent,
         lower.pull_variation_percent,
     )
+    assert math.isclose(
+        estimated.trial_duration_seconds,
+        lower.trial_duration_seconds,
+    )
 
 
 def test_catalog_contains_expected_weights() -> None:
@@ -230,6 +259,7 @@ def test_estimate_tension_handles_zero_span_intervals(
         target_force_grams=50.0,
         feed_rate_mm_s=30.0,
         pull_variation_percent=3.0,
+        trial_duration_seconds=45.0,
     )
     upper = tension.TensionProfile(
         weight="custom-high",
@@ -237,6 +267,7 @@ def test_estimate_tension_handles_zero_span_intervals(
         target_force_grams=60.0,
         feed_rate_mm_s=30.0,
         pull_variation_percent=3.0,
+        trial_duration_seconds=55.0,
     )
 
     monkeypatch.setattr(
@@ -282,6 +313,7 @@ def test_estimate_tension_returns_last_profile_when_comparison_fails(
         target_force_grams=90.0,
         feed_rate_mm_s=28.0,
         pull_variation_percent=2.5,
+        trial_duration_seconds=58.0,
     )
     light = tension.TensionProfile(
         weight="light",
@@ -289,6 +321,7 @@ def test_estimate_tension_returns_last_profile_when_comparison_fails(
         target_force_grams=35.0,
         feed_rate_mm_s=40.0,
         pull_variation_percent=4.0,
+        trial_duration_seconds=62.0,
     )
 
     monkeypatch.setattr(
@@ -311,6 +344,7 @@ def test_estimate_profile_returns_last_profile_when_comparison_fails(
         target_force_grams=90.0,
         feed_rate_mm_s=28.0,
         pull_variation_percent=2.5,
+        trial_duration_seconds=58.0,
     )
     light = tension.TensionProfile(
         weight="light",
@@ -318,6 +352,7 @@ def test_estimate_profile_returns_last_profile_when_comparison_fails(
         target_force_grams=35.0,
         feed_rate_mm_s=40.0,
         pull_variation_percent=4.0,
+        trial_duration_seconds=62.0,
     )
 
     monkeypatch.setattr(
@@ -335,4 +370,8 @@ def test_estimate_profile_returns_last_profile_when_comparison_fails(
     assert math.isclose(
         estimated.pull_variation_percent,
         light.pull_variation_percent,
+    )
+    assert math.isclose(
+        estimated.trial_duration_seconds,
+        light.trial_duration_seconds,
     )

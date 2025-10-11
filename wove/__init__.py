@@ -55,6 +55,7 @@ from .gauge import (
 )
 from .machine_profile import AxisProfile, MachineProfile, load_machine_profile
 from .tension import (
+    DEFAULT_TRIAL_DURATION_SECONDS,
     TENSION_PROFILES,
     TensionProfile,
     estimate_tension_for_wpi,
@@ -120,6 +121,7 @@ __all__ = [
     "AxisProfile",
     "MachineProfile",
     "load_machine_profile",
+    "DEFAULT_TRIAL_DURATION_SECONDS",
     "TensionProfile",
     "EstimatedTension",
     "TENSION_PROFILES",
