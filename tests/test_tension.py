@@ -28,6 +28,29 @@ def test_list_tension_profiles_orders_light_to_heavy() -> None:
     assert midpoints == sorted(midpoints, reverse=True)
 
 
+def test_find_tension_profile_for_wpi_matches_catalog_range() -> None:
+    profile = tension.find_tension_profile_for_wpi(10.5)
+    assert profile is not None
+    assert profile.weight == "worsted"
+
+
+def test_find_tension_profile_for_wpi_prefers_lighter_boundary() -> None:
+    profile = tension.find_tension_profile_for_wpi(18.0)
+    assert profile is not None
+    assert profile.weight == "fingering"
+
+
+def test_find_tension_profile_for_wpi_returns_none_when_unmatched() -> None:
+    assert tension.find_tension_profile_for_wpi(40.0) is None
+
+
+def test_find_tension_profile_for_wpi_requires_positive_values() -> None:
+    with pytest.raises(ValueError):
+        tension.find_tension_profile_for_wpi(0)
+    with pytest.raises(ValueError):
+        tension.find_tension_profile_for_wpi(float("nan"))
+
+
 def test_estimate_tension_for_exact_profile() -> None:
     sport = tension.get_tension_profile("sport")
     target = tension.estimate_tension_for_wpi(sport.midpoint_wpi)

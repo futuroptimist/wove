@@ -291,6 +291,36 @@ def estimate_profile_for_wpi(wraps_per_inch: float) -> EstimatedTension:
     )
 
 
+def find_tension_profile_for_wpi(
+    wraps_per_inch: float,
+) -> TensionProfile | None:
+    """Return the recorded profile that spans ``wraps_per_inch``.
+
+    The v1c mechanical roadmap catalogs each yarn weight with an inclusive
+    wraps-per-inch range.  Builders measuring an unknown yarn can use this
+    helper to map that measurement back to the closest documented profile
+    before falling back to interpolation.
+
+    Args:
+        wraps_per_inch: Measured wraps per inch. Must be positive.
+
+    Returns:
+        The matching :class:`TensionProfile` when the measurement falls inside
+        a documented range; ``None`` when it lies outside all cataloged ranges.
+
+    Raises:
+        ValueError: If ``wraps_per_inch`` is not positive or is NaN.
+    """
+
+    if math.isnan(wraps_per_inch) or wraps_per_inch <= 0:
+        raise ValueError("wraps_per_inch must be a positive number")
+    for profile in list_tension_profiles():
+        lower, upper = profile.wraps_per_inch
+        if lower <= wraps_per_inch <= upper:
+            return profile
+    return None
+
+
 __all__ = [
     "DEFAULT_TRIAL_DURATION_SECONDS",
     "TensionProfile",
@@ -298,6 +328,7 @@ __all__ = [
     "TENSION_PROFILES",
     "estimate_tension_for_wpi",
     "estimate_profile_for_wpi",
+    "find_tension_profile_for_wpi",
     "get_tension_profile",
     "list_tension_profiles",
 ]

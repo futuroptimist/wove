@@ -24,8 +24,10 @@ Key features include:
 - A pattern translation CLI (`python -m wove.pattern_cli`) that turns a simple
   stitch description into G-code-like motion for early crochet experiments.
 - Yarn tension profile helpers (`wove.tension`) that document tested pull
-  forces, trial durations, and feed rates for lace through super bulky yarns, plus
-  `estimate_profile_for_wpi` for interpolating guidance between weights.
+  forces, trial durations, and feed rates for lace through super bulky yarns,
+  plus `find_tension_profile_for_wpi` to map wraps-per-inch measurements to the
+  catalog and `estimate_profile_for_wpi` for interpolating guidance between
+  weights.
 - LLM helpers described in [AGENTS.md](AGENTS.md).
 - Sample Codex prompts in [`docs/prompts/codex/automation.md`](docs/prompts/codex/automation.md).
 
