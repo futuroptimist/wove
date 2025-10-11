@@ -52,6 +52,7 @@ the helpers to look up a tested profile or estimate tension for in-between yarns
 from wove import (
     estimate_profile_for_wpi,
     estimate_tension_for_wpi,
+    find_tension_profile_for_wpi,
     get_tension_profile,
 )
 
@@ -66,6 +67,10 @@ print(round(target_force, 1))  # -> 42.1 grams (approx)
 # Inspect interpolated feed-rate guidance and bounding weights
 profile = estimate_profile_for_wpi(17.5)
 print(profile.feed_rate_mm_s, profile.heavier_weight, profile.lighter_weight)
+
+# Identify the documented profile that spans a measured wraps-per-inch value
+matched = find_tension_profile_for_wpi(18.0)
+print(matched.weight if matched else "no catalog match")
 ```
 
 Profiles are sorted from lightest to heaviest yarns so the automation stack can feed the data into
