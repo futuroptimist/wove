@@ -230,6 +230,11 @@ class PatternTranslator:
         self._ensure_safe_height()
         x_value = self._parse_float(arguments[0], line_number, "MOVE")
         y_value = self._parse_float(arguments[1], line_number, "MOVE")
+        if x_value <= 0 or y_value <= 0:
+            message = "MOVE on line {} requires positive coordinates".format(
+                line_number
+            )
+            raise ValueError(message)
         self._ensure_within_limits("X", x_value, line_number=line_number)
         self._ensure_within_limits("Y", y_value, line_number=line_number)
         self._x_mm = x_value

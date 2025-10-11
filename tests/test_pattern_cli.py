@@ -144,6 +144,14 @@ def test_translate_pattern_errors(pattern):
         translator.translate(pattern)
 
 
+def test_move_requires_positive_coordinates():
+    translator = PatternTranslator()
+    with pytest.raises(ValueError):
+        translator.translate("MOVE -1 5")
+    with pytest.raises(ValueError):
+        translator.translate("MOVE 5 0")
+
+
 def test_turn_without_argument_uses_default_height():
     pattern = "\n".join(["CHAIN 1", "TURN", "CHAIN 1"])
     lines = translate_pattern(pattern)
