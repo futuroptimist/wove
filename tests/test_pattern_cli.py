@@ -144,6 +144,14 @@ def test_translate_pattern_errors(pattern):
         translator.translate(pattern)
 
 
+def test_move_requires_positive_coordinates():
+    translator = PatternTranslator()
+    with pytest.raises(ValueError):
+        translator.translate("MOVE -1 5")
+    with pytest.raises(ValueError):
+        translator.translate("MOVE 5 0")
+
+
 def test_turn_without_argument_uses_default_height():
     pattern = "\n".join(["CHAIN 1", "TURN", "CHAIN 1"])
     lines = translate_pattern(pattern)
@@ -566,11 +574,33 @@ def test_pattern_from_svg_scales_and_offsets(tmp_path):
         svg_path,
         scale=2.0,
         offset_x=1.0,
-        offset_y=-1.5,
+        offset_y=0.5,
     )
     assert result.splitlines() == [
-        "MOVE 1.000 -1.500",
-        "MOVE 3.000 0.500",
+        "MOVE 1.000 0.500",
+        "MOVE 3.000 2.500",
+    ]
+
+
+def test_pattern_from_svg_shifts_coordinates_to_positive_origin(tmp_path):
+    svg_path = tmp_path / "shape.svg"
+    svg_path.write_text(
+        (
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            '<polyline points="0,0 1,0"/>'
+            "</svg>"
+        ),
+        encoding="utf-8",
+    )
+    result = _pattern_from_svg(
+        svg_path,
+        scale=1.0,
+        offset_x=0.0,
+        offset_y=0.0,
+    )
+    assert result.splitlines() == [
+        "MOVE 0.001 0.001",
+        "MOVE 1.001 0.001",
     ]
 
 

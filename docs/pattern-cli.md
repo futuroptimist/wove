@@ -20,8 +20,9 @@ empty or start with `#` are ignored.
 | `TURN [height]` | Reset X=0, advance Y to next row, optionally override default 6 mm height. |
 | `PAUSE <seconds>` | Insert a `G4` dwell for the specified number of seconds. |
 
-Values must be positive. Invalid commands or parameters raise `ValueError` and
-stop translation so mistakes surface early.
+Values must be positive. MOVE enforces positive coordinates, so zero or
+negative positions raise `ValueError`. Invalid commands or parameters raise
+`ValueError` and stop translation so mistakes surface early.
 
 ## Example
 

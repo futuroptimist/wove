@@ -18,6 +18,7 @@ TRAVEL_FEED_RATE = 1200
 PLUNGE_FEED_RATE = 600
 YARN_FEED_RATE = 300
 DEFAULT_ROW_HEIGHT = 6.0
+MIN_MOVE_COORD_MM = 1e-3
 
 
 @dataclass(frozen=True)
@@ -230,6 +231,11 @@ class PatternTranslator:
         self._ensure_safe_height()
         x_value = self._parse_float(arguments[0], line_number, "MOVE")
         y_value = self._parse_float(arguments[1], line_number, "MOVE")
+        if x_value <= 0 or y_value <= 0:
+            message = "MOVE on line {} requires positive coordinates".format(
+                line_number
+            )
+            raise ValueError(message)
         self._ensure_within_limits("X", x_value, line_number=line_number)
         self._ensure_within_limits("Y", y_value, line_number=line_number)
         self._x_mm = x_value
@@ -356,11 +362,24 @@ def _pattern_from_svg(
     points = _points_from_svg(svg_path)
     if not points:
         raise ValueError("SVG source did not provide any coordinates")
-    commands = []
+    scaled_points: List[Tuple[float, float]] = []
     for x_value, y_value in points:
         x_mm = x_value * scale + offset_x
         y_mm = y_value * scale + offset_y
-        commands.append(f"MOVE {x_mm:.3f} {y_mm:.3f}")
+        scaled_points.append((x_mm, y_mm))
+    min_x = min(x for x, _ in scaled_points)
+    min_y = min(y for _, y in scaled_points)
+    shift_x = 0.0
+    shift_y = 0.0
+    if min_x <= 0:
+        shift_x = MIN_MOVE_COORD_MM - min_x
+    if min_y <= 0:
+        shift_y = MIN_MOVE_COORD_MM - min_y
+    commands = []
+    for x_mm, y_mm in scaled_points:
+        adjusted_x = x_mm + shift_x
+        adjusted_y = y_mm + shift_y
+        commands.append(f"MOVE {adjusted_x:.3f} {adjusted_y:.3f}")
     return "\n".join(commands)
 
 
