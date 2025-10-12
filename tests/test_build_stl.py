@@ -9,7 +9,7 @@ import pytest
 
 import wove.build_stl as build_stl
 
-Call = Tuple[str, Path, Path, Tuple[build_stl.Definition, ...]]
+Call = Tuple[str, Path, Path, Tuple[build_stl.Definition, ...], str]
 
 
 @pytest.fixture()
@@ -32,8 +32,18 @@ def _recorded_calls(
         scad_path: Path,
         stl_path: Path,
         defines: Sequence[build_stl.Definition] | None = None,
+        *,
+        standoff_mode: str,
     ) -> None:
-        calls.append((openscad, scad_path, stl_path, tuple(defines or ())))
+        calls.append(
+            (
+                openscad,
+                scad_path,
+                stl_path,
+                tuple(defines or ()),
+                standoff_mode,
+            )
+        )
         stl_path.parent.mkdir(parents=True, exist_ok=True)
         stl_path.write_text("rendered", encoding="utf-8")
 
@@ -67,6 +77,7 @@ def test_render_specific_file(
             target,
             stl_dir / "alpha.stl",
             (),
+            "heatset",
         )
     ]
 
@@ -104,6 +115,7 @@ def test_skip_up_to_date_file(
             scad_project / "alpha.scad",
             stl_dir / "alpha.stl",
             (),
+            "heatset",
         )
     ]
 
@@ -164,6 +176,7 @@ def test_should_skip_force_overrides(
         stale,
         stl,
         force=True,
+        standoff_mode="heatset",
     )
 
     assert skip is False
@@ -180,6 +193,7 @@ def test_should_skip_without_output(
         stale,
         stl,
         force=False,
+        standoff_mode="heatset",
     )
 
     assert skip is False
@@ -250,7 +264,12 @@ def test_run_openscad_invocation(
     scad = scad_project / "alpha.scad"
     stl = tmp_path / "alpha.stl"
 
-    build_stl._run_openscad("openscad", scad, stl)
+    build_stl._run_openscad(
+        "openscad",
+        scad,
+        stl,
+        standoff_mode="heatset",
+    )
 
     assert called_with == [
         [
@@ -291,7 +310,12 @@ def test_run_openscad_includes_standoff_mode_when_set(
     scad = scad_project / "alpha.scad"
     stl = tmp_path / "alpha.stl"
 
-    build_stl._run_openscad("openscad", scad, stl)
+    build_stl._run_openscad(
+        "openscad",
+        scad,
+        stl,
+        standoff_mode="printed",
+    )
 
     assert called_with == [
         [
@@ -321,7 +345,12 @@ def test_should_skip_rebuilds_when_standoff_mode_changes(
     build_stl._write_metadata(stl, {"standoff_mode": "printed"})
     monkeypatch.delenv("STANDOFF_MODE", raising=False)
 
-    skip = build_stl._should_skip(scad, stl, force=False)
+    skip = build_stl._should_skip(
+        scad,
+        stl,
+        force=False,
+        standoff_mode="heatset",
+    )
 
     assert skip is False
 
@@ -336,7 +365,12 @@ def test_should_skip_defaults_to_heatset_when_missing_metadata(
     stl.write_text("existing", encoding="utf-8")
     monkeypatch.setenv("STANDOFF_MODE", "printed")
 
-    skip = build_stl._should_skip(scad, stl, force=False)
+    skip = build_stl._should_skip(
+        scad,
+        stl,
+        force=False,
+        standoff_mode="printed",
+    )
 
     assert skip is False
 
@@ -374,6 +408,7 @@ def test_run_openscad_with_defines(
             ("STANDOFF_MODE", "printed"),
             ("HEIGHT_MM", "12.5"),
         ],
+        standoff_mode="printed",
     )
 
     assert called_with == [
@@ -403,6 +438,7 @@ def test_render_stls_handles_skips(
     up_to_date = stl_dir / "nested" / "beta.stl"
     up_to_date.parent.mkdir(parents=True, exist_ok=True)
     up_to_date.write_text("fresh", encoding="utf-8")
+    build_stl._write_metadata(up_to_date, {"standoff_mode": "printed"})
 
     mtime = (scad_project / "nested" / "beta.scad").stat().st_mtime
     os.utime(up_to_date, (mtime + 50, mtime + 50))
@@ -416,6 +452,7 @@ def test_render_stls_handles_skips(
         ],
         "openscad",
         defines=[("STANDOFF_MODE", "printed")],
+        standoff_mode="printed",
     )
 
     captured = capsys.readouterr()
@@ -426,6 +463,7 @@ def test_render_stls_handles_skips(
             scad_project / "alpha.scad",
             stl_dir / "alpha.stl",
             (("STANDOFF_MODE", "printed"),),
+            "printed",
         )
     ]
 
@@ -485,3 +523,35 @@ def test_main_reports_no_targets(
     captured = capsys.readouterr()
     assert exit_code == 0
     assert "No .scad files found" in captured.out
+
+
+def test_main_accepts_standoff_mode_flag(
+    monkeypatch: pytest.MonkeyPatch,
+    scad_project: Path,
+    tmp_path: Path,
+) -> None:
+    calls = _recorded_calls(monkeypatch)
+    stl_dir = tmp_path / "out"
+
+    exit_code = build_stl.main(
+        [
+            "--scad-dir",
+            str(scad_project),
+            "--stl-dir",
+            str(stl_dir),
+            "--standoff-mode",
+            "printed",
+            str(scad_project / "alpha.scad"),
+        ]
+    )
+
+    assert exit_code == 0
+    assert calls == [
+        (
+            "openscad",
+            scad_project / "alpha.scad",
+            stl_dir / "alpha.stl",
+            (),
+            "printed",
+        )
+    ]

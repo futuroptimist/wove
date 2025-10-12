@@ -38,6 +38,20 @@ def _write_metadata(stl_path: Path, metadata: Dict[str, str]) -> None:
 Definition = Tuple[str, str]
 
 
+def _normalize_standoff_mode(mode: str | None) -> str:
+    """Normalize standoff mode strings for consistent comparisons."""
+
+    if mode is None:
+        return DEFAULT_STANDOFF_MODE
+    stripped = mode.strip()
+    if not stripped:
+        return DEFAULT_STANDOFF_MODE
+    if stripped[0] in {'"', "'"} and stripped[-1] == stripped[0]:
+        stripped = stripped[1:-1]
+    normalized = stripped.strip().lower()
+    return normalized or DEFAULT_STANDOFF_MODE
+
+
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Render OpenSCAD sources to STL files",
@@ -75,6 +89,13 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help=(
             "Pass an OpenSCAD variable definition (KEY=VALUE). "
             "Repeat the flag to set multiple values."
+        ),
+    )
+    parser.add_argument(
+        "--standoff-mode",
+        help=(
+            "Set the STANDOFF_MODE OpenSCAD variable without exporting "
+            "environment overrides."
         ),
     )
     parser.add_argument(
@@ -123,13 +144,19 @@ def _stl_path_for(scad_dir: Path, stl_dir: Path, scad_path: Path) -> Path:
     return stl_dir / relative.with_suffix(".stl")
 
 
-def _should_skip(scad_path: Path, stl_path: Path, force: bool) -> bool:
+def _should_skip(
+    scad_path: Path,
+    stl_path: Path,
+    force: bool,
+    *,
+    standoff_mode: str,
+) -> bool:
     if force:
         return False
     if not stl_path.exists():
         return False
     metadata = _load_metadata(stl_path)
-    requested_mode = _current_standoff_mode()
+    requested_mode = standoff_mode
     previous_mode = metadata.get("standoff_mode")
     if previous_mode is None:
         if requested_mode != DEFAULT_STANDOFF_MODE:
@@ -169,7 +196,8 @@ def _format_define_value(value: str) -> str:
 
 def _current_standoff_mode() -> str:
     """Return the current standoff mode from environment or default."""
-    return os.environ.get("STANDOFF_MODE", DEFAULT_STANDOFF_MODE)
+
+    return _normalize_standoff_mode(os.environ.get("STANDOFF_MODE"))
 
 
 def _openscad_args(
@@ -177,6 +205,8 @@ def _openscad_args(
     scad_path: Path,
     stl_path: Path,
     defines: Sequence[Definition] | None = None,
+    *,
+    standoff_mode: str,
 ) -> List[str]:
     """Construct the OpenSCAD command with environment-aware defines."""
     provided_defines = list(defines or ())
@@ -185,11 +215,9 @@ def _openscad_args(
     for key, raw_value in provided_defines:
         value = _format_define_value(raw_value)
         command.extend(["-D", f"{key}={value}"])
-    if "STANDOFF_MODE" not in provided_keys:
-        standoff_mode = _current_standoff_mode()
-        if standoff_mode:
-            quoted = json.dumps(standoff_mode)
-            command.extend(["-D", f"STANDOFF_MODE={quoted}"])
+    if "STANDOFF_MODE" not in provided_keys and standoff_mode:
+        quoted = json.dumps(standoff_mode)
+        command.extend(["-D", f"STANDOFF_MODE={quoted}"])
     command.extend(["-o", str(stl_path), str(scad_path)])
     return command
 
@@ -199,14 +227,22 @@ def _run_openscad(
     scad_path: Path,
     stl_path: Path,
     defines: Sequence[Definition] | None = None,
+    *,
+    standoff_mode: str,
 ) -> None:
     """Run OpenSCAD and emit STL + metadata with standoff mode context."""
     stl_path.parent.mkdir(parents=True, exist_ok=True)
-    command = _openscad_args(openscad, scad_path, stl_path, defines)
+    command = _openscad_args(
+        openscad,
+        scad_path,
+        stl_path,
+        defines,
+        standoff_mode=standoff_mode,
+    )
     subprocess.run(command, check=True)
     _write_metadata(
         stl_path,
-        {"standoff_mode": _current_standoff_mode()},
+        {"standoff_mode": standoff_mode},
     )
 
 
@@ -218,14 +254,31 @@ def render_stls(
     *,
     defines: Sequence[Definition] | None = None,
     force: bool = False,
+    standoff_mode: str | None = None,
 ) -> None:
+    active_mode = (
+        _normalize_standoff_mode(standoff_mode)
+        if standoff_mode is not None
+        else _current_standoff_mode()
+    )
     for scad_path in targets:
         stl_path = _stl_path_for(scad_dir, stl_dir, scad_path)
-        if _should_skip(scad_path, stl_path, force):
+        if _should_skip(
+            scad_path,
+            stl_path,
+            force,
+            standoff_mode=active_mode,
+        ):
             print(f"[INFO] Skipping {scad_path}; STL up to date")
             continue
         print(f"[INFO] Exporting {scad_path} -> {stl_path}")
-        _run_openscad(openscad, scad_path, stl_path, defines)
+        _run_openscad(
+            openscad,
+            scad_path,
+            stl_path,
+            defines,
+            standoff_mode=active_mode,
+        )
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -242,6 +295,18 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"[ERROR] {error}")
         return 1
 
+    if args.standoff_mode is not None:
+        standoff_mode = _normalize_standoff_mode(args.standoff_mode)
+        defines = [item for item in defines if item[0] != "STANDOFF_MODE"]
+    else:
+        standoff_mode = None
+        for key, value in reversed(defines):
+            if key == "STANDOFF_MODE":
+                standoff_mode = _normalize_standoff_mode(value)
+                break
+    if standoff_mode is None:
+        standoff_mode = _current_standoff_mode()
+
     if not targets:
         print("[INFO] No .scad files found to render")
         return 0
@@ -253,6 +318,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.openscad,
         defines=defines,
         force=args.force,
+        standoff_mode=standoff_mode,
     )
     return 0
 

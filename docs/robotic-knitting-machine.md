@@ -98,6 +98,8 @@ weights.
 - **Tension post**
   - Purpose: sets yarn wrap angle and overall tension.
   - Key parameters: `STANDOFF_MODE` toggles between heat-set inserts and printed standoffs.
+    Use `python -m wove.build_stl --standoff-mode printed cad/tension_post.scad`
+    to render printed standoffs without relying on environment variables.
   - Interfaces: fastens to the mounting bracket and shares the spacer stack footprint.
 - **End cap / alignment pin**
   - Purpose: protects exposed rods and keeps stacked components square.
