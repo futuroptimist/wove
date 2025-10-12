@@ -135,32 +135,26 @@ class HallSensorCalibration:
         lower = self.points[0]
         upper = self.points[-1]
 
-        if reading == lower.reading:
-            return lower.grams
-
-        if reading == upper.reading:
-            return upper.grams
-
         if reading < lower.reading:
             if clamp:
-                return lower.grams
-            message = "Reading {:.3f} below calibration range".format(reading)
-            raise ValueError(message)
-        if reading > upper.reading:
+                reading = lower.reading
+            else:
+                message = "Reading {:.3f} below calibration range".format(reading)
+                raise ValueError(message)
+        elif reading > upper.reading:
             if clamp:
-                return upper.grams
-            message = "Reading {:.3f} above calibration range".format(reading)
-            raise ValueError(message)
+                reading = upper.reading
+            else:
+                message = "Reading {:.3f} above calibration range".format(reading)
+                raise ValueError(message)
 
         for low, high in zip(self.points, self.points[1:]):
             if low.reading <= reading <= high.reading:
                 span = high.reading - low.reading
-                if span == 0:
-                    return low.grams
                 ratio = (reading - low.reading) / span
                 return _interpolate(low.grams, high.grams, ratio)
 
-        return upper.grams
+        raise RuntimeError("Calibration interpolation failed")  # pragma: no cover
 
 
 def _profiles() -> Dict[str, TensionProfile]:

@@ -681,6 +681,8 @@ def test_calibration_rejects_invalid_points() -> None:
     with pytest.raises(ValueError):
         tension.CalibrationPoint(reading=100.0, grams=-1.0)
     with pytest.raises(ValueError):
+        tension.CalibrationPoint(reading=100.0, grams=float("nan"))
+    with pytest.raises(ValueError):
         tension.HallSensorCalibration.from_pairs(
             [
                 (100.0, 20.0),
@@ -734,6 +736,19 @@ def test_calibration_accepts_boundary_with_and_without_clamp() -> None:
         calibration.force_for_reading(220.0, clamp=False),
         85.0,
     )
+
+
+def test_calibration_clamps_above_range_when_enabled() -> None:
+    calibration = _sample_calibration()
+
+    assert math.isclose(calibration.force_for_reading(230.0), 85.0)
+
+
+def test_calibration_rejects_above_range_when_unclamped() -> None:
+    calibration = _sample_calibration()
+
+    with pytest.raises(ValueError):
+        calibration.force_for_reading(230.0, clamp=False)
 
 
 def test_match_tension_profile_for_sensor_reading() -> None:
