@@ -285,13 +285,30 @@ def test_estimate_profile_for_force_falls_back_when_bounds_missing(
         raising=False,
     )
 
-    evasive = EvasiveForce((lighter.target_force_grams + heavier.target_force_grams) / 2.0)
+    probe = EvasiveForce(
+        (lighter.target_force_grams + heavier.target_force_grams) / 2.0
+    )
+
+    assert not (probe <= lighter.target_force_grams)
+    assert not (probe <= heavier.target_force_grams)
+    assert probe <= (heavier.target_force_grams + 1.0)
+
+    assert not (probe >= heavier.target_force_grams)
+    assert not (probe >= lighter.target_force_grams)
+    assert probe >= (lighter.target_force_grams - 1.0)
+
+    evasive = EvasiveForce(
+        (lighter.target_force_grams + heavier.target_force_grams) / 2.0
+    )
 
     estimated = tension.estimate_profile_for_force(evasive)
 
     assert estimated.heavier_weight == heavier.weight
     assert estimated.lighter_weight == heavier.weight
-    assert math.isclose(estimated.target_force_grams, heavier.target_force_grams)
+    assert math.isclose(
+        estimated.target_force_grams,
+        heavier.target_force_grams,
+    )
 
 
 def test_estimate_tension_for_exact_profile() -> None:
