@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Dict, Iterable, Tuple
+from typing import Dict, Iterable, Sequence, Tuple
 
 DEFAULT_TRIAL_DURATION_SECONDS = 60.0
 
@@ -70,6 +70,98 @@ class ForceMatch:
 
     profile: TensionProfile
     difference_grams: float
+
+
+@dataclass(frozen=True)
+class CalibrationPoint:
+    """Calibration pair mapping a sensor reading to grams of pull force."""
+
+    reading: float
+    grams: float
+
+    def __post_init__(self) -> None:
+        if not math.isfinite(self.reading):
+            raise ValueError("Calibration reading must be finite")
+        if not math.isfinite(self.grams):
+            raise ValueError("Calibration grams must be finite")
+        if self.grams < 0:
+            raise ValueError("Calibration grams must be non-negative")
+
+
+@dataclass(frozen=True)
+class HallSensorCalibration:
+    """Linear interpolation helper for hall-effect yarn tension sensors."""
+
+    points: Tuple[CalibrationPoint, ...]
+
+    def __post_init__(self) -> None:
+        if len(self.points) < 2:
+            raise ValueError("Need at least two calibration points")
+        ordered = tuple(
+            sorted(
+                self.points,
+                key=lambda point: point.reading,
+            )
+        )
+        for previous, current in zip(ordered, ordered[1:]):
+            if current.reading <= previous.reading:
+                raise ValueError("Calibration readings must increase strictly")
+        object.__setattr__(self, "points", ordered)
+
+    @classmethod
+    def from_pairs(
+        cls, pairs: Sequence[Tuple[float, float]]
+    ) -> "HallSensorCalibration":
+        """Construct calibration data from ``(reading, grams)`` pairs."""
+
+        calibration_points = []
+        for reading, grams in pairs:
+            calibration_points.append(
+                CalibrationPoint(reading=float(reading), grams=float(grams))
+            )
+        return cls(points=calibration_points)
+
+    def force_for_reading(
+        self,
+        reading: float,
+        *,
+        clamp: bool = True,
+    ) -> float:
+        """Return the pull force (grams) represented by ``reading``."""
+
+        if not math.isfinite(reading):
+            raise ValueError("Sensor reading must be a finite value")
+
+        lower = self.points[0]
+        upper = self.points[-1]
+
+        if reading == lower.reading:
+            return lower.grams
+        if reading == upper.reading:
+            return upper.grams
+
+        if reading < lower.reading:
+            if clamp:
+                reading = lower.reading
+            else:
+                message = f"Reading {reading:.3f} below calibration range"
+                raise ValueError(message)
+        elif reading > upper.reading:
+            if clamp:
+                reading = upper.reading
+            else:
+                message = f"Reading {reading:.3f} above calibration range"
+                raise ValueError(message)
+
+        for low, high in zip(self.points, self.points[1:]):
+            if low.reading <= reading <= high.reading:
+                span = high.reading - low.reading
+                ratio = (reading - low.reading) / span
+                return _interpolate(low.grams, high.grams, ratio)
+
+        raise RuntimeError(
+            "Calibration interpolation failed",
+        )  # pragma: no cover
 
 
 def _profiles() -> Dict[str, TensionProfile]:
@@ -352,6 +444,29 @@ def _interpolate(
     return lower + ratio * (upper - lower)
 
 
+def estimate_tension_for_sensor_reading(
+    reading: float,
+    calibration: HallSensorCalibration,
+    *,
+    clamp: bool = True,
+) -> float:
+    """Convert a hall-effect sensor reading into grams of tension."""
+
+    return calibration.force_for_reading(reading, clamp=clamp)
+
+
+def match_tension_profile_for_sensor_reading(
+    reading: float,
+    calibration: HallSensorCalibration,
+    *,
+    clamp: bool = True,
+) -> ForceMatch:
+    """Return the catalog entry closest to a hall-effect sensor reading."""
+
+    force_grams = calibration.force_for_reading(reading, clamp=clamp)
+    return find_tension_profile_for_force(force_grams)
+
+
 def estimate_profile_for_wpi(wraps_per_inch: float) -> EstimatedTension:
     """Interpolate a tension profile for ``wraps_per_inch``.
 
@@ -491,6 +606,10 @@ __all__ = [
     "TensionProfile",
     "EstimatedTension",
     "ForceMatch",
+    "CalibrationPoint",
+    "HallSensorCalibration",
+    "estimate_tension_for_sensor_reading",
+    "match_tension_profile_for_sensor_reading",
     "TENSION_PROFILES",
     "estimate_profile_for_force",
     "find_tension_profile_for_force",

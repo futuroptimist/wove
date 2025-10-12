@@ -59,13 +59,17 @@ from .tension import (
     TENSION_PROFILES,
     TensionProfile,
     ForceMatch,
+    CalibrationPoint,
+    HallSensorCalibration,
     estimate_profile_for_force,
     estimate_tension_for_wpi,
+    estimate_tension_for_sensor_reading,
     estimate_profile_for_wpi,
     find_tension_profile_for_wpi,
     find_tension_profile_for_force,
     get_tension_profile,
     list_tension_profiles,
+    match_tension_profile_for_sensor_reading,
     EstimatedTension,
 )
 
@@ -128,6 +132,9 @@ __all__ = [
     "DEFAULT_TRIAL_DURATION_SECONDS",
     "TensionProfile",
     "ForceMatch",
+    "CalibrationPoint",
+    "HallSensorCalibration",
+    "estimate_tension_for_sensor_reading",
     "EstimatedTension",
     "TENSION_PROFILES",
     "estimate_profile_for_force",
@@ -137,4 +144,5 @@ __all__ = [
     "find_tension_profile_for_wpi",
     "get_tension_profile",
     "list_tension_profiles",
+    "match_tension_profile_for_sensor_reading",
 ]
