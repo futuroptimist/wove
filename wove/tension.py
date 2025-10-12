@@ -135,12 +135,12 @@ class HallSensorCalibration:
         lower = self.points[0]
         upper = self.points[-1]
 
-        if reading <= lower.reading:
+        if reading < lower.reading:
             if clamp:
                 return lower.grams
             message = "Reading {:.3f} below calibration range".format(reading)
             raise ValueError(message)
-        if reading >= upper.reading:
+        if reading > upper.reading:
             if clamp:
                 return upper.grams
             message = "Reading {:.3f} above calibration range".format(reading)

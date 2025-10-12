@@ -92,6 +92,8 @@ SHA
 YOURTOKEN
 
 htmlcontent
+CalibrationPoint
+HallSensorCalibration
 installable
 OpenSCAD
 LaTeX
