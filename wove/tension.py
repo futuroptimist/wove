@@ -282,6 +282,126 @@ def find_tension_profile_for_force(force_grams: float) -> ForceMatch:
     return ForceMatch(profile=match, difference_grams=difference)
 
 
+def estimate_profile_for_force(force_grams: float) -> EstimatedTension:
+    """Interpolate a tension profile for ``force_grams``.
+
+    Bench tests in the mechanical roadmap emphasize measuring pull force in
+    addition to wraps-per-inch.  This helper mirrors
+    :func:`estimate_profile_for_wpi` so calibration scripts can infer feed rate
+    and variation guidance from a measured pull force between catalog entries.
+
+    Args:
+        force_grams: Measured pull force in grams. Must be positive and
+            finite.
+
+    Returns:
+        An :class:`EstimatedTension` describing the interpolated profile.  The
+        ``wraps_per_inch`` value reflects the interpolated midpoint derived
+        from the bracketing catalog entries.
+
+    Raises:
+        ValueError: If ``force_grams`` is not a positive finite value.
+    """
+
+    if math.isnan(force_grams) or math.isinf(force_grams) or force_grams <= 0:
+        raise ValueError("force_grams must be a positive, finite value")
+
+    ordered = sorted(
+        list_tension_profiles(),
+        key=lambda profile: profile.target_force_grams,
+    )
+
+    for profile in ordered:
+        if math.isclose(force_grams, profile.target_force_grams):
+            return EstimatedTension(
+                wraps_per_inch=profile.midpoint_wpi,
+                target_force_grams=profile.target_force_grams,
+                feed_rate_mm_s=profile.feed_rate_mm_s,
+                pull_variation_percent=profile.pull_variation_percent,
+                heavier_weight=profile.weight,
+                lighter_weight=profile.weight,
+                trial_duration_seconds=profile.trial_duration_seconds,
+            )
+
+    first = ordered[0]
+    if force_grams <= first.target_force_grams:
+        return EstimatedTension(
+            wraps_per_inch=first.midpoint_wpi,
+            target_force_grams=first.target_force_grams,
+            feed_rate_mm_s=first.feed_rate_mm_s,
+            pull_variation_percent=first.pull_variation_percent,
+            heavier_weight=first.weight,
+            lighter_weight=first.weight,
+            trial_duration_seconds=first.trial_duration_seconds,
+        )
+
+    last = ordered[-1]
+    if force_grams >= last.target_force_grams:
+        return EstimatedTension(
+            wraps_per_inch=last.midpoint_wpi,
+            target_force_grams=last.target_force_grams,
+            feed_rate_mm_s=last.feed_rate_mm_s,
+            pull_variation_percent=last.pull_variation_percent,
+            heavier_weight=last.weight,
+            lighter_weight=last.weight,
+            trial_duration_seconds=last.trial_duration_seconds,
+        )
+
+    for lighter_profile, heavier_profile in zip(ordered, ordered[1:]):
+        lower_force = lighter_profile.target_force_grams
+        upper_force = heavier_profile.target_force_grams
+        if lower_force <= force_grams <= upper_force:
+            span = upper_force - lower_force
+            if span == 0:
+                variation = lighter_profile.pull_variation_percent
+                duration = lighter_profile.trial_duration_seconds
+                return EstimatedTension(
+                    wraps_per_inch=lighter_profile.midpoint_wpi,
+                    target_force_grams=lighter_profile.target_force_grams,
+                    feed_rate_mm_s=lighter_profile.feed_rate_mm_s,
+                    pull_variation_percent=variation,
+                    heavier_weight=heavier_profile.weight,
+                    lighter_weight=lighter_profile.weight,
+                    trial_duration_seconds=duration,
+                )
+            ratio = (force_grams - lower_force) / span
+            return EstimatedTension(
+                wraps_per_inch=_interpolate(
+                    lighter_profile.midpoint_wpi,
+                    heavier_profile.midpoint_wpi,
+                    ratio,
+                ),
+                target_force_grams=force_grams,
+                feed_rate_mm_s=_interpolate(
+                    lighter_profile.feed_rate_mm_s,
+                    heavier_profile.feed_rate_mm_s,
+                    ratio,
+                ),
+                pull_variation_percent=_interpolate(
+                    lighter_profile.pull_variation_percent,
+                    heavier_profile.pull_variation_percent,
+                    ratio,
+                ),
+                heavier_weight=heavier_profile.weight,
+                lighter_weight=lighter_profile.weight,
+                trial_duration_seconds=_interpolate(
+                    lighter_profile.trial_duration_seconds,
+                    heavier_profile.trial_duration_seconds,
+                    ratio,
+                ),
+            )
+
+    return EstimatedTension(
+        wraps_per_inch=last.midpoint_wpi,
+        target_force_grams=last.target_force_grams,
+        feed_rate_mm_s=last.feed_rate_mm_s,
+        pull_variation_percent=last.pull_variation_percent,
+        heavier_weight=last.weight,
+        lighter_weight=last.weight,
+        trial_duration_seconds=last.trial_duration_seconds,
+    )
+
+
 def estimate_tension_for_wpi(wraps_per_inch: float) -> float:
     """Estimate the target tension (grams) for a wraps-per-inch value."""
 
@@ -484,6 +604,7 @@ __all__ = [
     "estimate_tension_for_sensor_reading",
     "match_tension_profile_for_sensor_reading",
     "TENSION_PROFILES",
+    "estimate_profile_for_force",
     "find_tension_profile_for_force",
     "estimate_tension_for_wpi",
     "estimate_profile_for_wpi",
