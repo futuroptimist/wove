@@ -212,7 +212,9 @@ def test_normalize_standoff_mode(provided: str | None, expected: str) -> None:
     assert build_stl._normalize_standoff_mode(provided) == expected
 
 
-def test_current_standoff_mode_reads_environment(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_current_standoff_mode_reads_environment(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setenv("STANDOFF_MODE", "  Printed  ")
 
     assert build_stl._current_standoff_mode() == "printed"
