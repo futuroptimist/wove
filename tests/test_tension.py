@@ -425,3 +425,80 @@ def test_estimate_profile_returns_last_profile_when_comparison_fails(
         estimated.trial_duration_seconds,
         light.trial_duration_seconds,
     )
+
+
+def _sample_calibration() -> tension.HallSensorCalibration:
+    return tension.HallSensorCalibration.from_pairs(
+        [
+            (100.0, 20.0),
+            (160.0, 55.0),
+            (220.0, 85.0),
+        ]
+    )
+
+
+def test_calibration_requires_multiple_points() -> None:
+    with pytest.raises(ValueError):
+        tension.HallSensorCalibration.from_pairs([(100.0, 20.0)])
+
+
+def test_calibration_rejects_invalid_points() -> None:
+    with pytest.raises(ValueError):
+        tension.CalibrationPoint(reading=float("nan"), grams=10.0)
+    with pytest.raises(ValueError):
+        tension.CalibrationPoint(reading=100.0, grams=-1.0)
+    with pytest.raises(ValueError):
+        tension.HallSensorCalibration.from_pairs(
+            [
+                (100.0, 20.0),
+                (100.0, 25.0),
+            ]
+        )
+
+
+def test_estimate_tension_from_sensor_interpolates() -> None:
+    calibration = _sample_calibration()
+    grams = tension.estimate_tension_for_sensor_reading(
+        190.0,
+        calibration,
+    )
+    assert math.isclose(grams, 70.0)
+
+
+def test_estimate_tension_from_sensor_clamps_and_validates() -> None:
+    calibration = _sample_calibration()
+    assert math.isclose(
+        tension.estimate_tension_for_sensor_reading(
+            50.0,
+            calibration,
+        ),
+        20.0,
+    )
+    with pytest.raises(ValueError):
+        tension.estimate_tension_for_sensor_reading(
+            50.0,
+            calibration,
+            clamp=False,
+        )
+    with pytest.raises(ValueError):
+        tension.estimate_tension_for_sensor_reading(
+            float("inf"),
+            calibration,
+        )
+
+
+def test_match_tension_profile_for_sensor_reading() -> None:
+    calibration = _sample_calibration()
+    match = tension.match_tension_profile_for_sensor_reading(
+        185.0,
+        calibration,
+    )
+    measured = tension.estimate_tension_for_sensor_reading(
+        185.0,
+        calibration,
+    )
+    assert match.profile.weight == "worsted"
+    assert math.isclose(
+        match.difference_grams,
+        abs(match.profile.target_force_grams - measured),
+    )

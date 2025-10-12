@@ -87,6 +87,37 @@ duration, and highlights how evenly the passive tensioner maintained feed force 
 weights that bound the requested wraps-per-inch. Use those labels to surface which tested yarns the
 estimate derived from during calibration reports.
 
+Hall-effect sensors mounted on the tension arm can feed real-time readings back into the same
+catalog. Calibrate the sensor with a handful of measured loads, then translate new readings into
+grams and match them to the documented yarn weights:
+
+```
+from wove import (
+    CalibrationPoint,
+    HallSensorCalibration,
+    estimate_tension_for_sensor_reading,
+    match_tension_profile_for_sensor_reading,
+)
+
+calibration = HallSensorCalibration.from_pairs(
+    [
+        (102.0, 20.0),
+        (168.5, 55.0),
+        (220.0, 85.0),
+    ]
+)
+
+reading_grams = estimate_tension_for_sensor_reading(185.0, calibration)
+force_match = match_tension_profile_for_sensor_reading(185.0, calibration)
+
+print(round(reading_grams, 1))  # -> 61.3 grams (interpolated)
+print(force_match.profile.weight, round(force_match.difference_grams, 1))
+```
+
+Clamp behavior defaults to the calibration bounds so noisy readings outside the measured range do
+not generate unrealistic values. Pass ``clamp=False`` to surface out-of-range readings for
+additional debugging.
+
 ### Frame and Build Volume
 - **Frame**: 20x20 mm aluminum extrusion perimeter with printed corner cubes and feet. Designed for
   250 mm × 250 mm working area; printable parts cap at 220 mm to fit standard beds.
