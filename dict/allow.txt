@@ -92,8 +92,6 @@ SHA
 YOURTOKEN
 
 htmlcontent
-CalibrationPoint
-HallSensorCalibration
 installable
 OpenSCAD
 LaTeX
@@ -130,6 +128,8 @@ aspell
 linkchecker
 pyspelling
 yaml
+CalibrationPoint
+HallSensorCalibration
 AllFreeCrochet
 Knitty
 Swatching

@@ -135,6 +135,12 @@ class HallSensorCalibration:
         lower = self.points[0]
         upper = self.points[-1]
 
+        if reading == lower.reading:
+            return lower.grams
+
+        if reading == upper.reading:
+            return upper.grams
+
         if reading < lower.reading:
             if clamp:
                 return lower.grams

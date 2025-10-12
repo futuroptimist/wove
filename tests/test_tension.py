@@ -720,8 +720,11 @@ def test_estimate_tension_from_sensor_clamps_and_validates() -> None:
         )
 
 
-def test_calibration_accepts_boundary_without_clamp() -> None:
+def test_calibration_accepts_boundary_with_and_without_clamp() -> None:
     calibration = _sample_calibration()
+
+    assert math.isclose(calibration.force_for_reading(100.0), 20.0)
+    assert math.isclose(calibration.force_for_reading(220.0), 85.0)
 
     assert math.isclose(
         calibration.force_for_reading(100.0, clamp=False),
