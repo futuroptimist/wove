@@ -16,6 +16,7 @@ Use `scripts/build_stl.sh` (a thin wrapper around `python -m wove.build_stl`) fo
 python -m wove.build_stl --force --stl-dir build-stl cad/spacer.scad
 
 # Render with custom OpenSCAD variables, e.g., select a standoff mode
+python -m wove.build_stl --standoff-mode printed cad/tension_post.scad
 python -m wove.build_stl --define STANDOFF_MODE=printed cad/tension_post.scad
 
 # Render the tension post with printed standoffs
