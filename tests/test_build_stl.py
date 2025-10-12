@@ -200,6 +200,25 @@ def test_should_skip_without_output(
 
 
 @pytest.mark.parametrize(
+    "provided, expected",
+    [
+        (None, build_stl.DEFAULT_STANDOFF_MODE),
+        (" printed ", "printed"),
+        ('"PRINTED"', "printed"),
+        ("", build_stl.DEFAULT_STANDOFF_MODE),
+    ],
+)
+def test_normalize_standoff_mode(provided: str | None, expected: str) -> None:
+    assert build_stl._normalize_standoff_mode(provided) == expected
+
+
+def test_current_standoff_mode_reads_environment(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("STANDOFF_MODE", "  Printed  ")
+
+    assert build_stl._current_standoff_mode() == "printed"
+
+
+@pytest.mark.parametrize(
     "raw, expected",
     [
         ("", '""'),
@@ -552,6 +571,38 @@ def test_main_accepts_standoff_mode_flag(
             scad_project / "alpha.scad",
             stl_dir / "alpha.stl",
             (),
+            "printed",
+        )
+    ]
+
+
+def test_main_uses_define_when_standoff_flag_missing(
+    monkeypatch: pytest.MonkeyPatch,
+    scad_project: Path,
+    tmp_path: Path,
+) -> None:
+    calls = _recorded_calls(monkeypatch)
+    stl_dir = tmp_path / "out"
+
+    exit_code = build_stl.main(
+        [
+            "--scad-dir",
+            str(scad_project),
+            "--stl-dir",
+            str(stl_dir),
+            "--define",
+            "STANDOFF_MODE=printed",
+            str(scad_project / "alpha.scad"),
+        ]
+    )
+
+    assert exit_code == 0
+    assert calls == [
+        (
+            "openscad",
+            scad_project / "alpha.scad",
+            stl_dir / "alpha.stl",
+            (("STANDOFF_MODE", "printed"),),
             "printed",
         )
     ]
