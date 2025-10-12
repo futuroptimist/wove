@@ -236,6 +236,64 @@ def test_estimate_profile_for_force_handles_zero_span(
     )
 
 
+def test_estimate_profile_for_force_falls_back_when_bounds_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Ensure the final safety fallback executes when comparisons fail."""
+
+    lighter = tension.get_tension_profile("lace")
+    heavier = tension.get_tension_profile("super bulky")
+
+    monkeypatch.setattr(
+        tension,
+        "list_tension_profiles",
+        lambda: [lighter, heavier],
+    )
+
+    class EvasiveForce:
+        """Behave like a float while dodging ordering comparisons."""
+
+        def __init__(self, value: float) -> None:
+            self.value = value
+            self._le_calls = 0
+            self._ge_calls = 0
+
+        def __float__(self) -> float:
+            return self.value
+
+        def __le__(self, other: float) -> bool:  # type: ignore[override]
+            self._le_calls += 1
+            if self._le_calls <= 2:
+                return False
+            return self.value <= other
+
+        def __ge__(self, other: float) -> bool:  # type: ignore[override]
+            self._ge_calls += 1
+            if self._ge_calls <= 2:
+                return False
+            return self.value >= other
+
+    original_isclose = tension.math.isclose
+    monkeypatch.setattr(
+        tension.math,
+        "isclose",
+        lambda a, b, *args, **kwargs: (
+            False
+            if isinstance(a, EvasiveForce) or isinstance(b, EvasiveForce)
+            else original_isclose(a, b, *args, **kwargs)
+        ),
+        raising=False,
+    )
+
+    evasive = EvasiveForce((lighter.target_force_grams + heavier.target_force_grams) / 2.0)
+
+    estimated = tension.estimate_profile_for_force(evasive)
+
+    assert estimated.heavier_weight == heavier.weight
+    assert estimated.lighter_weight == heavier.weight
+    assert math.isclose(estimated.target_force_grams, heavier.target_force_grams)
+
+
 def test_estimate_tension_for_exact_profile() -> None:
     sport = tension.get_tension_profile("sport")
     target = tension.estimate_tension_for_wpi(sport.midpoint_wpi)
