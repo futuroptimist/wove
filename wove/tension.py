@@ -409,6 +409,30 @@ def estimate_profile_for_force(force_grams: float) -> EstimatedTension:
     )
 
 
+def estimate_tension_for_force(force_grams: float) -> float:
+    """Return the catalog-aligned tension target for ``force_grams``.
+
+    Builders often record pull force directly during bench tests. When the
+    measurement falls outside the documented catalog this helper clamps it to
+    the nearest recorded profile, mirroring
+    :func:`estimate_profile_for_force` while returning only the recommended
+    grams of tension.
+
+    Args:
+        force_grams: Measured pull force in grams. Must be positive and
+            finite.
+
+    Returns:
+        The recommended tension target in grams after applying catalog bounds.
+
+    Raises:
+        ValueError: If ``force_grams`` is not a positive finite value.
+    """
+
+    estimated = estimate_profile_for_force(force_grams)
+    return estimated.target_force_grams
+
+
 def estimate_tension_for_wpi(wraps_per_inch: float) -> float:
     """Estimate the target tension (grams) for a wraps-per-inch value."""
 
@@ -644,6 +668,7 @@ __all__ = [
     "match_tension_profile_for_sensor_reading",
     "estimate_profile_for_sensor_reading",
     "TENSION_PROFILES",
+    "estimate_tension_for_force",
     "estimate_profile_for_force",
     "find_tension_profile_for_force",
     "estimate_tension_for_wpi",
