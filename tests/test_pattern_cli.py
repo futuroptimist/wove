@@ -252,6 +252,12 @@ def test_write_output_planner(tmp_path):
     assert payload["bounds"]["x_mm"]["max"] == pytest.approx(5.0)
 
 
+def test_write_output_planner_requires_events(tmp_path):
+    gcode_lines = [GCodeLine("G21")]
+    with pytest.raises(ValueError):
+        _write_output(gcode_lines, tmp_path / "pattern.planner.json", "planner")
+
+
 def test_load_pattern_prefers_inline(tmp_path):
     pattern_path = tmp_path / "pattern.txt"
     pattern_path.write_text("CHAIN 1", encoding="utf-8")

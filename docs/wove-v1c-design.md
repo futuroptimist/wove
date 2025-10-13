@@ -180,7 +180,7 @@ additional debugging, or to raise errors when routing data through
   importer converts sketches into travel moves for rapid prototyping.
 - Future roadmap: integrate with browser-based planner for interactive pattern design.
   The pattern CLI now emits planner-oriented JSON via `--format planner`,
-  packaging command snapshots and motion bounds so the frontend can visualize
+ packaging command snapshots and motion bounds so the front-end can visualize
   sequences without parsing raw G-code.
 
 ## Bill of Materials (Initial Release)
