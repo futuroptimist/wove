@@ -12,11 +12,14 @@ import pytest
 from wove.machine_profile import AxisProfile, MachineProfile
 from wove.pattern_cli import (
     DEFAULT_ROW_HEIGHT,
+    SAFE_Z_MM,
+    YARN_FEED_RATE,
     GCodeLine,
     PatternTranslator,
     _load_pattern,
     _parse_points_attribute,
     _pattern_from_svg,
+    _planner_payload,
     _points_from_svg,
     _strip_namespace,
     _write_output,
@@ -76,6 +79,38 @@ def test_translate_pattern_basic():
     assert text[turn_index + 1] == expected_plunge
     final_step = "G0 X4.50 Y11.00 F1200 ; single stitch 1 of 1: advance"
     assert text[-1] == final_step
+
+
+def test_pattern_translator_records_planner_events():
+    translator = PatternTranslator()
+    lines = translator.translate("CHAIN 1")
+
+    events = translator.planner_events
+
+    assert len(events) == len(lines)
+    assert events[0].command == "G21"
+    last_event = events[-1]
+    assert last_event.command.startswith("G0 X5.00")
+    assert last_event.x_mm == pytest.approx(5.0)
+    assert last_event.y_mm == pytest.approx(0.0)
+    assert last_event.z_mm == pytest.approx(SAFE_Z_MM)
+    assert last_event.extrusion_mm == pytest.approx(0.5)
+
+
+def test_planner_payload_includes_metadata():
+    translator = PatternTranslator()
+    translator.translate("CHAIN 1")
+
+    payload = _planner_payload(translator.planner_events)
+
+    assert payload["version"] == 1
+    assert payload["defaults"]["safe_z_mm"] == pytest.approx(SAFE_Z_MM)
+    assert payload["defaults"]["yarn_feed_rate_mm_min"] == YARN_FEED_RATE
+    bounds = payload["bounds"]
+    assert bounds["x_mm"]["max"] == pytest.approx(5.0)
+    assert payload["commands"][0]["command"] == "G21"
+    last_entry = payload["commands"][-1]
+    assert last_entry["state"]["extrusion_mm"] == pytest.approx(0.5)
 
 
 def test_translate_pattern_slip_stitches():
@@ -200,6 +235,23 @@ def test_write_output_handles_files(tmp_path):
     assert payload[1]["comment"] == "absolute positioning"
 
 
+def test_write_output_planner(tmp_path):
+    translator = PatternTranslator()
+    lines = translator.translate("CHAIN 1")
+    planner_path = tmp_path / "pattern.planner.json"
+
+    _write_output(
+        lines,
+        planner_path,
+        "planner",
+        planner_events=translator.planner_events,
+    )
+
+    payload = json.loads(planner_path.read_text(encoding="utf-8"))
+    assert payload["commands"][0]["command"] == "G21"
+    assert payload["bounds"]["x_mm"]["max"] == pytest.approx(5.0)
+
+
 def test_load_pattern_prefers_inline(tmp_path):
     pattern_path = tmp_path / "pattern.txt"
     pattern_path.write_text("CHAIN 1", encoding="utf-8")
@@ -285,6 +337,8 @@ def test_parse_args_variants():
     assert str(args.machine_profile).endswith("profile.yaml")
     assert args.home_state == "homed"
     assert args.require_home is True
+    planner_args = parse_args(["--format", "planner"])
+    assert planner_args.format == "planner"
 
 
 def test_main_stdout_json(capsys):
@@ -292,6 +346,14 @@ def test_main_stdout_json(capsys):
     assert exit_code == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload[0]["command"] == "G21"
+
+
+def test_main_stdout_planner(capsys):
+    exit_code = main(["--text", "CHAIN 1", "--format", "planner"])
+    assert exit_code == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["commands"][0]["command"] == "G21"
+    assert payload["defaults"]["safe_z_mm"] == pytest.approx(SAFE_Z_MM)
 
 
 def test_main_writes_output_file(tmp_path):
