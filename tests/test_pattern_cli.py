@@ -144,6 +144,21 @@ def test_translate_pattern_errors(pattern):
         translator.translate(pattern)
 
 
+def test_translate_pattern_rejects_non_finite_values():
+    translator = PatternTranslator()
+    for command in (
+        "MOVE nan 5",
+        "MOVE 5 nan",
+        "MOVE inf 5",
+        "PAUSE nan",
+        "PAUSE inf",
+        "TURN nan",
+        "TURN inf",
+    ):
+        with pytest.raises(ValueError):
+            translator.translate(command)
+
+
 def test_move_requires_positive_coordinates():
     translator = PatternTranslator()
     with pytest.raises(ValueError):
