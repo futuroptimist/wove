@@ -467,6 +467,38 @@ def match_tension_profile_for_sensor_reading(
     return find_tension_profile_for_force(force_grams)
 
 
+def estimate_profile_for_sensor_reading(
+    reading: float,
+    calibration: HallSensorCalibration,
+    *,
+    clamp: bool = True,
+) -> EstimatedTension:
+    """Return an interpolated profile for a hall-effect sensor reading.
+
+    Builders who log hall-effect sensor data often want the same feed-rate and
+    variation guidance returned by :func:`estimate_profile_for_force`.  This
+    helper bridges the roadmap's sensor workflow to the existing interpolation
+    logic by converting the reading to grams and delegating to the force-based
+    estimator.  It preserves the calibration's clamping behavior so
+    out-of-range readings either snap to the measured bounds or surface
+    ``ValueError`` when ``clamp`` is ``False``.
+
+    Args:
+        reading: Raw hall-effect sensor reading to translate.
+        calibration: Calibration data mapping sensor readings to grams.
+        clamp: When ``True`` (default), readings outside the calibrated range
+            are clamped to the nearest measured value.  When ``False``, a
+            :class:`ValueError` is raised instead.
+
+    Returns:
+        An :class:`EstimatedTension` describing the interpolated profile for
+        the translated pull force.
+    """
+
+    force_grams = calibration.force_for_reading(reading, clamp=clamp)
+    return estimate_profile_for_force(force_grams)
+
+
 def estimate_profile_for_wpi(wraps_per_inch: float) -> EstimatedTension:
     """Interpolate a tension profile for ``wraps_per_inch``.
 
@@ -610,6 +642,7 @@ __all__ = [
     "HallSensorCalibration",
     "estimate_tension_for_sensor_reading",
     "match_tension_profile_for_sensor_reading",
+    "estimate_profile_for_sensor_reading",
     "TENSION_PROFILES",
     "estimate_profile_for_force",
     "find_tension_profile_for_force",

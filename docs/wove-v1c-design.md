@@ -105,6 +105,7 @@ from wove import (
     HallSensorCalibration,
     estimate_tension_for_sensor_reading,
     match_tension_profile_for_sensor_reading,
+    estimate_profile_for_sensor_reading,
 )
 
 calibration = HallSensorCalibration.from_pairs(
@@ -117,14 +118,18 @@ calibration = HallSensorCalibration.from_pairs(
 
 reading_grams = estimate_tension_for_sensor_reading(185.0, calibration)
 force_match = match_tension_profile_for_sensor_reading(185.0, calibration)
+interpolated = estimate_profile_for_sensor_reading(185.0, calibration)
 
 print(round(reading_grams, 1))  # -> 61.3 grams (interpolated)
 print(force_match.profile.weight, round(force_match.difference_grams, 1))
+print(round(interpolated.feed_rate_mm_s, 1))  # -> 33.5 mm/s (approx)
+print(interpolated.heavier_weight, interpolated.lighter_weight)
 ```
 
 Clamp behavior defaults to the calibration bounds so noisy readings outside the measured range do
 not generate unrealistic values. Pass ``clamp=False`` to surface out-of-range readings for
-additional debugging.
+additional debugging, or to raise errors when routing data through
+``estimate_profile_for_sensor_reading``.
 
 ### Frame and Build Volume
 - **Frame**: 20x20 mm aluminum extrusion perimeter with printed corner cubes and feet. Designed for

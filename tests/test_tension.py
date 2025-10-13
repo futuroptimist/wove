@@ -766,3 +766,38 @@ def test_match_tension_profile_for_sensor_reading() -> None:
         match.difference_grams,
         abs(match.profile.target_force_grams - measured),
     )
+
+
+def test_estimate_profile_for_sensor_reading_matches_force_helper() -> None:
+    calibration = _sample_calibration()
+    reading = 185.0
+
+    estimated_from_sensor = tension.estimate_profile_for_sensor_reading(
+        reading,
+        calibration,
+    )
+    force = tension.estimate_tension_for_sensor_reading(
+        reading,
+        calibration,
+    )
+    estimated_from_force = tension.estimate_profile_for_force(force)
+
+    assert estimated_from_sensor == estimated_from_force
+
+
+def test_estimate_profile_for_sensor_reading_respects_clamp_flag() -> None:
+    calibration = _sample_calibration()
+
+    clamped = tension.estimate_profile_for_sensor_reading(
+        40.0,
+        calibration,
+    )
+    lace = tension.get_tension_profile("lace")
+    assert math.isclose(clamped.target_force_grams, lace.target_force_grams)
+
+    with pytest.raises(ValueError):
+        tension.estimate_profile_for_sensor_reading(
+            40.0,
+            calibration,
+            clamp=False,
+        )
