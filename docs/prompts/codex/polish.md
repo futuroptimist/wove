@@ -5,7 +5,9 @@ slug: 'codex-polish'
 
 Copy the appropriate prompt block below into Codex.
 
-# Primary prompt
+# Wove Codex Polish Plan
+
+## Primary prompt
 ```
 SYSTEM:
 You are an automation planner for the wove repository.
@@ -78,7 +80,7 @@ PEDAGOGY-FIRST ROBOTICS ONRAMP:
   automation once students prove proficiency on the manual track.
 ```
 
-# Upgrade prompt
+## Upgrade prompt
 ```
 SYSTEM:
 You critique and improve the "Primary prompt" above for the wove repository.

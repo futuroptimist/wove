@@ -118,6 +118,11 @@ deps
 virtualenv
 maxdepth
 msg
+UX
+GIFs
+ONRAMP
+changelog
+toctrees
 toctree
 crochet
 crocheting
