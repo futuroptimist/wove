@@ -757,6 +757,20 @@ def test_calibration_rejects_invalid_points() -> None:
                 (100.0, 25.0),
             ]
         )
+    with pytest.raises(ValueError):
+        tension.HallSensorCalibration.from_pairs(
+            [
+                (100.0, 20.0),
+                (120.0, 20.0),
+            ]
+        )
+    with pytest.raises(ValueError):
+        tension.HallSensorCalibration.from_pairs(
+            [
+                (100.0, 20.0),
+                (120.0, 15.0),
+            ]
+        )
 
 
 def test_estimate_tension_from_sensor_interpolates() -> None:
@@ -817,6 +831,68 @@ def test_calibration_rejects_above_range_when_unclamped() -> None:
 
     with pytest.raises(ValueError):
         calibration.force_for_reading(230.0, clamp=False)
+
+
+def test_calibration_reading_for_force_interpolates() -> None:
+    calibration = _sample_calibration()
+
+    assert math.isclose(calibration.reading_for_force(70.0), 190.0)
+
+
+def test_calibration_reading_for_force_validates_and_clamps() -> None:
+    calibration = _sample_calibration()
+
+    assert math.isclose(calibration.reading_for_force(10.0), 100.0)
+    assert math.isclose(calibration.reading_for_force(90.0), 220.0)
+
+    with pytest.raises(ValueError):
+        calibration.reading_for_force(10.0, clamp=False)
+    with pytest.raises(ValueError):
+        calibration.reading_for_force(float("nan"))
+    with pytest.raises(ValueError):
+        calibration.reading_for_force(-1.0)
+
+
+def test_calibration_reading_for_force_rejects_above_when_unclamped() -> None:
+    calibration = _sample_calibration()
+
+    with pytest.raises(ValueError):
+        calibration.reading_for_force(90.0, clamp=False)
+
+
+def test_calibration_reading_for_force_detects_invalid_span() -> None:
+    calibration = object.__new__(tension.HallSensorCalibration)
+    object.__setattr__(
+        calibration,
+        "points",
+        (
+            tension.CalibrationPoint(reading=100.0, grams=10.0),
+            tension.CalibrationPoint(reading=150.0, grams=10.0),
+            tension.CalibrationPoint(reading=200.0, grams=20.0),
+        ),
+    )
+
+    with pytest.raises(ValueError):
+        calibration.reading_for_force(15.0)
+
+
+def test_estimate_sensor_reading_for_tension() -> None:
+    calibration = _sample_calibration()
+    target = 65.0
+
+    expected = calibration.reading_for_force(target)
+    estimated = tension.estimate_sensor_reading_for_tension(
+        target,
+        calibration,
+    )
+
+    assert math.isclose(estimated, expected)
+    with pytest.raises(ValueError):
+        tension.estimate_sensor_reading_for_tension(
+            10.0,
+            calibration,
+            clamp=False,
+        )
 
 
 def test_match_tension_profile_for_sensor_reading() -> None:

@@ -68,6 +68,7 @@ from .tension import (
     estimate_tension_for_sensor_reading,
     estimate_profile_for_wpi,
     estimate_profile_for_sensor_reading,
+    estimate_sensor_reading_for_tension,
     find_tension_profile_for_wpi,
     match_tension_profile_for_wpi,
     find_tension_profile_for_force,
@@ -153,4 +154,5 @@ __all__ = [
     "get_tension_profile",
     "list_tension_profiles",
     "match_tension_profile_for_sensor_reading",
+    "estimate_sensor_reading_for_tension",
 ]
