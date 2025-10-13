@@ -23,21 +23,41 @@ MIN_MOVE_COORD_MM = 1e-3
 
 
 @dataclass(frozen=True)
+class PlannerState:
+    """State snapshot captured after emitting a motion command."""
+
+    x_mm: float
+    y_mm: float
+    z_mm: float
+    extrusion_mm: float
+    feed_rate_mm_per_min: float | None
+
+
+@dataclass(frozen=True)
 class GCodeLine:
     """A single G-code-like instruction with an optional trailing comment."""
 
     command: str
     comment: str | None = None
+    state: PlannerState | None = None
 
     def as_text(self) -> str:
         if self.comment:
             return f"{self.command} ; {self.comment}"
         return self.command
 
-    def as_dict(self) -> dict[str, str]:
-        data = {"command": self.command}
+    def as_dict(self, *, include_state: bool = False) -> dict[str, object]:
+        data: dict[str, object] = {"command": self.command}
         if self.comment:
             data["comment"] = self.comment
+        if include_state and self.state is not None:
+            data["state"] = {
+                "x_mm": self.state.x_mm,
+                "y_mm": self.state.y_mm,
+                "z_mm": self.state.z_mm,
+                "extrusion_mm": self.state.extrusion_mm,
+                "feed_rate_mm_per_min": self.state.feed_rate_mm_per_min,
+            }
         return data
 
 
@@ -123,21 +143,33 @@ class PatternTranslator:
     # Internal helpers -------------------------------------------------
 
     def _reset_state(self) -> None:
-        self._lines = [
-            GCodeLine("G21", "use millimeters"),
-            GCodeLine("G90", "absolute positioning"),
-            GCodeLine(
-                f"G92 X{self._x_mm:.2f} Y{self._y_mm:.2f} Z{SAFE_Z_MM:.2f} E0",
-                "zero axes",
-            ),
-        ]
+        self._lines = []
         self._x_mm = 0.0
         self._y_mm = 0.0
         self._z_mm = SAFE_Z_MM
         self._extrusion_mm = 0.0
+        self._emit("G21", "use millimeters")
+        self._emit("G90", "absolute positioning")
+        self._emit(
+            f"G92 X{self._x_mm:.2f} Y{self._y_mm:.2f} Z{SAFE_Z_MM:.2f} E0",
+            "zero axes",
+        )
 
-    def _emit(self, command: str, comment: str | None = None) -> None:
-        self._lines.append(GCodeLine(command, comment))
+    def _emit(
+        self,
+        command: str,
+        comment: str | None = None,
+        *,
+        feed_rate: float | None = None,
+    ) -> None:
+        state = PlannerState(
+            x_mm=self._x_mm,
+            y_mm=self._y_mm,
+            z_mm=self._z_mm,
+            extrusion_mm=self._extrusion_mm,
+            feed_rate_mm_per_min=feed_rate,
+        )
+        self._lines.append(GCodeLine(command, comment, state))
 
     def _ensure_within_limits(
         self, axis: str, position: float, *, line_number: int | None = None
@@ -198,8 +230,12 @@ class PatternTranslator:
         if self._z_mm != SAFE_Z_MM:
             self._ensure_within_limits("Z", SAFE_Z_MM)
             command = f"G1 Z{SAFE_Z_MM:.2f} F{PLUNGE_FEED_RATE}"
-            self._emit(command, "raise to safe height")
             self._z_mm = SAFE_Z_MM
+            self._emit(
+                command,
+                "raise to safe height",
+                feed_rate=PLUNGE_FEED_RATE,
+            )
 
     def _emit_stitches(
         self, profile: StitchProfile, count: int, line_number: int
@@ -208,21 +244,24 @@ class PatternTranslator:
             stitch_label = f"{profile.name.lower()} stitch {index} of {count}"
             plunge_z = FABRIC_PLANE_Z_MM - profile.plunge_depth_mm
             self._ensure_within_limits("Z", plunge_z, line_number=line_number)
+            self._z_mm = plunge_z
             self._emit(
                 f"G1 Z{plunge_z:.2f} F{PLUNGE_FEED_RATE}",
                 f"{stitch_label}: plunge",
+                feed_rate=PLUNGE_FEED_RATE,
             )
-            self._z_mm = plunge_z
             self._extrusion_mm += profile.yarn_feed_mm
             self._emit(
                 f"G1 E{self._extrusion_mm:.2f} F{YARN_FEED_RATE}",
                 f"{stitch_label}: feed yarn",
+                feed_rate=YARN_FEED_RATE,
             )
+            self._z_mm = SAFE_Z_MM
             self._emit(
                 f"G1 Z{SAFE_Z_MM:.2f} F{PLUNGE_FEED_RATE}",
                 f"{stitch_label}: raise",
+                feed_rate=PLUNGE_FEED_RATE,
             )
-            self._z_mm = SAFE_Z_MM
             self._ensure_within_limits("Z", SAFE_Z_MM, line_number=line_number)
             new_x = self._x_mm + profile.spacing_mm
             self._ensure_within_limits("X", new_x, line_number=line_number)
@@ -230,6 +269,7 @@ class PatternTranslator:
             self._emit(
                 f"G0 X{self._x_mm:.2f} Y{self._y_mm:.2f} F{TRAVEL_FEED_RATE}",
                 f"{stitch_label}: advance",
+                feed_rate=TRAVEL_FEED_RATE,
             )
 
     def _handle_move(self, arguments: Sequence[str], line_number: int) -> None:
@@ -251,6 +291,7 @@ class PatternTranslator:
         self._emit(
             f"G0 X{self._x_mm:.2f} Y{self._y_mm:.2f} F{TRAVEL_FEED_RATE}",
             "reposition",
+            feed_rate=TRAVEL_FEED_RATE,
         )
 
     def _handle_pause(
@@ -297,6 +338,7 @@ class PatternTranslator:
         self._emit(
             f"G0 X{self._x_mm:.2f} Y{self._y_mm:.2f} F{TRAVEL_FEED_RATE}",
             "turn to next row",
+            feed_rate=TRAVEL_FEED_RATE,
         )
 
 
@@ -418,9 +460,18 @@ def _write_output(
 ) -> None:
     if fmt == "gcode":
         text = "\n".join(line.as_text() for line in lines) + "\n"
-    else:
+    elif fmt == "json":
         payload = [line.as_dict() for line in lines]
         text = json.dumps(payload, indent=2)
+    elif fmt == "planner":
+        payload = {
+            "units": "mm",
+            "safe_z_mm": SAFE_Z_MM,
+            "steps": [line.as_dict(include_state=True) for line in lines],
+        }
+        text = json.dumps(payload, indent=2)
+    else:  # pragma: no cover - defensive against argparse drift
+        raise ValueError(f"Unsupported format: {fmt}")
     if output_path is None:
         sys.stdout.write(text)
     else:
@@ -475,7 +526,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--format",
-        choices=("gcode", "json"),
+        choices=("gcode", "json", "planner"),
         default="gcode",
         help="Output format (default: gcode).",
     )

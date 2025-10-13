@@ -79,6 +79,47 @@ pipelines:
 python -m wove.pattern_cli --text "CHAIN 1\nDOUBLE 1" --format json
 ```
 
+Use `--format planner` to emit metadata for interactive planners. The output
+includes the current axis positions, extrusion value, and feed rate after each
+command so browser tools can animate motion without parsing raw G-code:
+
+```bash
+python -m wove.pattern_cli --text "CHAIN 1" --format planner
+```
+
+Example snippet:
+
+```json
+{
+  "units": "mm",
+  "safe_z_mm": 4.0,
+  "steps": [
+    {
+      "command": "G21",
+      "comment": "use millimeters",
+      "state": {
+        "x_mm": 0.0,
+        "y_mm": 0.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 0.0,
+        "feed_rate_mm_per_min": null
+      }
+    },
+    {
+      "command": "G0 X5.00 Y0.00 F1200",
+      "comment": "chain stitch 1 of 1: advance",
+      "state": {
+        "x_mm": 5.0,
+        "y_mm": 0.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 0.5,
+        "feed_rate_mm_per_min": 1200
+      }
+    }
+  ]
+}
+```
+
 ## Homing guard
 
 The robotic crochet design doc stresses that the gantry must be homed before

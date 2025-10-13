@@ -22,7 +22,8 @@ Key features include:
   simple unit conversion helpers.
   See [docs/gauge.md](docs/gauge.md) for examples.
 - A pattern translation CLI (`python -m wove.pattern_cli`) that turns a simple
-  stitch description into G-code-like motion for early crochet experiments.
+  stitch description into G-code-like motion for early crochet experiments and
+  can emit planner-ready JSON with per-command state snapshots.
 - Yarn tension profile helpers (`wove.tension`) that document tested pull
   forces, trial durations, and feed rates for lace through super bulky yarns.
   Use `find_tension_profile_for_wpi` to map wraps-per-inch measurements to the
@@ -83,6 +84,8 @@ file path or inline text:
 python -m wove.pattern_cli pattern.txt
 # or
 python -m wove.pattern_cli --text "CHAIN 2\nSINGLE 1" --format json
+# or
+python -m wove.pattern_cli --text "CHAIN 1" --format planner
 ```
 
 Trace simple SVG sketches by passing a polyline or polygon. Adjust scale and offsets to fit your

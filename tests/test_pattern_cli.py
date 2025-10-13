@@ -14,6 +14,8 @@ from wove.pattern_cli import (
     DEFAULT_ROW_HEIGHT,
     GCodeLine,
     PatternTranslator,
+    SAFE_Z_MM,
+    TRAVEL_FEED_RATE,
     _load_pattern,
     _parse_points_attribute,
     _pattern_from_svg,
@@ -200,6 +202,22 @@ def test_write_output_handles_files(tmp_path):
     assert payload[1]["comment"] == "absolute positioning"
 
 
+def test_write_output_planner_includes_state(capsys):
+    translator = PatternTranslator()
+    lines = translator.translate("CHAIN 1")
+    _write_output(lines, None, "planner")
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert payload["units"] == "mm"
+    assert payload["safe_z_mm"] == pytest.approx(SAFE_Z_MM)
+    steps = payload["steps"]
+    assert steps[0]["state"]["z_mm"] == pytest.approx(SAFE_Z_MM)
+    last_state = steps[-1]["state"]
+    assert last_state["x_mm"] == pytest.approx(5.0)
+    expected_feed = pytest.approx(TRAVEL_FEED_RATE)
+    assert last_state["feed_rate_mm_per_min"] == expected_feed
+
+
 def test_load_pattern_prefers_inline(tmp_path):
     pattern_path = tmp_path / "pattern.txt"
     pattern_path.write_text("CHAIN 1", encoding="utf-8")
@@ -285,6 +303,9 @@ def test_parse_args_variants():
     assert str(args.machine_profile).endswith("profile.yaml")
     assert args.home_state == "homed"
     assert args.require_home is True
+
+    planner_args = parse_args(["--format", "planner"])
+    assert planner_args.format == "planner"
 
 
 def test_main_stdout_json(capsys):
@@ -426,7 +447,7 @@ def test_main_reports_machine_profile_load_errors(tmp_path, capsys):
     assert "Machine profile file must contain an object" in captured.err
 
 
-@pytest.mark.parametrize("fmt", ["json", "gcode"])
+@pytest.mark.parametrize("fmt", ["json", "gcode", "planner"])
 def test_pattern_cli_formats(tmp_path, fmt):
     pattern_path = tmp_path / "pattern.txt"
     pattern_path.write_text("CHAIN 1\n", encoding="utf-8")
@@ -449,6 +470,14 @@ def test_pattern_cli_formats(tmp_path, fmt):
         payload = json.loads(completed.stdout)
         assert payload[0]["command"] == "G21"
         assert payload[-1]["comment"].startswith("chain")
+    elif fmt == "planner":
+        payload = json.loads(completed.stdout)
+        assert payload["safe_z_mm"] == pytest.approx(SAFE_Z_MM)
+        steps = payload["steps"]
+        assert steps[0]["state"]["z_mm"] == pytest.approx(SAFE_Z_MM)
+        assert steps[-1]["state"]["x_mm"] == pytest.approx(5.0)
+        expected_feed = pytest.approx(TRAVEL_FEED_RATE)
+        assert steps[-1]["state"]["feed_rate_mm_per_min"] == expected_feed
     else:
         output_lines = completed.stdout.strip().splitlines()
         assert output_lines[0] == "G21 ; use millimeters"
