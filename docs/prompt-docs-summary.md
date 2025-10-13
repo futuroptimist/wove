@@ -16,6 +16,10 @@ Update `dict/prompt-doc-repos.txt` to control which repositories appear.
   Use this prompt when generating or updating OpenSCAD modules for Wove. It keeps 3D assets and
   their exported models in sync.
 
+- **Codex Design Doc Upgrade Prompt** (`evergreen`) — `docs/prompts/codex/design-doc-upgrade.md`
+  Use this prompt when design specifications (like `docs/wove-v1c-design.md`) need structural
+  improvements, simplification, or clarity before downstream teams execute on them.
+
 - **Codex Docs Prompt** (`evergreen`) — `docs/prompts/codex/docs.md`
   Use this prompt when updating or creating documentation in Wove. It keeps written guides and
   references consistent.
@@ -24,9 +28,9 @@ Update `dict/prompt-doc-repos.txt` to control which repositories appear.
   Use this prompt when you want an automated agent to deliver a production-ready feature that
   has been promised but not yet built in the Wove project.
 
-- **Codex Design Doc Upgrade Prompt** (`evergreen`) — `docs/prompts/codex/design-doc-upgrade.md`
-  Use this prompt to tighten architecture documents, simplify assemblies, and
-  document follow-up tasks for implementers.
+- **Wove Codex Polish Plan** (`evergreen`) — `docs/prompts/codex/polish.md`
+  Copy the primary prompt or the upgrade prompt to steer Codex as it delivers the pedagogy-first
+  polish roadmap and iterates on the plan.
 
 - **Codex Prompt Propagation Guide** (`evergreen`) — `docs/prompts/codex/propagate.md`
   Use this guide when copying Wove's Codex prompt catalog into another repository or rotating a
