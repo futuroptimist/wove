@@ -52,6 +52,7 @@ the helpers to look up a tested profile or estimate tension for in-between yarns
 from wove import (
     estimate_profile_for_force,
     estimate_profile_for_wpi,
+    estimate_tension_for_force,
     estimate_tension_for_wpi,
     find_tension_profile_for_wpi,
     find_tension_profile_for_force,
@@ -83,6 +84,10 @@ print(force_match.profile.weight, force_match.difference_grams)
 force_profile = estimate_profile_for_force(68.0)
 print(round(force_profile.feed_rate_mm_s, 1))  # -> 34.0 mm/s (approx)
 print(force_profile.heavier_weight, force_profile.lighter_weight)
+
+# Clamp a measured pull force to the catalog bounds when only the tension target is needed
+target_force = estimate_tension_for_force(110.0)
+print(target_force)  # -> 95.0 grams (clamped to the heaviest profile)
 ```
 
 Profiles are sorted from lightest to heaviest yarns so the automation stack can feed the data into

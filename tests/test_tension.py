@@ -311,6 +311,45 @@ def test_estimate_profile_for_force_falls_back_when_bounds_missing(
     )
 
 
+def test_estimate_tension_for_force_exact_profile() -> None:
+    profile = tension.get_tension_profile("worsted")
+
+    target = tension.estimate_tension_for_force(profile.target_force_grams)
+
+    assert math.isclose(target, profile.target_force_grams)
+
+
+def test_estimate_tension_for_force_interpolated_value() -> None:
+    dk = tension.get_tension_profile("dk")
+    worsted = tension.get_tension_profile("worsted")
+    midpoint_force = (dk.target_force_grams + worsted.target_force_grams) / 2.0
+
+    target = tension.estimate_tension_for_force(midpoint_force)
+
+    assert math.isclose(target, midpoint_force)
+
+
+def test_estimate_tension_for_force_clamps_extremes() -> None:
+    lace = tension.get_tension_profile("lace")
+    super_bulky = tension.get_tension_profile("super bulky")
+
+    low = tension.estimate_tension_for_force(lace.target_force_grams / 2.0)
+    heavy_force = super_bulky.target_force_grams * 2.0
+    high = tension.estimate_tension_for_force(heavy_force)
+
+    assert math.isclose(low, lace.target_force_grams)
+    assert math.isclose(high, super_bulky.target_force_grams)
+
+
+def test_estimate_tension_for_force_validates_input() -> None:
+    with pytest.raises(ValueError):
+        tension.estimate_tension_for_force(0.0)
+    with pytest.raises(ValueError):
+        tension.estimate_tension_for_force(float("nan"))
+    with pytest.raises(ValueError):
+        tension.estimate_tension_for_force(float("inf"))
+
+
 def test_estimate_tension_for_exact_profile() -> None:
     sport = tension.get_tension_profile("sport")
     target = tension.estimate_tension_for_wpi(sport.midpoint_wpi)
