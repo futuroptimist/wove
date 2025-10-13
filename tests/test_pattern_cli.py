@@ -255,7 +255,11 @@ def test_write_output_planner(tmp_path):
 def test_write_output_planner_requires_events(tmp_path):
     gcode_lines = [GCodeLine("G21")]
     with pytest.raises(ValueError):
-        _write_output(gcode_lines, tmp_path / "pattern.planner.json", "planner")
+        _write_output(
+            gcode_lines,
+            tmp_path / "pattern.planner.json",
+            "planner",
+        )
 
 
 def test_load_pattern_prefers_inline(tmp_path):
