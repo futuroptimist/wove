@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -178,13 +179,20 @@ class PatternTranslator:
         command: str,
     ) -> float:
         try:
-            return float(value)
+            number = float(value)
         except ValueError as error:
             message = "{} on line {} expects numeric values".format(
                 command,
                 line_number,
             )
             raise ValueError(message) from error
+        if math.isnan(number) or math.isinf(number):
+            message = "{} on line {} expects finite values".format(
+                command,
+                line_number,
+            )
+            raise ValueError(message)
+        return number
 
     def _ensure_safe_height(self) -> None:
         if self._z_mm != SAFE_Z_MM:
