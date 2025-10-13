@@ -21,6 +21,7 @@ prompts/codex/implement
 prompts/codex/design-doc-upgrade
 prompts/codex/cad
 prompts/codex/docs
+prompts/codex/polish
 prompts/codex/propagate
 prompts/codex/tests
 prompt-docs-summary
