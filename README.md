@@ -30,7 +30,9 @@ Key features include:
   and the interpolation helpers `estimate_profile_for_wpi`,
   `estimate_profile_for_force`, and `estimate_profile_for_sensor_reading` to
   guide in-between yarn choices and translate hall-effect sensor readings into
-  the same feed-rate and variation context.
+  the same feed-rate and variation context. Call
+  `estimate_sensor_reading_for_tension` to compute the hall-effect reading a
+  servo-driven tensioner should target for a desired pull force.
 - LLM helpers described in [AGENTS.md](AGENTS.md).
 - Sample Codex prompts in [`docs/prompts/codex/automation.md`](docs/prompts/codex/automation.md).
 

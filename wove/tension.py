@@ -106,6 +106,8 @@ class HallSensorCalibration:
         for previous, current in zip(ordered, ordered[1:]):
             if current.reading <= previous.reading:
                 raise ValueError("Calibration readings must increase strictly")
+            if current.grams <= previous.grams:
+                raise ValueError("Calibration grams must increase strictly")
         object.__setattr__(self, "points", ordered)
 
     @classmethod
@@ -158,6 +160,47 @@ class HallSensorCalibration:
                 span = high.reading - low.reading
                 ratio = (reading - low.reading) / span
                 return _interpolate(low.grams, high.grams, ratio)
+
+        raise RuntimeError(
+            "Calibration interpolation failed",
+        )  # pragma: no cover
+
+    def reading_for_force(
+        self,
+        grams: float,
+        *,
+        clamp: bool = True,
+    ) -> float:
+        """Return the hall-effect sensor reading for ``grams`` of tension."""
+
+        if not math.isfinite(grams):
+            raise ValueError("Target grams must be a finite value")
+        if grams < 0:
+            raise ValueError("Target grams must be non-negative")
+
+        lowest = self.points[0]
+        highest = self.points[-1]
+        target = grams
+
+        if grams <= lowest.grams:
+            if grams < lowest.grams and not clamp:
+                message = f"Target grams {grams:.3f} below calibration range"
+                raise ValueError(message)
+            return lowest.reading
+
+        if grams >= highest.grams:
+            if grams > highest.grams and not clamp:
+                message = f"Target grams {grams:.3f} above calibration range"
+                raise ValueError(message)
+            return highest.reading
+
+        for low, high in zip(self.points, self.points[1:]):
+            span = high.grams - low.grams
+            if span <= 0:
+                raise ValueError("Calibration grams must increase strictly")
+            if low.grams <= target <= high.grams:
+                ratio = (target - low.grams) / span
+                return _interpolate(low.reading, high.reading, ratio)
 
         raise RuntimeError(
             "Calibration interpolation failed",
@@ -479,6 +522,17 @@ def estimate_tension_for_sensor_reading(
     return calibration.force_for_reading(reading, clamp=clamp)
 
 
+def estimate_sensor_reading_for_tension(
+    grams: float,
+    calibration: HallSensorCalibration,
+    *,
+    clamp: bool = True,
+) -> float:
+    """Return the hall-effect sensor reading for the target ``grams``."""
+
+    return calibration.reading_for_force(grams, clamp=clamp)
+
+
 def match_tension_profile_for_sensor_reading(
     reading: float,
     calibration: HallSensorCalibration,
@@ -665,6 +719,7 @@ __all__ = [
     "CalibrationPoint",
     "HallSensorCalibration",
     "estimate_tension_for_sensor_reading",
+    "estimate_sensor_reading_for_tension",
     "match_tension_profile_for_sensor_reading",
     "estimate_profile_for_sensor_reading",
     "TENSION_PROFILES",
