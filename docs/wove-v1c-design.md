@@ -56,6 +56,7 @@ from wove import (
     estimate_tension_for_wpi,
     find_tension_profile_for_wpi,
     find_tension_profile_for_force,
+    match_tension_profile_for_wpi,
     get_tension_profile,
 )
 
@@ -76,6 +77,9 @@ print(profile.trial_duration_seconds)  # -> 60.0-second trial window
 matched = find_tension_profile_for_wpi(18.0)
 print(matched.weight if matched else "no catalog match")
 
+wpi_match = match_tension_profile_for_wpi(24.0)
+print(wpi_match.profile.weight, round(wpi_match.difference_wpi, 1))
+
 # Map a measured pull force back to the catalog and inspect the difference
 force_match = find_tension_profile_for_force(68.0)
 print(force_match.profile.weight, force_match.difference_grams)
@@ -93,6 +97,9 @@ print(target_force)  # -> 95.0 grams (clamped to the heaviest profile)
 Profiles are sorted from lightest to heaviest yarns so the automation stack can feed the data into
 future calibration scripts. Each entry captures the wraps-per-inch range, the 60-second trial
 duration, and highlights how evenly the passive tensioner maintained feed force during testing.
+Use `match_tension_profile_for_wpi` to locate the nearest catalog entry when a measurement falls
+between documented ranges; the helper reports the absolute wraps-per-inch difference so calibration
+tools can surface how far a swatch deviates from the recorded data.
 
 `estimate_profile_for_wpi` returns interpolated values along with the heavier and lighter catalog
 weights that bound the requested wraps-per-inch. Use those labels to surface which tested yarns the
