@@ -42,6 +42,18 @@ class GCodeLine:
 
 
 @dataclass(frozen=True)
+class PlannerEvent:
+    """State snapshot for planner integrations after emitting a command."""
+
+    command: str
+    comment: str | None
+    x_mm: float
+    y_mm: float
+    z_mm: float
+    extrusion_mm: float
+
+
+@dataclass(frozen=True)
 class StitchProfile:
     """Describe how to render a stitch in the generated motion sequence."""
 
@@ -89,6 +101,7 @@ class PatternTranslator:
         self._z_mm = SAFE_Z_MM
         self._extrusion_mm = 0.0
         self._machine_profile = machine_profile
+        self._planner_events: List[PlannerEvent] = []
 
     def translate(self, source: str) -> List[GCodeLine]:
         """Translate a stitch description into motion commands."""
@@ -120,24 +133,40 @@ class PatternTranslator:
                 raise ValueError(message)
         return list(self._lines)
 
+    @property
+    def planner_events(self) -> List[PlannerEvent]:
+        """Return planner-oriented command snapshots for the translation."""
+
+        return list(self._planner_events)
+
     # Internal helpers -------------------------------------------------
 
     def _reset_state(self) -> None:
-        self._lines = [
-            GCodeLine("G21", "use millimeters"),
-            GCodeLine("G90", "absolute positioning"),
-            GCodeLine(
-                f"G92 X{self._x_mm:.2f} Y{self._y_mm:.2f} Z{SAFE_Z_MM:.2f} E0",
-                "zero axes",
-            ),
-        ]
+        self._lines = []
+        self._planner_events = []
         self._x_mm = 0.0
         self._y_mm = 0.0
         self._z_mm = SAFE_Z_MM
         self._extrusion_mm = 0.0
+        self._emit("G21", "use millimeters")
+        self._emit("G90", "absolute positioning")
+        self._emit(
+            f"G92 X{self._x_mm:.2f} Y{self._y_mm:.2f} Z{SAFE_Z_MM:.2f} E0",
+            "zero axes",
+        )
 
     def _emit(self, command: str, comment: str | None = None) -> None:
         self._lines.append(GCodeLine(command, comment))
+        self._planner_events.append(
+            PlannerEvent(
+                command=command,
+                comment=comment,
+                x_mm=self._x_mm,
+                y_mm=self._y_mm,
+                z_mm=self._z_mm,
+                extrusion_mm=self._extrusion_mm,
+            )
+        )
 
     def _ensure_within_limits(
         self, axis: str, position: float, *, line_number: int | None = None
@@ -197,9 +226,9 @@ class PatternTranslator:
     def _ensure_safe_height(self) -> None:
         if self._z_mm != SAFE_Z_MM:
             self._ensure_within_limits("Z", SAFE_Z_MM)
+            self._z_mm = SAFE_Z_MM
             command = f"G1 Z{SAFE_Z_MM:.2f} F{PLUNGE_FEED_RATE}"
             self._emit(command, "raise to safe height")
-            self._z_mm = SAFE_Z_MM
 
     def _emit_stitches(
         self, profile: StitchProfile, count: int, line_number: int
@@ -208,21 +237,21 @@ class PatternTranslator:
             stitch_label = f"{profile.name.lower()} stitch {index} of {count}"
             plunge_z = FABRIC_PLANE_Z_MM - profile.plunge_depth_mm
             self._ensure_within_limits("Z", plunge_z, line_number=line_number)
+            self._z_mm = plunge_z
             self._emit(
                 f"G1 Z{plunge_z:.2f} F{PLUNGE_FEED_RATE}",
                 f"{stitch_label}: plunge",
             )
-            self._z_mm = plunge_z
             self._extrusion_mm += profile.yarn_feed_mm
             self._emit(
                 f"G1 E{self._extrusion_mm:.2f} F{YARN_FEED_RATE}",
                 f"{stitch_label}: feed yarn",
             )
+            self._z_mm = SAFE_Z_MM
             self._emit(
                 f"G1 Z{SAFE_Z_MM:.2f} F{PLUNGE_FEED_RATE}",
                 f"{stitch_label}: raise",
             )
-            self._z_mm = SAFE_Z_MM
             self._ensure_within_limits("Z", SAFE_Z_MM, line_number=line_number)
             new_x = self._x_mm + profile.spacing_mm
             self._ensure_within_limits("X", new_x, line_number=line_number)
@@ -411,15 +440,66 @@ def _load_pattern(
     return sys.stdin.read()
 
 
+def _planner_payload(events: Sequence[PlannerEvent]) -> dict[str, object]:
+    """Return a planner-friendly payload summarizing motion commands."""
+
+    def bounds(values: Iterable[float]) -> dict[str, float]:
+        series = list(values)
+        return {"min": min(series), "max": max(series)}
+
+    commands = []
+    for index, event in enumerate(events):
+        entry: dict[str, object] = {
+            "index": index,
+            "command": event.command,
+            "state": {
+                "x_mm": event.x_mm,
+                "y_mm": event.y_mm,
+                "z_mm": event.z_mm,
+                "extrusion_mm": event.extrusion_mm,
+            },
+        }
+        if event.comment is not None:
+            entry["comment"] = event.comment
+        commands.append(entry)
+
+    return {
+        "version": 1,
+        "units": "millimeters",
+        "defaults": {
+            "safe_z_mm": SAFE_Z_MM,
+            "fabric_plane_z_mm": FABRIC_PLANE_Z_MM,
+            "travel_feed_rate_mm_min": TRAVEL_FEED_RATE,
+            "plunge_feed_rate_mm_min": PLUNGE_FEED_RATE,
+            "yarn_feed_rate_mm_min": YARN_FEED_RATE,
+            "default_row_height_mm": DEFAULT_ROW_HEIGHT,
+        },
+        "bounds": {
+            "x_mm": bounds(event.x_mm for event in events),
+            "y_mm": bounds(event.y_mm for event in events),
+            "z_mm": bounds(event.z_mm for event in events),
+            "extrusion_mm": bounds(event.extrusion_mm for event in events),
+        },
+        "commands": commands,
+    }
+
+
 def _write_output(
     lines: Iterable[GCodeLine],
     output_path: Path | None,
     fmt: str,
+    *,
+    planner_events: Sequence[PlannerEvent] | None = None,
 ) -> None:
     if fmt == "gcode":
         text = "\n".join(line.as_text() for line in lines) + "\n"
-    else:
+    elif fmt == "json":
         payload = [line.as_dict() for line in lines]
+        text = json.dumps(payload, indent=2)
+    else:
+        if planner_events is None:
+            raise ValueError("Planner format requires planner events")
+        payload = _planner_payload(planner_events)
         text = json.dumps(payload, indent=2)
     if output_path is None:
         sys.stdout.write(text)
@@ -475,7 +555,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--format",
-        choices=("gcode", "json"),
+        choices=("gcode", "json", "planner"),
         default="gcode",
         help="Output format (default: gcode).",
     )
@@ -534,15 +614,18 @@ def main(argv: Sequence[str] | None = None) -> int:
         guidance = "Run the machine homing sequence or omit --require-home.\n"
         sys.stderr.write(guidance)
         return 1
+    translator = PatternTranslator(machine_profile=machine_profile)
     try:
-        lines = translate_pattern(
-            pattern_text,
-            machine_profile=machine_profile,
-        )
+        lines = translator.translate(pattern_text)
     except ValueError as error:
         sys.stderr.write(f"{error}\n")
         return 1
-    _write_output(lines, args.output, args.format)
+    _write_output(
+        lines,
+        args.output,
+        args.format,
+        planner_events=translator.planner_events,
+    )
     return 0
 
 
