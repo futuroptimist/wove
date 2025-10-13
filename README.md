@@ -27,8 +27,10 @@ Key features include:
   forces, trial durations, and feed rates for lace through super bulky yarns.
   Use `find_tension_profile_for_wpi` to map wraps-per-inch measurements to the
   catalog, `find_tension_profile_for_force` to match measured pull force data,
-  and the interpolation helpers `estimate_profile_for_wpi` and
-  `estimate_profile_for_force` to guide in-between yarn choices.
+  and the interpolation helpers `estimate_profile_for_wpi`,
+  `estimate_profile_for_force`, and `estimate_profile_for_sensor_reading` to
+  guide in-between yarn choices and translate hall-effect sensor readings into
+  the same feed-rate and variation context.
 - LLM helpers described in [AGENTS.md](AGENTS.md).
 - Sample Codex prompts in [`docs/prompts/codex/automation.md`](docs/prompts/codex/automation.md).
 
