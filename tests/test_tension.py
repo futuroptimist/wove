@@ -831,6 +831,22 @@ def test_calibration_reading_for_force_rejects_above_when_unclamped() -> None:
         calibration.reading_for_force(90.0, clamp=False)
 
 
+def test_calibration_reading_for_force_detects_invalid_span() -> None:
+    calibration = object.__new__(tension.HallSensorCalibration)
+    object.__setattr__(
+        calibration,
+        "points",
+        (
+            tension.CalibrationPoint(reading=100.0, grams=10.0),
+            tension.CalibrationPoint(reading=150.0, grams=10.0),
+            tension.CalibrationPoint(reading=200.0, grams=20.0),
+        ),
+    )
+
+    with pytest.raises(ValueError):
+        calibration.reading_for_force(15.0)
+
+
 def test_estimate_sensor_reading_for_tension() -> None:
     calibration = _sample_calibration()
     target = 65.0
