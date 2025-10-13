@@ -824,6 +824,13 @@ def test_calibration_reading_for_force_validates_and_clamps() -> None:
         calibration.reading_for_force(-1.0)
 
 
+def test_calibration_reading_for_force_rejects_above_when_unclamped() -> None:
+    calibration = _sample_calibration()
+
+    with pytest.raises(ValueError):
+        calibration.reading_for_force(90.0, clamp=False)
+
+
 def test_estimate_sensor_reading_for_tension() -> None:
     calibration = _sample_calibration()
     target = 65.0
