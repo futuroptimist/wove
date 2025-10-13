@@ -51,6 +51,35 @@ def test_find_tension_profile_for_wpi_requires_positive_values() -> None:
         tension.find_tension_profile_for_wpi(float("nan"))
 
 
+def test_match_tension_profile_for_wpi_returns_nearest() -> None:
+    match = tension.match_tension_profile_for_wpi(10.5)
+    assert match.profile.weight == "worsted"
+    assert match.difference_wpi == pytest.approx(0.0)
+
+
+def test_match_tension_profile_for_wpi_prefers_lighter_boundary() -> None:
+    match = tension.match_tension_profile_for_wpi(18.0)
+    assert match.profile.weight == "fingering"
+    assert match.difference_wpi == pytest.approx(0.0)
+
+
+def test_match_tension_profile_for_wpi_handles_extremes() -> None:
+    low = tension.match_tension_profile_for_wpi(4.0)
+    assert low.profile.weight == "super bulky"
+    assert low.difference_wpi == pytest.approx(1.0)
+
+    high = tension.match_tension_profile_for_wpi(40.0)
+    assert high.profile.weight == "lace"
+    assert high.difference_wpi == pytest.approx(8.0)
+
+
+def test_match_tension_profile_for_wpi_validates_input() -> None:
+    with pytest.raises(ValueError):
+        tension.match_tension_profile_for_wpi(0.0)
+    with pytest.raises(ValueError):
+        tension.match_tension_profile_for_wpi(float("nan"))
+
+
 def test_find_tension_profile_for_force_returns_nearest() -> None:
     match = tension.find_tension_profile_for_force(67.0)
     assert match.profile.weight == "worsted"

@@ -73,6 +73,14 @@ class ForceMatch:
 
 
 @dataclass(frozen=True)
+class WpiMatch:
+    """Nearest catalog entry for a measured wraps-per-inch value."""
+
+    profile: TensionProfile
+    difference_wpi: float
+
+
+@dataclass(frozen=True)
 class CalibrationPoint:
     """Calibration pair mapping a sensor reading to grams of pull force."""
 
@@ -627,6 +635,50 @@ def estimate_profile_for_wpi(wraps_per_inch: float) -> EstimatedTension:
     )
 
 
+def match_tension_profile_for_wpi(wraps_per_inch: float) -> WpiMatch:
+    """Return the catalog entry closest to ``wraps_per_inch``.
+
+    Args:
+        wraps_per_inch: Measured wraps-per-inch value. Must be positive and
+            finite.
+
+    Returns:
+        A :class:`WpiMatch` describing the nearest
+        :class:`TensionProfile` and the absolute wraps-per-inch difference.
+
+    Raises:
+        ValueError: If ``wraps_per_inch`` is not a positive number.
+    """
+
+    if math.isnan(wraps_per_inch) or wraps_per_inch <= 0:
+        raise ValueError("wraps_per_inch must be a positive number")
+
+    ordered = list(list_tension_profiles())
+    best_index = 0
+    best_difference = float("inf")
+
+    for index, profile in enumerate(ordered):
+        low, high = profile.wraps_per_inch
+        if low <= wraps_per_inch <= high:
+            difference = 0.0
+        elif wraps_per_inch < low:
+            difference = low - wraps_per_inch
+        else:
+            difference = wraps_per_inch - high
+
+        if difference < best_difference:
+            best_difference = difference
+            best_index = index
+        # When ``difference`` equals ``best_difference`` we keep the earlier
+        # profile so boundary values prefer the lighter yarn, mirroring the
+        # behavior of :func:`find_tension_profile_for_wpi`.
+
+    return WpiMatch(
+        profile=ordered[best_index],
+        difference_wpi=best_difference,
+    )
+
+
 def find_tension_profile_for_wpi(
     wraps_per_inch: float,
 ) -> TensionProfile | None:
@@ -662,6 +714,7 @@ __all__ = [
     "TensionProfile",
     "EstimatedTension",
     "ForceMatch",
+    "WpiMatch",
     "CalibrationPoint",
     "HallSensorCalibration",
     "estimate_tension_for_sensor_reading",
@@ -674,6 +727,7 @@ __all__ = [
     "estimate_tension_for_wpi",
     "estimate_profile_for_wpi",
     "find_tension_profile_for_wpi",
+    "match_tension_profile_for_wpi",
     "get_tension_profile",
     "list_tension_profiles",
 ]
