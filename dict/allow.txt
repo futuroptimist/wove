@@ -55,6 +55,7 @@ repo_manager
 repos
 roadmap
 subcommands
+subfolders
 subprocess
 token.place
 tokenplace
@@ -99,6 +100,7 @@ tfrac
 frac
 PETG
 explainer
+entrypoints
 PLA
 STL
 retightened
@@ -141,6 +143,7 @@ Swatching
 VeryPink
 TODOs
 APAC
+APIs
 BigTreeTech
 BOM
 GRBL
