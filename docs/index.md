@@ -11,6 +11,7 @@ robotic-knitting-machine
 pattern-cli
 gauge
 learning-resources
+plans/polish-work-plan
 testing
 repository-overview
 glossary
