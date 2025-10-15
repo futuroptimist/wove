@@ -440,7 +440,11 @@ def _load_pattern(
     return sys.stdin.read()
 
 
-def _planner_payload(events: Sequence[PlannerEvent]) -> dict[str, object]:
+def _planner_payload(
+    events: Sequence[PlannerEvent],
+    *,
+    machine_profile: MachineProfile | None = None,
+) -> dict[str, object]:
     """Return a planner-friendly payload summarizing motion commands."""
 
     def bounds(values: Iterable[float]) -> dict[str, float]:
@@ -463,7 +467,7 @@ def _planner_payload(events: Sequence[PlannerEvent]) -> dict[str, object]:
             entry["comment"] = event.comment
         commands.append(entry)
 
-    return {
+    payload: dict[str, object] = {
         "version": 1,
         "units": "millimeters",
         "defaults": {
@@ -483,6 +487,20 @@ def _planner_payload(events: Sequence[PlannerEvent]) -> dict[str, object]:
         "commands": commands,
     }
 
+    if machine_profile is not None:
+        axes_payload: dict[str, dict[str, float]] = {}
+        for name in sorted(machine_profile.axes):
+            axis = machine_profile.axes[name]
+            axes_payload[name] = {
+                "microstepping": axis.microstepping,
+                "steps_per_mm": axis.steps_per_mm,
+                "travel_min_mm": axis.travel_min_mm,
+                "travel_max_mm": axis.travel_max_mm,
+            }
+        payload["machine_profile"] = {"axes": axes_payload}
+
+    return payload
+
 
 def _write_output(
     lines: Iterable[GCodeLine],
@@ -490,6 +508,7 @@ def _write_output(
     fmt: str,
     *,
     planner_events: Sequence[PlannerEvent] | None = None,
+    machine_profile: MachineProfile | None = None,
 ) -> None:
     if fmt == "gcode":
         text = "\n".join(line.as_text() for line in lines) + "\n"
@@ -499,7 +518,10 @@ def _write_output(
     else:
         if planner_events is None:
             raise ValueError("Planner format requires planner events")
-        payload = _planner_payload(planner_events)
+        payload = _planner_payload(
+            planner_events,
+            machine_profile=machine_profile,
+        )
         text = json.dumps(payload, indent=2)
     if output_path is None:
         sys.stdout.write(text)
@@ -625,6 +647,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.output,
         args.format,
         planner_events=translator.planner_events,
+        machine_profile=machine_profile,
     )
     return 0
 

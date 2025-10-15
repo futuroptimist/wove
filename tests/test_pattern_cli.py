@@ -113,6 +113,23 @@ def test_planner_payload_includes_metadata():
     assert last_entry["state"]["extrusion_mm"] == pytest.approx(0.5)
 
 
+def test_planner_payload_includes_machine_profile_axes():
+    profile = _sample_machine_profile()
+    translator = PatternTranslator(machine_profile=profile)
+    translator.translate("CHAIN 1")
+
+    payload = _planner_payload(
+        translator.planner_events,
+        machine_profile=profile,
+    )
+
+    machine = payload["machine_profile"]["axes"]
+    assert machine["X"]["travel_max_mm"] == pytest.approx(120.0)
+    assert machine["Z"]["travel_min_mm"] == pytest.approx(-10.0)
+    assert machine["Y"]["steps_per_mm"] == pytest.approx(80.0)
+    assert machine["X"]["microstepping"] == 16
+
+
 def test_translate_pattern_slip_stitches():
     lines = translate_pattern("SLIP 2")
     text = _as_text(lines)
@@ -250,6 +267,26 @@ def test_write_output_planner(tmp_path):
     payload = json.loads(planner_path.read_text(encoding="utf-8"))
     assert payload["commands"][0]["command"] == "G21"
     assert payload["bounds"]["x_mm"]["max"] == pytest.approx(5.0)
+
+
+def test_write_output_planner_embeds_machine_profile(tmp_path):
+    profile = _sample_machine_profile()
+    translator = PatternTranslator(machine_profile=profile)
+    lines = translator.translate("CHAIN 1")
+    planner_path = tmp_path / "pattern.profile.planner.json"
+
+    _write_output(
+        lines,
+        planner_path,
+        "planner",
+        planner_events=translator.planner_events,
+        machine_profile=profile,
+    )
+
+    payload = json.loads(planner_path.read_text(encoding="utf-8"))
+    axes = payload["machine_profile"]["axes"]
+    assert axes["X"]["travel_max_mm"] == pytest.approx(120.0)
+    assert axes["Y"]["steps_per_mm"] == pytest.approx(80.0)
 
 
 def test_write_output_planner_requires_events(tmp_path):
