@@ -50,8 +50,10 @@
   and recommended next modules to smooth transitions between manual and robotic studies.
 
 ## Testing Roadmap
-- Introduce golden-motion tests in `tests/pattern_cli/test_golden_outputs.py` that validate motion
-  plans emitted from curated fixtures, run via `pytest -k pattern_cli` in CI.
+- Maintain golden-motion tests in `tests/pattern_cli/test_golden_outputs.py`
+  that validate motion plans emitted from curated fixtures. The focused suite
+  runs via `pytest -k pattern_cli` in CI and guards the planner, JSON, and
+  G-code outputs from accidental regressions.
 - Extend gauge and tension acceptance coverage in `tests/gauge/test_units.py` and
   `tests/tension/test_units.py`, consuming the centralized `UnitRegistry` to verify imperial, metric,
   and SI-derived unit parity.
