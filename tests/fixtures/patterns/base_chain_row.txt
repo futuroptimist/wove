@@ -1,0 +1,6 @@
+# form a base chain, reposition, and add a single crochet
+CHAIN 3
+PAUSE 0.4
+MOVE 18 5
+TURN 7
+SINGLE 1

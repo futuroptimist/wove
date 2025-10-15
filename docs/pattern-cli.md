@@ -79,6 +79,16 @@ pipelines:
 python -m wove.pattern_cli --text "CHAIN 1\nDOUBLE 1" --format json
 ```
 
+Golden-motion regression fixtures live in `tests/fixtures/patterns/`. The
+translator is exercised against those curated patterns by
+`tests/pattern_cli/test_golden_outputs.py`, ensuring the emitted G-code,
+JSON, and planner metadata remain stable as the CLI evolves. Run the focused
+suite during development to verify the snapshots:
+
+```bash
+pytest -k pattern_cli
+```
+
 Provide planner-friendly metadata for the browser-based roadmap by emitting the
 `planner` format. The payload includes per-command position snapshots,
 feed-rate defaults, and the motion bounds so interactive tools can render the
