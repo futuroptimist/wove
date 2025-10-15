@@ -100,4 +100,6 @@ The DSL accepts commands such as `SLIP <count>`, `CHAIN <count>`, `SINGLE <count
 <count>`, `MOVE <x> <y>`, `TURN [height]`, and `PAUSE <seconds>`. The output is
 G-code-inspired: each stitch generates plunge, yarn-feed, raise, and travel
 moves with comments so you can import the sequence into firmware or simulation
-tools.
+tools. Export the planner-oriented JSON format with `--format planner` and
+validate it against [`docs/schema/pattern-cli.schema.json`](docs/schema/pattern-cli.schema.json)
+to integrate with browser tooling or downstream automation.

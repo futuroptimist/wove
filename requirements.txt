@@ -4,3 +4,4 @@ black
 pytest
 pre-commit
 pyyaml
+jsonschema
