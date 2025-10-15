@@ -6,7 +6,9 @@ import io
 import json
 import subprocess
 import sys
+from pathlib import Path
 
+import jsonschema
 import pytest
 
 from wove.machine_profile import AxisProfile, MachineProfile
@@ -31,6 +33,24 @@ from wove.pattern_cli import (
 
 def _as_text(lines):
     return [line.as_text() for line in lines]
+
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures" / "patterns"
+SCHEMA_PATH = ROOT_DIR / "docs" / "schema" / "pattern-cli.schema.json"
+
+
+@pytest.fixture(scope="session")
+def planner_validator() -> jsonschema.Draft202012Validator:
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    jsonschema.Draft202012Validator.check_schema(schema)
+    return jsonschema.Draft202012Validator(schema)
+
+
+def _planner_payload_for_pattern(pattern: str) -> dict[str, object]:
+    translator = PatternTranslator()
+    translator.translate(pattern)
+    return _planner_payload(translator.planner_events)
 
 
 def _sample_machine_profile(
@@ -128,6 +148,26 @@ def test_planner_payload_includes_machine_profile_axes():
     assert machine["Z"]["travel_min_mm"] == pytest.approx(-10.0)
     assert machine["Y"]["steps_per_mm"] == pytest.approx(80.0)
     assert machine["X"]["microstepping"] == 16
+
+
+def test_planner_schema_validates_handwritten_fixture(
+    planner_validator: jsonschema.Draft202012Validator,
+) -> None:
+    pattern_path = FIXTURES_DIR / "handwritten.txt"
+    pattern_text = pattern_path.read_text(encoding="utf-8")
+    payload = _planner_payload_for_pattern(pattern_text)
+
+    planner_validator.validate(payload)
+
+
+def test_planner_schema_validates_svg_fixture(
+    planner_validator: jsonschema.Draft202012Validator,
+) -> None:
+    svg_path = FIXTURES_DIR / "triangle.svg"
+    pattern_text = _pattern_from_svg(svg_path, 1.0, 0.0, 0.0)
+    payload = _planner_payload_for_pattern(pattern_text)
+
+    planner_validator.validate(payload)
 
 
 def test_translate_pattern_slip_stitches():

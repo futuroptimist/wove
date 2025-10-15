@@ -1,0 +1,5 @@
+# anchor with slip stitches before adding taller stitches
+SLIP 2
+CHAIN 1
+TURN 5.5
+DOUBLE 2

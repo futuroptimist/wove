@@ -1,0 +1,6 @@
+# Sample hand-written pattern for schema validation
+CHAIN 3
+PAUSE 0.25
+MOVE 15 8
+TURN 6.5
+SINGLE 2

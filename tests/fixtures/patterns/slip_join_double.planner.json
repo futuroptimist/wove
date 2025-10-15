@@ -1,0 +1,296 @@
+{
+  "version": 1,
+  "units": "millimeters",
+  "defaults": {
+    "safe_z_mm": 4.0,
+    "fabric_plane_z_mm": 0.0,
+    "travel_feed_rate_mm_min": 1200,
+    "plunge_feed_rate_mm_min": 600,
+    "yarn_feed_rate_mm_min": 300,
+    "default_row_height_mm": 6.0
+  },
+  "bounds": {
+    "x_mm": {
+      "min": 0.0,
+      "max": 12.0
+    },
+    "y_mm": {
+      "min": 0.0,
+      "max": 5.5
+    },
+    "z_mm": {
+      "min": -2.5,
+      "max": 4.0
+    },
+    "extrusion_mm": {
+      "min": 0.0,
+      "max": 2.5
+    }
+  },
+  "commands": [
+    {
+      "index": 0,
+      "command": "G21",
+      "state": {
+        "x_mm": 0.0,
+        "y_mm": 0.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 0.0
+      },
+      "comment": "use millimeters"
+    },
+    {
+      "index": 1,
+      "command": "G90",
+      "state": {
+        "x_mm": 0.0,
+        "y_mm": 0.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 0.0
+      },
+      "comment": "absolute positioning"
+    },
+    {
+      "index": 2,
+      "command": "G92 X0.00 Y0.00 Z4.00 E0",
+      "state": {
+        "x_mm": 0.0,
+        "y_mm": 0.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 0.0
+      },
+      "comment": "zero axes"
+    },
+    {
+      "index": 3,
+      "command": "G1 Z-1.00 F600",
+      "state": {
+        "x_mm": 0.0,
+        "y_mm": 0.0,
+        "z_mm": -1.0,
+        "extrusion_mm": 0.0
+      },
+      "comment": "slip stitch 1 of 2: plunge"
+    },
+    {
+      "index": 4,
+      "command": "G1 E0.30 F300",
+      "state": {
+        "x_mm": 0.0,
+        "y_mm": 0.0,
+        "z_mm": -1.0,
+        "extrusion_mm": 0.3
+      },
+      "comment": "slip stitch 1 of 2: feed yarn"
+    },
+    {
+      "index": 5,
+      "command": "G1 Z4.00 F600",
+      "state": {
+        "x_mm": 0.0,
+        "y_mm": 0.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 0.3
+      },
+      "comment": "slip stitch 1 of 2: raise"
+    },
+    {
+      "index": 6,
+      "command": "G0 X3.50 Y0.00 F1200",
+      "state": {
+        "x_mm": 3.5,
+        "y_mm": 0.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 0.3
+      },
+      "comment": "slip stitch 1 of 2: advance"
+    },
+    {
+      "index": 7,
+      "command": "G1 Z-1.00 F600",
+      "state": {
+        "x_mm": 3.5,
+        "y_mm": 0.0,
+        "z_mm": -1.0,
+        "extrusion_mm": 0.3
+      },
+      "comment": "slip stitch 2 of 2: plunge"
+    },
+    {
+      "index": 8,
+      "command": "G1 E0.60 F300",
+      "state": {
+        "x_mm": 3.5,
+        "y_mm": 0.0,
+        "z_mm": -1.0,
+        "extrusion_mm": 0.6
+      },
+      "comment": "slip stitch 2 of 2: feed yarn"
+    },
+    {
+      "index": 9,
+      "command": "G1 Z4.00 F600",
+      "state": {
+        "x_mm": 3.5,
+        "y_mm": 0.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 0.6
+      },
+      "comment": "slip stitch 2 of 2: raise"
+    },
+    {
+      "index": 10,
+      "command": "G0 X7.00 Y0.00 F1200",
+      "state": {
+        "x_mm": 7.0,
+        "y_mm": 0.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 0.6
+      },
+      "comment": "slip stitch 2 of 2: advance"
+    },
+    {
+      "index": 11,
+      "command": "G1 Z-1.50 F600",
+      "state": {
+        "x_mm": 7.0,
+        "y_mm": 0.0,
+        "z_mm": -1.5,
+        "extrusion_mm": 0.6
+      },
+      "comment": "chain stitch 1 of 1: plunge"
+    },
+    {
+      "index": 12,
+      "command": "G1 E1.10 F300",
+      "state": {
+        "x_mm": 7.0,
+        "y_mm": 0.0,
+        "z_mm": -1.5,
+        "extrusion_mm": 1.1
+      },
+      "comment": "chain stitch 1 of 1: feed yarn"
+    },
+    {
+      "index": 13,
+      "command": "G1 Z4.00 F600",
+      "state": {
+        "x_mm": 7.0,
+        "y_mm": 0.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 1.1
+      },
+      "comment": "chain stitch 1 of 1: raise"
+    },
+    {
+      "index": 14,
+      "command": "G0 X12.00 Y0.00 F1200",
+      "state": {
+        "x_mm": 12.0,
+        "y_mm": 0.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 1.1
+      },
+      "comment": "chain stitch 1 of 1: advance"
+    },
+    {
+      "index": 15,
+      "command": "G0 X0.00 Y5.50 F1200",
+      "state": {
+        "x_mm": 0.0,
+        "y_mm": 5.5,
+        "z_mm": 4.0,
+        "extrusion_mm": 1.1
+      },
+      "comment": "turn to next row"
+    },
+    {
+      "index": 16,
+      "command": "G1 Z-2.50 F600",
+      "state": {
+        "x_mm": 0.0,
+        "y_mm": 5.5,
+        "z_mm": -2.5,
+        "extrusion_mm": 1.1
+      },
+      "comment": "double stitch 1 of 2: plunge"
+    },
+    {
+      "index": 17,
+      "command": "G1 E1.80 F300",
+      "state": {
+        "x_mm": 0.0,
+        "y_mm": 5.5,
+        "z_mm": -2.5,
+        "extrusion_mm": 1.8
+      },
+      "comment": "double stitch 1 of 2: feed yarn"
+    },
+    {
+      "index": 18,
+      "command": "G1 Z4.00 F600",
+      "state": {
+        "x_mm": 0.0,
+        "y_mm": 5.5,
+        "z_mm": 4.0,
+        "extrusion_mm": 1.8
+      },
+      "comment": "double stitch 1 of 2: raise"
+    },
+    {
+      "index": 19,
+      "command": "G0 X5.50 Y5.50 F1200",
+      "state": {
+        "x_mm": 5.5,
+        "y_mm": 5.5,
+        "z_mm": 4.0,
+        "extrusion_mm": 1.8
+      },
+      "comment": "double stitch 1 of 2: advance"
+    },
+    {
+      "index": 20,
+      "command": "G1 Z-2.50 F600",
+      "state": {
+        "x_mm": 5.5,
+        "y_mm": 5.5,
+        "z_mm": -2.5,
+        "extrusion_mm": 1.8
+      },
+      "comment": "double stitch 2 of 2: plunge"
+    },
+    {
+      "index": 21,
+      "command": "G1 E2.50 F300",
+      "state": {
+        "x_mm": 5.5,
+        "y_mm": 5.5,
+        "z_mm": -2.5,
+        "extrusion_mm": 2.5
+      },
+      "comment": "double stitch 2 of 2: feed yarn"
+    },
+    {
+      "index": 22,
+      "command": "G1 Z4.00 F600",
+      "state": {
+        "x_mm": 5.5,
+        "y_mm": 5.5,
+        "z_mm": 4.0,
+        "extrusion_mm": 2.5
+      },
+      "comment": "double stitch 2 of 2: raise"
+    },
+    {
+      "index": 23,
+      "command": "G0 X11.00 Y5.50 F1200",
+      "state": {
+        "x_mm": 11.0,
+        "y_mm": 5.5,
+        "z_mm": 4.0,
+        "extrusion_mm": 2.5
+      },
+      "comment": "double stitch 2 of 2: advance"
+    }
+  ]
+}
