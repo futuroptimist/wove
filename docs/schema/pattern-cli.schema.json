@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://futuroptimist.github.io/wove/schema/pattern-cli.schema.json",
+  "title": "Wove Pattern CLI Planner Format",
+  "description": "Schema describing the JSON payload emitted by `python -m wove.pattern_cli --format planner`.",
+  "type": "object",
+  "required": [
+    "version",
+    "units",
+    "defaults",
+    "bounds",
+    "commands"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "description": "Planner format version number.",
+      "type": "integer",
+      "const": 1
+    },
+    "units": {
+      "description": "Measurement units used throughout the payload.",
+      "type": "string",
+      "enum": [
+        "millimeters"
+      ]
+    },
+    "defaults": {
+      "description": "Feed rates, safety planes, and other defaults applied during translation.",
+      "$ref": "#/definitions/defaults"
+    },
+    "bounds": {
+      "description": "Axis-aligned bounds covering every emitted planner event.",
+      "$ref": "#/definitions/bounds"
+    },
+    "commands": {
+      "description": "Planner-aligned command list preserving ordering and machine state snapshots.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/command"
+      }
+    }
+  },
+  "definitions": {
+    "defaults": {
+      "type": "object",
+      "required": [
+        "safe_z_mm",
+        "fabric_plane_z_mm",
+        "travel_feed_rate_mm_min",
+        "plunge_feed_rate_mm_min",
+        "yarn_feed_rate_mm_min",
+        "default_row_height_mm"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "safe_z_mm": {
+          "type": "number",
+          "description": "Z height (mm) used for safe travel moves."
+        },
+        "fabric_plane_z_mm": {
+          "type": "number",
+          "description": "Z height (mm) representing the fabric plane."
+        },
+        "travel_feed_rate_mm_min": {
+          "type": "number",
+          "description": "Feed rate (mm/min) for travel moves."
+        },
+        "plunge_feed_rate_mm_min": {
+          "type": "number",
+          "description": "Feed rate (mm/min) for plunge moves."
+        },
+        "yarn_feed_rate_mm_min": {
+          "type": "number",
+          "description": "Feed rate (mm/min) for yarn extrusion."
+        },
+        "default_row_height_mm": {
+          "type": "number",
+          "description": "Default Y increment (mm) applied by TURN commands."
+        }
+      }
+    },
+    "bounds": {
+      "type": "object",
+      "required": [
+        "x_mm",
+        "y_mm",
+        "z_mm",
+        "extrusion_mm"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "x_mm": {
+          "$ref": "#/definitions/range"
+        },
+        "y_mm": {
+          "$ref": "#/definitions/range"
+        },
+        "z_mm": {
+          "$ref": "#/definitions/range"
+        },
+        "extrusion_mm": {
+          "$ref": "#/definitions/range"
+        }
+      }
+    },
+    "range": {
+      "type": "object",
+      "required": [
+        "min",
+        "max"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "min": {
+          "type": "number",
+          "description": "Minimum value observed across planner events."
+        },
+        "max": {
+          "type": "number",
+          "description": "Maximum value observed across planner events."
+        }
+      }
+    },
+    "command": {
+      "type": "object",
+      "required": [
+        "index",
+        "command",
+        "state"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Zero-based command index preserving planner ordering."
+        },
+        "command": {
+          "type": "string",
+          "description": "G-code-like instruction emitted by the translator."
+        },
+        "comment": {
+          "type": "string",
+          "description": "Optional human-readable comment explaining the command."
+        },
+        "state": {
+          "$ref": "#/definitions/state"
+        }
+      }
+    },
+    "state": {
+      "type": "object",
+      "required": [
+        "x_mm",
+        "y_mm",
+        "z_mm",
+        "extrusion_mm"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "x_mm": {
+          "type": "number",
+          "description": "X position in millimeters after applying the command."
+        },
+        "y_mm": {
+          "type": "number",
+          "description": "Y position in millimeters after applying the command."
+        },
+        "z_mm": {
+          "type": "number",
+          "description": "Z position in millimeters after applying the command."
+        },
+        "extrusion_mm": {
+          "type": "number",
+          "description": "Yarn extrusion distance in millimeters after applying the command."
+        }
+      }
+    }
+  }
+}

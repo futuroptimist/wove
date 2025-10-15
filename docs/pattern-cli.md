@@ -92,6 +92,22 @@ The resulting JSON object lists each command with its comment and the updated
 `X`, `Y`, `Z`, and yarn-feed positions. Use the `defaults` block for safety
 constraints such as the safe Z height and row spacing.
 
+Refer to [`docs/schema/pattern-cli.schema.json`](schema/pattern-cli.schema.json)
+for a machine-readable description of the planner format. The schema mirrors
+the default units (millimeters), enumerates the command state snapshot fields,
+and constrains the axis bounds included in the payload. Validate generated
+files with [`jsonschema`](https://github.com/python-jsonschema/jsonschema):
+
+```bash
+python -m wove.pattern_cli --text "CHAIN 1" --format planner > planner.json
+python -m jsonschema -i planner.json docs/schema/pattern-cli.schema.json
+```
+
+Sample pattern inputs live under `tests/fixtures/patterns/` and cover both
+hand-authored DSL snippets (`handwritten.txt`) and SVG-generated MOVE sequences
+(`triangle.svg`). They provide quick references for exercising the CLI and the
+schema-backed planner payload in tests or tooling experiments.
+
 ## Homing guard
 
 The robotic crochet design doc stresses that the gantry must be homed before
