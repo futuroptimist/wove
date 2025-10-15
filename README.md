@@ -23,8 +23,9 @@ Key features include:
   See [docs/gauge.md](docs/gauge.md) for examples.
 - A pattern translation CLI (`python -m wove.pattern_cli`) that turns a simple
   stitch description into G-code-like motion for early crochet experiments. Use
-  `--format planner` to export per-command position snapshots and bounds for
-  the browser-based planner roadmap.
+  `--format planner` to export per-command position snapshots, bounds, and (when
+  `--machine-profile` is provided) the axis metadata consumed by the
+  browser-based planner roadmap.
 - Yarn tension profile helpers (`wove.tension`) that document tested pull
   forces, trial durations, and feed rates for lace through super bulky yarns.
   Use `find_tension_profile_for_wpi` to map wraps-per-inch measurements to the

@@ -92,7 +92,10 @@ pytest -k pattern_cli
 Provide planner-friendly metadata for the browser-based roadmap by emitting the
 `planner` format. The payload includes per-command position snapshots,
 feed-rate defaults, and the motion bounds so interactive tools can render the
-sequence without parsing G-code first:
+sequence without parsing G-code first. When you supply a machine profile with
+`--machine-profile`, the planner payload also embeds that axis metadata so the
+front-end inherits the same microstepping, steps-per-millimeter, and travel
+limits used during validation:
 
 ```bash
 python -m wove.pattern_cli --text "CHAIN 1" --format planner
@@ -100,7 +103,10 @@ python -m wove.pattern_cli --text "CHAIN 1" --format planner
 
 The resulting JSON object lists each command with its comment and the updated
 `X`, `Y`, `Z`, and yarn-feed positions. Use the `defaults` block for safety
-constraints such as the safe Z height and row spacing.
+constraints such as the safe Z height and row spacing. When a machine profile
+was provided, the `machine_profile.axes` mapping mirrors the JSON/YAML schema
+loaded by `--machine-profile` so downstream planners can respect the same
+travel envelope without re-reading the original file.
 
 Refer to [`docs/schema/pattern-cli.schema.json`](schema/pattern-cli.schema.json)
 for a machine-readable description of the planner format. The schema mirrors
