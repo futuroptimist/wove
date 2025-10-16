@@ -27,7 +27,7 @@
    - Author a JSON Schema in `docs/schema/pattern-cli.schema.json` describing primitives, units, and
      composition rules; add sample inputs under `tests/fixtures/patterns/` representing hand-written
      and auto-generated cases.
-   - Build a visualization harness in `scripts/pattern_visualize.py` that renders stitch charts and
+   - Leverage the `scripts/pattern_visualize.py` visualization harness to render stitch charts and
      motion timelines from fixtures, exporting static assets to `docs/_static/pattern_previews/` for
      educator review.
 3. **Consolidate unit conversion utilities**
