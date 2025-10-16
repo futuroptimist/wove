@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import sys
 from pathlib import Path
 
 import pytest
@@ -78,3 +79,72 @@ def test_helper_functions_cover_edge_cases(tmp_path):
     # _load_patterns raises when a requested pattern cannot be found.
     with pytest.raises(FileNotFoundError):
         module._load_patterns(tmp_path, ["does-not-exist"])
+
+
+def test_module_inserts_repo_root_into_sys_path(monkeypatch):
+    module = _load_module()
+    repo_root = module.REPO_ROOT
+    sanitized_path = [
+        entry
+        for entry in sys.path
+        if Path(entry).resolve() != repo_root
+    ]
+    monkeypatch.setattr(sys, "path", sanitized_path, raising=False)
+
+    module = _load_module()
+
+    assert str(repo_root) in sys.path
+
+
+def test_chart_helpers_cover_edge_branches():
+    module = _load_module()
+
+    empty_chart = module._xy_chart([], "empty")
+    assert "data-role=\"xy-path\"" in empty_chart
+
+    single_event = module.PlannerEvent(
+        command="KNIT",
+        comment=None,
+        x_mm=1.0,
+        y_mm=2.0,
+        z_mm=3.0,
+        extrusion_mm=0.0,
+    )
+    single_timeline = module._timeline_chart([single_event], "single")
+    assert "data-series=\"z_mm\"" in single_timeline
+
+
+def test_load_patterns_defaults_to_directory_listing(tmp_path):
+    module = _load_module()
+    (tmp_path / "first.txt").write_text("KNIT 0 0 0", encoding="utf-8")
+    (tmp_path / "second.txt").write_text("KNIT 0 0 0", encoding="utf-8")
+
+    loaded = module._load_patterns(tmp_path, None)
+
+    assert [path.name for path in loaded] == ["first.txt", "second.txt"]
+
+
+def test_main_reports_errors_and_empty_directories(tmp_path, capsys):
+    module = _load_module()
+
+    exit_code = module.main([
+        "--pattern-dir",
+        str(tmp_path),
+        "--pattern",
+        "missing",
+    ])
+
+    assert exit_code == 1
+    captured = capsys.readouterr()
+    assert "does not exist" in captured.out
+
+    exit_code = module.main([
+        "--pattern-dir",
+        str(tmp_path),
+        "--output-dir",
+        str(tmp_path / "out"),
+    ])
+
+    assert exit_code == 0
+    captured = capsys.readouterr()
+    assert "nothing to render" in captured.out
