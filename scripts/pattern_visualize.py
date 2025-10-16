@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import html
+import importlib
 import math
 import sys
 from pathlib import Path
@@ -11,10 +12,16 @@ from typing import Iterable, List, Sequence
 
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
 
-from wove.pattern_cli import PatternTranslator, PlannerEvent
+
+def _load_pattern_cli() -> tuple[type, type]:
+    if str(REPO_ROOT) not in sys.path:
+        sys.path.insert(0, str(REPO_ROOT))
+    module = importlib.import_module("wove.pattern_cli")
+    return module.PatternTranslator, module.PlannerEvent
+
+
+PatternTranslator, PlannerEvent = _load_pattern_cli()
 DEFAULT_PATTERN_DIR = REPO_ROOT / "tests" / "fixtures" / "patterns"
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "docs" / "_static" / "pattern_previews"
 
@@ -70,22 +77,31 @@ def _xy_chart(events: Sequence[PlannerEvent], name: str) -> str:
     start_x, start_y = scaled[0]
     end_x, end_y = scaled[-1]
     escaped_name = html.escape(name)
-    return (
-        "<svg xmlns=\"http://www.w3.org/2000/svg\" "
-        f"width=\"{width}\" height=\"{height}\" viewBox=\"0 0 {width} {height}\">"
-        f"<title>{escaped_name} XY path</title>"
-        "<desc>Scaled XY motion path generated from planner events.</desc>"
-        f"<rect x=\"{margin}\" y=\"{margin}\" width=\"{width - 2 * margin}\" "
-        f"height=\"{height - 2 * margin}\" fill=\"#f6f8fb\" stroke=\"#cdd5e0\" "
-        "stroke-width=\"1\"/>"
-        f"<polyline data-role=\"xy-path\" fill=\"none\" stroke=\"#0069ff\" "
-        f"stroke-width=\"2\" points=\"{path_points}\"/>"
-        f"<circle cx=\"{start_x:.1f}\" cy=\"{start_y:.1f}\" r=\"5\" fill=\"#2a9d8f\"/>"
-        f"<circle cx=\"{end_x:.1f}\" cy=\"{end_y:.1f}\" r=\"5\" fill=\"#e76f51\"/>"
-        f"<text x=\"{margin}\" y=\"{margin - 10}\" "
-        "font-family=\"sans-serif\" font-size=\"14\" fill=\"#1f2933\">"
-        f"{escaped_name} XY motion</text>"
-        "</svg>"
+    return "".join(
+        [
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" ",
+            f"width=\"{width}\" height=\"{height}\" ",
+            f"viewBox=\"0 0 {width} {height}\">",
+            f"<title>{escaped_name} XY path</title>",
+            "<desc>Scaled XY motion path generated from planner events."
+            "</desc>",
+            f"<rect x=\"{margin}\" y=\"{margin}\" ",
+            f"width=\"{width - 2 * margin}\" ",
+            f"height=\"{height - 2 * margin}\" ",
+            "fill=\"#f6f8fb\" stroke=\"#cdd5e0\" stroke-width=\"1\"/>",
+            "<polyline data-role=\"xy-path\" fill=\"none\" ",
+            "stroke=\"#0069ff\" stroke-width=\"2\" ",
+            f"points=\"{path_points}\"/>",
+            f"<circle cx=\"{start_x:.1f}\" cy=\"{start_y:.1f}\" ",
+            "r=\"5\" fill=\"#2a9d8f\"/>",
+            f"<circle cx=\"{end_x:.1f}\" cy=\"{end_y:.1f}\" ",
+            "r=\"5\" fill=\"#e76f51\"/>",
+            f"<text x=\"{margin}\" y=\"{margin - 10}\" ",
+            "font-family=\"sans-serif\" font-size=\"14\" ",
+            "fill=\"#1f2933\">",
+            f"{escaped_name} XY motion</text>",
+            "</svg>",
+        ]
     )
 
 
@@ -110,45 +126,70 @@ def _timeline_chart(events: Sequence[PlannerEvent], name: str) -> str:
     top_band = (margin_top, (height / 2) - 16)
     bottom_band = ((height / 2) + 16, height - margin_bottom)
 
-    def series_points(series: Sequence[float], source_range: tuple[float, float], band):
+    def series_points(
+        series: Sequence[float],
+        source_range: tuple[float, float],
+        band: tuple[float, float],
+    ) -> str:
         start_px, end_px = band
-        return " ".join(
-            f"{x:.1f},{_scale_linear(value, source=source_range, target=(end_px, start_px)):.1f}"
-            for x, value in zip(x_coords, series)
-        )
+        points: list[str] = []
+        for x, value in zip(x_coords, series):
+            scaled_value = _scale_linear(
+                value,
+                source=source_range,
+                target=(end_px, start_px),
+            )
+            points.append(f"{x:.1f},{scaled_value:.1f}")
+        return " ".join(points)
 
     z_points = series_points(z_series, (z_min, z_max), top_band)
     e_points = series_points(extrusion_series, (e_min, e_max), bottom_band)
     escaped_name = html.escape(name)
-    return (
-        "<svg xmlns=\"http://www.w3.org/2000/svg\" "
-        f"width=\"{width}\" height=\"{height}\" viewBox=\"0 0 {width} {height}\">"
-        f"<title>{escaped_name} timeline</title>"
-        "<desc>Z height and yarn feed plotted across emitted commands.</desc>"
-        f"<rect x=\"{margin_left}\" y=\"{margin_top}\" "
-        f"width=\"{plot_width}\" height=\"{height - margin_top - margin_bottom}\" "
-        "fill=\"#f6f8fb\" stroke=\"#cdd5e0\" stroke-width=\"1\"/>"
-        f"<line x1=\"{margin_left}\" y1=\"{height/2}\" x2=\"{width - margin_right}\" "
-        f"y2=\"{height/2}\" stroke=\"#cdd5e0\" stroke-dasharray=\"4 4\"/>"
-        f"<polyline data-series=\"z_mm\" fill=\"none\" stroke=\"#264653\" "
-        f"stroke-width=\"2\" points=\"{z_points}\"/>"
-        f"<polyline data-series=\"extrusion_mm\" fill=\"none\" stroke=\"#e9c46a\" "
-        f"stroke-width=\"2\" points=\"{e_points}\"/>"
-        f"<text x=\"{margin_left}\" y=\"{margin_top - 10}\" "
-        "font-family=\"sans-serif\" font-size=\"14\" fill=\"#1f2933\">"
-        f"{escaped_name} motion timeline</text>"
-        f"<text x=\"{margin_left}\" y=\"{height/2 - 8}\" "
-        "font-family=\"sans-serif\" font-size=\"12\" fill=\"#264653\">Z (mm)</text>"
-        f"<text x=\"{margin_left}\" y=\"{height/2 + 24}\" "
-        "font-family=\"sans-serif\" font-size=\"12\" fill=\"#946c00\">Extrusion (mm)</text>"
-        f"<text x=\"{width - margin_right - 4}\" y=\"{height - margin_bottom + 24}\" "
-        "font-family=\"sans-serif\" font-size=\"12\" fill=\"#1f2933\" text-anchor=\"end\">"
-        "Command index</text>"
-        "</svg>"
+    return "".join(
+        [
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" ",
+            f"width=\"{width}\" height=\"{height}\" ",
+            f"viewBox=\"0 0 {width} {height}\">",
+            f"<title>{escaped_name} timeline</title>",
+            "<desc>Z height and yarn feed plotted across emitted commands."
+            "</desc>",
+            f"<rect x=\"{margin_left}\" y=\"{margin_top}\" ",
+            f"width=\"{plot_width}\" ",
+            f"height=\"{height - margin_top - margin_bottom}\" ",
+            "fill=\"#f6f8fb\" stroke=\"#cdd5e0\" stroke-width=\"1\"/>",
+            f"<line x1=\"{margin_left}\" y1=\"{height/2}\" ",
+            f"x2=\"{width - margin_right}\" y2=\"{height/2}\" ",
+            "stroke=\"#cdd5e0\" stroke-dasharray=\"4 4\"/>",
+            "<polyline data-series=\"z_mm\" fill=\"none\" ",
+            "stroke=\"#264653\" stroke-width=\"2\" ",
+            f"points=\"{z_points}\"/>",
+            "<polyline data-series=\"extrusion_mm\" fill=\"none\" ",
+            "stroke=\"#e9c46a\" stroke-width=\"2\" ",
+            f"points=\"{e_points}\"/>",
+            f"<text x=\"{margin_left}\" y=\"{margin_top - 10}\" ",
+            "font-family=\"sans-serif\" font-size=\"14\" ",
+            "fill=\"#1f2933\">",
+            f"{escaped_name} motion timeline</text>",
+            f"<text x=\"{margin_left}\" y=\"{height/2 - 8}\" ",
+            "font-family=\"sans-serif\" font-size=\"12\" ",
+            "fill=\"#264653\">Z (mm)</text>",
+            f"<text x=\"{margin_left}\" y=\"{height/2 + 24}\" ",
+            "font-family=\"sans-serif\" font-size=\"12\" ",
+            "fill=\"#946c00\">Extrusion (mm)</text>",
+            f"<text x=\"{width - margin_right - 4}\" ",
+            f"y=\"{height - margin_bottom + 24}\" ",
+            "font-family=\"sans-serif\" font-size=\"12\" ",
+            "fill=\"#1f2933\" text-anchor=\"end\">",
+            "Command index</text>",
+            "</svg>",
+        ]
     )
 
 
-def _load_patterns(pattern_dir: Path, names: Sequence[str] | None) -> List[Path]:
+def _load_patterns(
+    pattern_dir: Path,
+    names: Sequence[str] | None,
+) -> List[Path]:
     if names:
         resolved: list[Path] = []
         for raw in names:
@@ -158,7 +199,8 @@ def _load_patterns(pattern_dir: Path, names: Sequence[str] | None) -> List[Path]
             if not candidate.is_absolute():
                 candidate = pattern_dir / candidate
             if not candidate.exists():
-                raise FileNotFoundError(f"Pattern file {candidate} does not exist")
+                message = f"Pattern file {candidate} does not exist"
+                raise FileNotFoundError(message)
             resolved.append(candidate)
         return sorted(resolved)
     return sorted(pattern_dir.glob("*.txt"))
@@ -197,27 +239,35 @@ def generate_previews(
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Render SVG stitch charts and motion timelines from pattern fixtures."
+            "Render SVG stitch charts and motion timelines "
+            "from pattern fixtures."
         )
     )
     parser.add_argument(
         "--pattern-dir",
         type=Path,
         default=DEFAULT_PATTERN_DIR,
-        help="Directory containing pattern .txt fixtures (default: %(default)s).",
+        help=(
+            "Directory containing pattern .txt fixtures "
+            "(default: %(default)s)."
+        ),
     )
     parser.add_argument(
         "--output-dir",
         type=Path,
         default=DEFAULT_OUTPUT_DIR,
-        help="Directory for generated SVG previews (default: %(default)s).",
+        help=(
+            "Directory for generated SVG previews "
+            "(default: %(default)s)."
+        ),
     )
     parser.add_argument(
         "--pattern",
         action="append",
         help=(
-            "Specific pattern files or basenames to render. Repeat for multiple "
-            "patterns. Defaults to all .txt files in --pattern-dir."
+            "Specific pattern files or basenames to render. Repeat "
+            "for multiple patterns. Defaults to all .txt files in "
+            "--pattern-dir."
         ),
     )
     parser.add_argument(

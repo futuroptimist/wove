@@ -9,11 +9,16 @@ from pathlib import Path
 import pytest
 
 
-MODULE_PATH = Path(__file__).resolve().parent.parent / "scripts" / "pattern_visualize.py"
+MODULE_PATH = (
+    Path(__file__).resolve().parent.parent / "scripts" / "pattern_visualize.py"
+)
 
 
 def _load_module():
-    spec = importlib.util.spec_from_file_location("pattern_visualize", MODULE_PATH)
+    spec = importlib.util.spec_from_file_location(
+        "pattern_visualize",
+        MODULE_PATH,
+    )
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
     spec.loader.exec_module(module)  # type: ignore[union-attr]
@@ -68,12 +73,16 @@ def test_helper_functions_cover_edge_cases(tmp_path):
     # _ensure_range returns a default window when it receives no values.
     assert module._ensure_range([]) == (0.0, 1.0)
 
-    # When the range collapses to a single value the helper expands it slightly.
+    # When the range collapses to a single value the helper expands it a bit.
     minimum, maximum = module._ensure_range([2.0, 2.0, 2.0])
     assert minimum < 2.0 < maximum
 
     # _scale_linear falls back to the midpoint when the source span is zero.
-    midpoint = module._scale_linear(5.0, source=(1.0, 1.0), target=(0.0, 10.0))
+    midpoint = module._scale_linear(
+        5.0,
+        source=(1.0, 1.0),
+        target=(0.0, 10.0),
+    )
     assert midpoint == 5.0
 
     # _load_patterns raises when a requested pattern cannot be found.
