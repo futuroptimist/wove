@@ -8,7 +8,6 @@ from pathlib import Path
 
 import pytest
 
-
 MODULE_PATH = (
     Path(__file__).resolve().parent.parent / "scripts" / "pattern_visualize.py"
 )
@@ -37,11 +36,11 @@ def test_generate_previews_creates_svgs(tmp_path):
     chart_text = chart.read_text(encoding="utf-8")
     timeline_text = timeline.read_text(encoding="utf-8")
     assert chart_text.startswith("<svg")
-    assert "data-role=\"xy-path\"" in chart_text
+    assert 'data-role="xy-path"' in chart_text
     assert "handwritten" in chart_text
     assert timeline_text.startswith("<svg")
-    assert "data-series=\"z_mm\"" in timeline_text
-    assert "data-series=\"extrusion_mm\"" in timeline_text
+    assert 'data-series="z_mm"' in timeline_text
+    assert 'data-series="extrusion_mm"' in timeline_text
 
 
 def test_main_invocation_creates_files(tmp_path, capsys):
@@ -93,11 +92,13 @@ def test_helper_functions_cover_edge_cases(tmp_path):
 def test_module_inserts_repo_root_into_sys_path(monkeypatch):
     module = _load_module()
     repo_root = module.REPO_ROOT
+    # fmt: off
     sanitized_path = [
         entry
         for entry in sys.path
         if Path(entry).resolve() != repo_root
     ]
+    # fmt: on
     monkeypatch.setattr(sys, "path", sanitized_path, raising=False)
 
     module = _load_module()
@@ -109,7 +110,7 @@ def test_chart_helpers_cover_edge_branches():
     module = _load_module()
 
     empty_chart = module._xy_chart([], "empty")
-    assert "data-role=\"xy-path\"" in empty_chart
+    assert 'data-role="xy-path"' in empty_chart
 
     single_event = module.PlannerEvent(
         command="KNIT",
@@ -120,7 +121,7 @@ def test_chart_helpers_cover_edge_branches():
         extrusion_mm=0.0,
     )
     single_timeline = module._timeline_chart([single_event], "single")
-    assert "data-series=\"z_mm\"" in single_timeline
+    assert 'data-series="z_mm"' in single_timeline
 
 
 def test_load_patterns_defaults_to_directory_listing(tmp_path):
@@ -136,23 +137,27 @@ def test_load_patterns_defaults_to_directory_listing(tmp_path):
 def test_main_reports_errors_and_empty_directories(tmp_path, capsys):
     module = _load_module()
 
-    exit_code = module.main([
-        "--pattern-dir",
-        str(tmp_path),
-        "--pattern",
-        "missing",
-    ])
+    exit_code = module.main(
+        [
+            "--pattern-dir",
+            str(tmp_path),
+            "--pattern",
+            "missing",
+        ]
+    )
 
     assert exit_code == 1
     captured = capsys.readouterr()
     assert "does not exist" in captured.out
 
-    exit_code = module.main([
-        "--pattern-dir",
-        str(tmp_path),
-        "--output-dir",
-        str(tmp_path / "out"),
-    ])
+    exit_code = module.main(
+        [
+            "--pattern-dir",
+            str(tmp_path),
+            "--output-dir",
+            str(tmp_path / "out"),
+        ]
+    )
 
     assert exit_code == 0
     captured = capsys.readouterr()

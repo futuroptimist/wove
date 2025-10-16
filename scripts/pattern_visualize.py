@@ -10,7 +10,6 @@ import sys
 from pathlib import Path
 from typing import Iterable, List, Sequence
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
@@ -77,32 +76,36 @@ def _xy_chart(events: Sequence[PlannerEvent], name: str) -> str:
     start_x, start_y = scaled[0]
     end_x, end_y = scaled[-1]
     escaped_name = html.escape(name)
+    # fmt: off
     return "".join(
         [
-            "<svg xmlns=\"http://www.w3.org/2000/svg\" ",
-            f"width=\"{width}\" height=\"{height}\" ",
-            f"viewBox=\"0 0 {width} {height}\">",
+            '<svg xmlns="http://www.w3.org/2000/svg" ',
+            f'width="{width}" height="{height}" ',
+            f'viewBox="0 0 {width} {height}">',
             f"<title>{escaped_name} XY path</title>",
-            "<desc>Scaled XY motion path generated from planner events."
-            "</desc>",
-            f"<rect x=\"{margin}\" y=\"{margin}\" ",
-            f"width=\"{width - 2 * margin}\" ",
-            f"height=\"{height - 2 * margin}\" ",
-            "fill=\"#f6f8fb\" stroke=\"#cdd5e0\" stroke-width=\"1\"/>",
-            "<polyline data-role=\"xy-path\" fill=\"none\" ",
-            "stroke=\"#0069ff\" stroke-width=\"2\" ",
-            f"points=\"{path_points}\"/>",
-            f"<circle cx=\"{start_x:.1f}\" cy=\"{start_y:.1f}\" ",
-            "r=\"5\" fill=\"#2a9d8f\"/>",
-            f"<circle cx=\"{end_x:.1f}\" cy=\"{end_y:.1f}\" ",
-            "r=\"5\" fill=\"#e76f51\"/>",
-            f"<text x=\"{margin}\" y=\"{margin - 10}\" ",
-            "font-family=\"sans-serif\" font-size=\"14\" ",
-            "fill=\"#1f2933\">",
+            (
+                "<desc>Scaled XY motion path generated from planner events."
+                "</desc>"
+            ),
+            f'<rect x="{margin}" y="{margin}" ',
+            f'width="{width - 2 * margin}" ',
+            f'height="{height - 2 * margin}" ',
+            'fill="#f6f8fb" stroke="#cdd5e0" stroke-width="1"/>',
+            '<polyline data-role="xy-path" fill="none" ',
+            'stroke="#0069ff" stroke-width="2" ',
+            f'points="{path_points}"/>',
+            f'<circle cx="{start_x:.1f}" cy="{start_y:.1f}" ',
+            'r="5" fill="#2a9d8f"/>',
+            f'<circle cx="{end_x:.1f}" cy="{end_y:.1f}" ',
+            'r="5" fill="#e76f51"/>',
+            f'<text x="{margin}" y="{margin - 10}" ',
+            'font-family="sans-serif" font-size="14" ',
+            'fill="#1f2933">',
             f"{escaped_name} XY motion</text>",
             "</svg>",
         ]
     )
+    # fmt: on
 
 
 def _timeline_chart(events: Sequence[PlannerEvent], name: str) -> str:
@@ -145,45 +148,49 @@ def _timeline_chart(events: Sequence[PlannerEvent], name: str) -> str:
     z_points = series_points(z_series, (z_min, z_max), top_band)
     e_points = series_points(extrusion_series, (e_min, e_max), bottom_band)
     escaped_name = html.escape(name)
+    # fmt: off
     return "".join(
         [
-            "<svg xmlns=\"http://www.w3.org/2000/svg\" ",
-            f"width=\"{width}\" height=\"{height}\" ",
-            f"viewBox=\"0 0 {width} {height}\">",
+            '<svg xmlns="http://www.w3.org/2000/svg" ',
+            f'width="{width}" height="{height}" ',
+            f'viewBox="0 0 {width} {height}">',
             f"<title>{escaped_name} timeline</title>",
-            "<desc>Z height and yarn feed plotted across emitted commands."
-            "</desc>",
-            f"<rect x=\"{margin_left}\" y=\"{margin_top}\" ",
-            f"width=\"{plot_width}\" ",
-            f"height=\"{height - margin_top - margin_bottom}\" ",
-            "fill=\"#f6f8fb\" stroke=\"#cdd5e0\" stroke-width=\"1\"/>",
-            f"<line x1=\"{margin_left}\" y1=\"{height/2}\" ",
-            f"x2=\"{width - margin_right}\" y2=\"{height/2}\" ",
-            "stroke=\"#cdd5e0\" stroke-dasharray=\"4 4\"/>",
-            "<polyline data-series=\"z_mm\" fill=\"none\" ",
-            "stroke=\"#264653\" stroke-width=\"2\" ",
-            f"points=\"{z_points}\"/>",
-            "<polyline data-series=\"extrusion_mm\" fill=\"none\" ",
-            "stroke=\"#e9c46a\" stroke-width=\"2\" ",
-            f"points=\"{e_points}\"/>",
-            f"<text x=\"{margin_left}\" y=\"{margin_top - 10}\" ",
-            "font-family=\"sans-serif\" font-size=\"14\" ",
-            "fill=\"#1f2933\">",
+            (
+                "<desc>Z height and yarn feed plotted across emitted commands."
+                "</desc>"
+            ),
+            f'<rect x="{margin_left}" y="{margin_top}" ',
+            f'width="{plot_width}" ',
+            f'height="{height - margin_top - margin_bottom}" ',
+            'fill="#f6f8fb" stroke="#cdd5e0" stroke-width="1"/>',
+            f'<line x1="{margin_left}" y1="{height/2}" ',
+            f'x2="{width - margin_right}" y2="{height/2}" ',
+            'stroke="#cdd5e0" stroke-dasharray="4 4"/>',
+            '<polyline data-series="z_mm" fill="none" ',
+            'stroke="#264653" stroke-width="2" ',
+            f'points="{z_points}"/>',
+            '<polyline data-series="extrusion_mm" fill="none" ',
+            'stroke="#e9c46a" stroke-width="2" ',
+            f'points="{e_points}"/>',
+            f'<text x="{margin_left}" y="{margin_top - 10}" ',
+            'font-family="sans-serif" font-size="14" ',
+            'fill="#1f2933">',
             f"{escaped_name} motion timeline</text>",
-            f"<text x=\"{margin_left}\" y=\"{height/2 - 8}\" ",
-            "font-family=\"sans-serif\" font-size=\"12\" ",
-            "fill=\"#264653\">Z (mm)</text>",
-            f"<text x=\"{margin_left}\" y=\"{height/2 + 24}\" ",
-            "font-family=\"sans-serif\" font-size=\"12\" ",
-            "fill=\"#946c00\">Extrusion (mm)</text>",
-            f"<text x=\"{width - margin_right - 4}\" ",
-            f"y=\"{height - margin_bottom + 24}\" ",
-            "font-family=\"sans-serif\" font-size=\"12\" ",
-            "fill=\"#1f2933\" text-anchor=\"end\">",
+            f'<text x="{margin_left}" y="{height/2 - 8}" ',
+            'font-family="sans-serif" font-size="12" ',
+            'fill="#264653">Z (mm)</text>',
+            f'<text x="{margin_left}" y="{height/2 + 24}" ',
+            'font-family="sans-serif" font-size="12" ',
+            'fill="#946c00">Extrusion (mm)</text>',
+            f'<text x="{width - margin_right - 4}" ',
+            f'y="{height - margin_bottom + 24}" ',
+            'font-family="sans-serif" font-size="12" ',
+            'fill="#1f2933" text-anchor="end">',
             "Command index</text>",
             "</svg>",
         ]
     )
+    # fmt: on
 
 
 def _load_patterns(
@@ -237,6 +244,7 @@ def generate_previews(
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
+    # fmt: off
     parser = argparse.ArgumentParser(
         description=(
             "Render SVG stitch charts and motion timelines "
@@ -275,6 +283,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Regenerate previews even when output files already exist.",
     )
+    # fmt: on
     return parser.parse_args(argv)
 
 
