@@ -108,6 +108,23 @@ was provided, the `machine_profile.axes` mapping mirrors the JSON/YAML schema
 loaded by `--machine-profile` so downstream planners can respect the same
 travel envelope without re-reading the original file.
 
+## Embedding the parser in automation
+
+Automation helpers can reuse the CLI parser without shelling out. Import the
+factory from `wove.pattern_cli` or the dedicated options module to keep argument
+handling consistent across scripts:
+
+```python
+from wove.pattern_cli import build_parser
+
+parser = build_parser()
+args = parser.parse_args(["--format", "json", "--text", "CHAIN 1"])
+```
+
+The `wove.pattern_cli.options.parse_args` helper mirrors the CLI surface and is
+handy for higher-level wrappers that need a ready-to-use namespace. Both entry
+points stay aligned with the command-line interface described above.
+
 Refer to [`docs/schema/pattern-cli.schema.json`](schema/pattern-cli.schema.json)
 for a machine-readable description of the planner format. The schema mirrors
 the default units (millimeters), enumerates the command state snapshot fields,

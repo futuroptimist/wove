@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import argparse
 import json
 import math
 import sys
@@ -11,7 +10,8 @@ from pathlib import Path
 from typing import Iterable, List, Sequence, Tuple
 from xml.etree import ElementTree as ET
 
-from .machine_profile import MachineProfile, load_machine_profile
+from ..machine_profile import MachineProfile, load_machine_profile
+from .options import build_parser, parse_args
 
 SAFE_Z_MM = 4.0
 FABRIC_PLANE_Z_MM = 0.0
@@ -529,86 +529,6 @@ def _write_output(
         output_path.write_text(text, encoding="utf-8")
 
 
-def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
-    description = "Translate a crochet pattern into G-code-like instructions."
-    parser = argparse.ArgumentParser(description=description)
-    parser.add_argument(
-        "pattern",
-        nargs="?",
-        help="Path to a pattern file (defaults to stdin).",
-    )
-    parser.add_argument(
-        "--text",
-        help="Inline pattern text. Overrides the positional file if provided.",
-    )
-    parser.add_argument(
-        "--svg",
-        type=Path,
-        help=" ".join(
-            [
-                "Path to an SVG polyline or polygon to convert into MOVE",
-                "commands.",
-            ]
-        ),
-    )
-    parser.add_argument(
-        "--svg-scale",
-        type=float,
-        default=1.0,
-        help="Scale factor applied to SVG coordinates before conversion.",
-    )
-    parser.add_argument(
-        "--svg-offset-x",
-        type=float,
-        default=0.0,
-        help="X offset (mm) applied after scaling SVG coordinates.",
-    )
-    parser.add_argument(
-        "--svg-offset-y",
-        type=float,
-        default=0.0,
-        help="Y offset (mm) applied after scaling SVG coordinates.",
-    )
-    parser.add_argument(
-        "--output",
-        "-o",
-        type=Path,
-        help="Optional file to write output. Defaults to stdout.",
-    )
-    parser.add_argument(
-        "--format",
-        choices=("gcode", "json", "planner"),
-        default="gcode",
-        help="Output format (default: gcode).",
-    )
-    parser.add_argument(
-        "--machine-profile",
-        type=Path,
-        help=(
-            "Path to a JSON or YAML machine profile containing axis limits. "
-            "Generated moves are checked against those limits."
-        ),
-    )
-    parser.add_argument(
-        "--home-state",
-        choices=("unknown", "homed"),
-        default="unknown",
-        help=(
-            "Reported homing state of the motion system (default: unknown). "
-            "Set to 'homed' after completing a homing cycle."
-        ),
-    )
-    parser.add_argument(
-        "--require-home",
-        action="store_true",
-        help=(
-            "Abort translation if the reported homing state is not 'homed'. "
-            "Enforces the home-before-run guard from the design docs."
-        ),
-    )
-    return parser.parse_args(argv)
-
-
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
     pattern_path = Path(args.pattern) if args.pattern else None
@@ -650,6 +570,33 @@ def main(argv: Sequence[str] | None = None) -> int:
         machine_profile=machine_profile,
     )
     return 0
+
+
+__all__ = [
+    "SAFE_Z_MM",
+    "FABRIC_PLANE_Z_MM",
+    "TRAVEL_FEED_RATE",
+    "PLUNGE_FEED_RATE",
+    "YARN_FEED_RATE",
+    "DEFAULT_ROW_HEIGHT",
+    "MIN_MOVE_COORD_MM",
+    "GCodeLine",
+    "PlannerEvent",
+    "StitchProfile",
+    "STITCH_PROFILES",
+    "PatternTranslator",
+    "translate_pattern",
+    "_strip_namespace",
+    "_parse_points_attribute",
+    "_points_from_svg",
+    "_pattern_from_svg",
+    "_planner_payload",
+    "_write_output",
+    "_load_pattern",
+    "build_parser",
+    "parse_args",
+    "main",
+]
 
 
 if __name__ == "__main__":  # pragma: no cover - exercised via CLI tests
