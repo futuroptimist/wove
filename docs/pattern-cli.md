@@ -119,6 +119,17 @@ python -m wove.pattern_cli --text "CHAIN 1" --format planner > planner.json
 python -m jsonschema -i planner.json docs/schema/pattern-cli.schema.json
 ```
 
+When you supply `--machine-profile`, the planner payload includes a
+`machine_profile.axes` block that mirrors the microstepping, steps-per-mm, and
+travel limits loaded from disk. The JSON Schema recognizes this optional block,
+so validation still succeeds even with the embedded metadata:
+
+```bash
+python -m wove.pattern_cli --text "CHAIN 1" --format planner \
+  --machine-profile machine-profile.json > planner.json
+python -m jsonschema -i planner.json docs/schema/pattern-cli.schema.json
+```
+
 Sample pattern inputs live under `tests/fixtures/patterns/` and cover both
 hand-authored DSL snippets (`handwritten.txt`) and SVG-generated MOVE sequences
 (`triangle.svg`). They provide quick references for exercising the CLI and the

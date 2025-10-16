@@ -170,6 +170,21 @@ def test_planner_schema_validates_svg_fixture(
     planner_validator.validate(payload)
 
 
+def test_planner_schema_accepts_machine_profile_block(
+    planner_validator: jsonschema.Draft202012Validator,
+) -> None:
+    profile = _sample_machine_profile()
+    translator = PatternTranslator(machine_profile=profile)
+    translator.translate("CHAIN 1")
+
+    payload = _planner_payload(
+        translator.planner_events,
+        machine_profile=profile,
+    )
+
+    planner_validator.validate(payload)
+
+
 def test_translate_pattern_slip_stitches():
     lines = translate_pattern("SLIP 2")
     text = _as_text(lines)

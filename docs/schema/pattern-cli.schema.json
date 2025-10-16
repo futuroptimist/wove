@@ -40,6 +40,24 @@
       "items": {
         "$ref": "#/definitions/command"
       }
+    },
+    "machine_profile": {
+      "description": "Optional machine profile metadata mirrored when --machine-profile is supplied.",
+      "type": "object",
+      "required": [
+        "axes"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "axes": {
+          "description": "Axis configuration keyed by axis name (e.g., X/Y/Z).",
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "$ref": "#/definitions/machine_axis"
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -175,6 +193,34 @@
         "extrusion_mm": {
           "type": "number",
           "description": "Yarn extrusion distance in millimeters after applying the command."
+        }
+      }
+    },
+    "machine_axis": {
+      "type": "object",
+      "required": [
+        "microstepping",
+        "steps_per_mm",
+        "travel_min_mm",
+        "travel_max_mm"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "microstepping": {
+          "type": "integer",
+          "description": "Microstepping configuration for the axis."
+        },
+        "steps_per_mm": {
+          "type": "number",
+          "description": "Steps per millimeter configured for the axis."
+        },
+        "travel_min_mm": {
+          "type": "number",
+          "description": "Minimum travel limit for the axis (millimeters)."
+        },
+        "travel_max_mm": {
+          "type": "number",
+          "description": "Maximum travel limit for the axis (millimeters)."
         }
       }
     }
