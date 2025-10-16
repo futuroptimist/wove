@@ -16,6 +16,7 @@ from wove.pattern_cli import (
     DEFAULT_ROW_HEIGHT,
     SAFE_Z_MM,
     YARN_FEED_RATE,
+    build_parser,
     GCodeLine,
     PatternTranslator,
     _load_pattern,
@@ -441,6 +442,21 @@ def test_parse_args_variants():
     assert args.require_home is True
     planner_args = parse_args(["--format", "planner"])
     assert planner_args.format == "planner"
+
+
+def test_build_parser_exposes_arguments():
+    parser = build_parser()
+    args = parser.parse_args(["--format", "json", "--home-state", "homed"])
+    assert args.format == "json"
+    assert args.home_state == "homed"
+
+
+def test_options_module_parse_matches_reexport():
+    options_module = pytest.importorskip("wove.pattern_cli.options")
+    parsed_from_module = options_module.parse_args(["--format", "planner"])
+    parsed_from_package = parse_args(["--format", "planner"])
+    assert parsed_from_module.format == parsed_from_package.format
+    assert parsed_from_module.pattern == parsed_from_package.pattern
 
 
 def test_main_stdout_json(capsys):

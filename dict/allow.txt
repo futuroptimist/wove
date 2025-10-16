@@ -17,6 +17,7 @@ PyPI
 README
 RSA
 YOURNAME
+args
 auth
 axel
 axel's
@@ -43,6 +44,7 @@ json
 js
 macOS
 md
+namespace
 npm
 nSINGLE
 pipx
