@@ -5,6 +5,8 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 
+import pytest
+
 
 MODULE_PATH = Path(__file__).resolve().parent.parent / "scripts" / "pattern_visualize.py"
 
@@ -57,3 +59,22 @@ def test_main_invocation_creates_files(tmp_path, capsys):
     captured = capsys.readouterr()
     assert "handwritten-chart.svg" in captured.out
     assert "handwritten-timeline.svg" in captured.out
+
+
+def test_helper_functions_cover_edge_cases(tmp_path):
+    module = _load_module()
+
+    # _ensure_range returns a default window when it receives no values.
+    assert module._ensure_range([]) == (0.0, 1.0)
+
+    # When the range collapses to a single value the helper expands it slightly.
+    minimum, maximum = module._ensure_range([2.0, 2.0, 2.0])
+    assert minimum < 2.0 < maximum
+
+    # _scale_linear falls back to the midpoint when the source span is zero.
+    midpoint = module._scale_linear(5.0, source=(1.0, 1.0), target=(0.0, 10.0))
+    assert midpoint == 5.0
+
+    # _load_patterns raises when a requested pattern cannot be found.
+    with pytest.raises(FileNotFoundError):
+        module._load_patterns(tmp_path, ["does-not-exist"])
