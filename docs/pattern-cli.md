@@ -89,6 +89,23 @@ suite during development to verify the snapshots:
 pytest -k pattern_cli
 ```
 
+Generate educator-friendly previews from those same fixtures with
+`scripts/pattern_visualize.py`. The harness renders an XY motion sketch and a
+timeline showing Z height and yarn feed progression for each pattern. Export
+the SVG previews into the Sphinx static assets directory (the defaults target
+`docs/_static/pattern_previews/`):
+
+```bash
+python scripts/pattern_visualize.py --pattern handwritten --force
+```
+
+The command above produces `handwritten-chart.svg` and
+`handwritten-timeline.svg`. Embed them in documentation or share the files
+directly with educators to illustrate how the CLI converts patterns into
+motion. A sample preview is shown below:
+
+![Handwritten pattern XY preview](_static/pattern_previews/handwritten-chart.svg)
+
 Provide planner-friendly metadata for the browser-based roadmap by emitting the
 `planner` format. The payload includes per-command position snapshots,
 feed-rate defaults, and the motion bounds so interactive tools can render the
