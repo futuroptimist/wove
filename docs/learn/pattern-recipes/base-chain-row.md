@@ -32,7 +32,9 @@ planner --text "$(cat recipe.txt)"`` with the DSL snippet saved to ``recipe.txt`
     "travel_feed_rate_mm_min": 1200,
     "plunge_feed_rate_mm_min": 600,
     "yarn_feed_rate_mm_min": 300,
-    "default_row_height_mm": 6.0
+    "default_row_height_mm": 6.0,
+    "require_home": false,
+    "home_state": "unknown"
   },
   "bounds": {
     "x_mm": {"min": 0.0, "max": 27.5},

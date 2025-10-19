@@ -120,8 +120,11 @@ python -m wove.pattern_cli --text "CHAIN 1" --format planner
 
 The resulting JSON object lists each command with its comment and the updated
 `X`, `Y`, `Z`, and yarn-feed positions. Use the `defaults` block for safety
-constraints such as the safe Z height and row spacing. When a machine profile
-was provided, the `machine_profile.axes` mapping mirrors the JSON/YAML schema
+constraints such as the safe Z height and row spacing. The planner defaults
+also record the `require_home` guard and the `home_state` reported during
+translation so browser tooling can surface homing expectations alongside the
+motion bounds. When a machine profile was provided, the `machine_profile.axes`
+mapping mirrors the JSON/YAML schema
 loaded by `--machine-profile` so downstream planners can respect the same
 travel envelope without re-reading the original file.
 
@@ -182,6 +185,11 @@ python -m wove.pattern_cli pattern.txt --require-home --home-state homed
 
 If you skip ``--home-state homed`` while ``--require-home`` is present, the CLI
 aborts with an explanatory error instead of generating G-code.
+
+Planner exports include the guard status: `defaults.require_home` indicates
+whether the translation required a homed machine, and `defaults.home_state`
+records the reported state so browser tooling can highlight when the plan was
+captured with a verified homing cycle.
 
 ## Machine profiles and travel limits
 

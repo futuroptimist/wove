@@ -127,6 +127,8 @@ def test_planner_payload_includes_metadata():
     assert payload["version"] == 1
     assert payload["defaults"]["safe_z_mm"] == pytest.approx(SAFE_Z_MM)
     assert payload["defaults"]["yarn_feed_rate_mm_min"] == YARN_FEED_RATE
+    assert payload["defaults"]["require_home"] is False
+    assert payload["defaults"]["home_state"] == "unknown"
     bounds = payload["bounds"]
     assert bounds["x_mm"]["max"] == pytest.approx(5.0)
     assert payload["commands"][0]["command"] == "G21"
@@ -323,6 +325,8 @@ def test_write_output_planner(tmp_path):
     payload = json.loads(planner_path.read_text(encoding="utf-8"))
     assert payload["commands"][0]["command"] == "G21"
     assert payload["bounds"]["x_mm"]["max"] == pytest.approx(5.0)
+    assert payload["defaults"]["require_home"] is False
+    assert payload["defaults"]["home_state"] == "unknown"
 
 
 def test_write_output_planner_embeds_machine_profile(tmp_path):
@@ -343,6 +347,8 @@ def test_write_output_planner_embeds_machine_profile(tmp_path):
     axes = payload["machine_profile"]["axes"]
     assert axes["X"]["travel_max_mm"] == pytest.approx(120.0)
     assert axes["Y"]["steps_per_mm"] == pytest.approx(80.0)
+    assert payload["defaults"]["require_home"] is False
+    assert payload["defaults"]["home_state"] == "unknown"
 
 
 def test_write_output_planner_requires_events(tmp_path):
@@ -472,6 +478,27 @@ def test_main_stdout_planner(capsys):
     payload = json.loads(capsys.readouterr().out)
     assert payload["commands"][0]["command"] == "G21"
     assert payload["defaults"]["safe_z_mm"] == pytest.approx(SAFE_Z_MM)
+    assert payload["defaults"]["require_home"] is False
+    assert payload["defaults"]["home_state"] == "unknown"
+
+
+def test_main_planner_includes_home_guard_metadata(capsys):
+    exit_code = main(
+        [
+            "--text",
+            "CHAIN 1",
+            "--format",
+            "planner",
+            "--require-home",
+            "--home-state",
+            "homed",
+        ]
+    )
+    assert exit_code == 0
+    payload = json.loads(capsys.readouterr().out)
+    defaults = payload["defaults"]
+    assert defaults["require_home"] is True
+    assert defaults["home_state"] == "homed"
 
 
 def test_main_writes_output_file(tmp_path):
