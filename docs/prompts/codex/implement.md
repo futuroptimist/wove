@@ -20,8 +20,10 @@ Keep the repository healthy by ensuring `pre-commit run --all-files`,
 USER:
 1. Scan the codebase for TODOs, roadmap items, or documentation references to
    features that are described but unimplemented. Include design docs such as
-   `docs/wove-v1c-design.md` and note actionable roadmap items. Randomly select
-   one that is still relevant and within a single PR scope.
+   `docs/wove-v1c-design.md`, the assembly viewer in `viewer/index.html`, and
+   note actionable roadmap items. Favor improvements that expand the Three.js
+   viewer experience unless a more urgent fix is clearly documented. Randomly
+   select one item that is still relevant and within a single PR scope.
 2. Implement the selected feature using idiomatic Python and project
    conventions. Touch only the files necessary to ship the feature.
 3. Add or update documentation so the promised behavior is now accurately

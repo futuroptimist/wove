@@ -94,6 +94,7 @@ brightgreen
 SHA
 YOURTOKEN
 
+html
 htmlcontent
 installable
 OpenSCAD
@@ -135,6 +136,7 @@ slipknot
 chamfer
 aspell
 linkchecker
+py
 pyspelling
 yaml
 CalibrationPoint

@@ -118,6 +118,35 @@ OUTPUT
 Return only the diff.
 ```
 
+### 4 Enhance the Three.js assembly viewer
+```
+SYSTEM: You are an automated contributor for the **futuroptimist/wove** repository.
+
+GOAL
+Iterate on the browser-based assembly viewer served from `viewer/index.html`.
+
+FILES OF INTEREST
+- viewer/index.html
+- scripts/serve_viewer.py
+- docs/ (when documenting the new behavior)
+
+REQUIREMENTS
+1. Make a meaningful visual or interactive improvement that highlights the
+   `v1c` crochet robot or sets the stage for future product lines.
+2. Update documentation or prompts so future Codex runs keep refining the
+   viewer.
+3. Capture a screenshot of the updated scene and attach it to the PR if
+   tooling allows.
+
+ACCEPTANCE CHECK
+`pre-commit run --all-files`, `pytest`, and `python scripts/serve_viewer.py --port 0`
+start cleanly. Stop the viewer server with `Ctrl+C` once it prints the startup
+message.
+
+OUTPUT
+Return only the diff.
+```
+
 ## Upgrade Prompt
 Type: evergreen
 
