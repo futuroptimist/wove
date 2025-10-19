@@ -106,7 +106,7 @@ The command above produces `handwritten-chart.svg` and
 `handwritten-timeline.svg`. Embed them in documentation or share the files
 directly with educators to illustrate how the CLI converts patterns into
 motion. The optional `--archive` flag writes a compressed bundle containing the
-generated SVGs, which the continuous-integration pipeline publishes as a
+generated SVG files, which the continuous-integration pipeline publishes as a
 non-blocking artifact for quick inspection. A sample preview is shown below:
 
 ![Handwritten pattern preview](_static/pattern_previews/handwritten-chart.svg)
