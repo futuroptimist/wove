@@ -7,6 +7,7 @@ import html
 import importlib
 import math
 import sys
+import zipfile
 from pathlib import Path
 from typing import Iterable, List, Sequence
 
@@ -243,6 +244,20 @@ def generate_previews(
     return generated
 
 
+def archive_previews(files: Sequence[Path], archive_path: Path) -> Path:
+    """Bundle ``files`` into ``archive_path`` preserving filenames."""
+
+    archive_path.parent.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(
+        archive_path,
+        "w",
+        compression=zipfile.ZIP_DEFLATED,
+    ) as bundle:
+        for file_path in files:
+            bundle.write(file_path, arcname=file_path.name)
+    return archive_path
+
+
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     # fmt: off
     parser = argparse.ArgumentParser(
@@ -283,6 +298,14 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Regenerate previews even when output files already exist.",
     )
+    parser.add_argument(
+        "--archive",
+        type=Path,
+        help=(
+            "Optional zip file path bundling generated previews for CI "
+            "artifacts."
+        ),
+    )
     # fmt: on
     return parser.parse_args(argv)
 
@@ -304,6 +327,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     for path in generated:
         print(f"[INFO] Wrote {path}")
+    if args.archive is not None:
+        archive = archive_previews(generated, args.archive)
+        print(f"[INFO] Archived previews to {archive}")
     return 0
 
 

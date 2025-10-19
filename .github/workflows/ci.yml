@@ -31,3 +31,20 @@ jobs:
         with:
           files: coverage.xml
           token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Render pattern previews
+        run: |
+          python scripts/pattern_visualize.py \
+            --pattern-dir tests/fixtures/patterns \
+            --output-dir build/pattern_previews \
+            --archive build/pattern-previews.zip \
+            --force
+        continue-on-error: true
+      - name: Upload pattern previews
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pattern-previews
+          path: |
+            build/pattern-previews.zip
+            build/pattern_previews
+          if-no-files-found: ignore
