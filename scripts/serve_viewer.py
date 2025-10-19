@@ -43,13 +43,18 @@ def run_server(host: str, port: int, directory: Path) -> None:
     if not directory.exists():
         raise SystemExit(f"Viewer directory not found: {directory}")
 
-    handler_factory = functools.partial(SimpleHTTPRequestHandler, directory=str(directory))
+    handler_factory = functools.partial(
+        SimpleHTTPRequestHandler,
+        directory=str(directory),
+    )
     server_address: Tuple[str, int] = (host, port)
     httpd = ThreadingHTTPServer(server_address, handler_factory)
 
     viewer_url = f"http://{host}:{port}/index.html"
     print(f"Serving Wove viewer from {directory}")
-    print(f"Open {viewer_url} in your browser to explore the assembly line.")
+    print(
+        f"Open {viewer_url} in your browser to explore the assembly line."
+    )
 
     try:
         httpd.serve_forever()
