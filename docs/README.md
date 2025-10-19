@@ -20,6 +20,7 @@ Then open `docs/_build/html/index.html` in a browser.
   assembly simplifications for the automated knitting platform.
 - [Pattern translation CLI](pattern-cli.md)
 - [Gauge utilities](gauge.md)
+- [Pattern recipes](learn/pattern-recipes/base-chain-row.md)
 - [Python Style Guide](styleguides/python.md)
 - [Markdown Style Guide](styleguides/markdown.md)
 - [Codex Prompt](prompts/codex/automation.md)

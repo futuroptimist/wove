@@ -23,6 +23,7 @@ wove-v1c-design
 robotic-knitting-machine
 pattern-cli
 gauge
+learn/pattern-recipes/base-chain-row
 learning-resources
 plans/polish-work-plan
 testing

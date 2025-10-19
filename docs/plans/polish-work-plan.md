@@ -43,7 +43,9 @@
 ## Docs & UX Enhancements
 - Draft recipe-style guides in `docs/learn/pattern-recipes/` pairing YAML/JSON snippets with rendered
   previews from `docs/_static/pattern_previews/`; ensure samples compile via `pattern_cli` so learners
-  see outcomes pre-knit.
+  see outcomes pre-knit. _Initial recipe available at
+  `docs/learn/pattern-recipes/base-chain-row.md`, including planner JSON excerpt and links to the
+  existing SVG previews._
 - Expand the root `README.md` (and `docs/index.md`) with a "Choose Your Path" section contrasting the
   Hand-Craft and Automation tracks, referencing prerequisites housed in `docs/learn/` and
   `docs/robotics/`.
