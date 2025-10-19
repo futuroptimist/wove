@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Dict
+from decimal import Decimal
+from fractions import Fraction
+from typing import Dict, Union
 
 
 @dataclass(frozen=True)
@@ -83,27 +85,29 @@ class UnitRegistry:
 
     def convert_length(
         self,
-        value: float,
+        value: Union[float, int, Decimal, Fraction],
         from_unit: str,
         to_unit: str,
     ) -> float:
         """Convert a length value between supported units."""
 
-        self._validate_value(value, label="value")
+        numeric = _coerce_real_number(value)
+        self._validate_value(numeric, label="value")
         ratio = self.conversion_ratio(from_unit, to_unit)
-        return value * ratio
+        return numeric * ratio
 
     def convert_per_length(
         self,
-        value: float,
+        value: Union[float, int, Decimal, Fraction],
         from_unit: str,
         to_unit: str,
     ) -> float:
         """Convert a per-length density into a different unit."""
 
-        self._validate_value(value, label="value")
+        numeric = _coerce_real_number(value)
+        self._validate_value(numeric, label="value")
         ratio = self.conversion_ratio(to_unit, from_unit)
-        return value * ratio
+        return numeric * ratio
 
     @property
     def length_units(self) -> tuple[str, ...]:
@@ -115,3 +119,23 @@ class UnitRegistry:
 UNIT_REGISTRY = UnitRegistry()
 
 __all__ = ["UnitRegistry", "UNIT_REGISTRY"]
+
+
+def _coerce_real_number(value: Union[float, int, Decimal, Fraction]) -> float:
+    """Return ``value`` as a finite ``float``.
+
+    The registry accepts ``Decimal`` and ``Fraction`` inputs from calibration
+    workflows that prefer higher precision, but conversions operate on floats
+    internally.  This helper normalizes each supported numeric type and rejects
+    non-finite values so downstream calculations remain well-behaved.
+    """
+
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError) as error:
+        message = f"Expected a real-valued number, received {value!r}"
+        raise TypeError(message) from error
+    if not math.isfinite(numeric):
+        message = f"Length values must be finite, received {value!r}"
+        raise ValueError(message)
+    return numeric

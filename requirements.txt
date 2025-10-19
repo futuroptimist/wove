@@ -6,3 +6,4 @@ hypothesis
 pre-commit
 pyyaml
 jsonschema
+hypothesis

@@ -36,6 +36,13 @@ UNIT_REGISTRY.convert_length(18.0, "inch", "centimeter")  # 45.72
 
 # Translate 5 stitches per inch into stitches per meter
 UNIT_REGISTRY.convert_per_length(5.0, "inch", "meter")  # ~196.85
+
+# Conversions accept Decimal and Fraction values used in calibration tooling
+from decimal import Decimal
+from fractions import Fraction
+
+UNIT_REGISTRY.convert_length(Decimal("2.5"), "inch", "centimeter")  # 6.35
+UNIT_REGISTRY.convert_length(Fraction(3, 2), "yard", "inch")  # 54.0
 ```
 
 Values ending in `.5` are rounded up when using `stitches_for_inches`,
