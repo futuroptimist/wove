@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from decimal import Decimal
 from fractions import Fraction
 
@@ -85,3 +86,24 @@ def test_fraction_matches_float(
         rel=1e-12,
         abs=1e-12,
     )
+
+
+def test_convert_length_rejects_non_numeric_input() -> None:
+    with pytest.raises(TypeError):
+        UNIT_REGISTRY.convert_length("twelve", "inch", "meter")
+
+
+@pytest.mark.parametrize(
+    "bad_value",
+    [
+        math.inf,
+        float("-inf"),
+        float("nan"),
+        Decimal("Infinity"),
+        Decimal("-Infinity"),
+        Decimal("NaN"),
+    ],
+)
+def test_convert_length_rejects_non_finite_values(bad_value: float) -> None:
+    with pytest.raises(ValueError):
+        UNIT_REGISTRY.convert_length(bad_value, "meter", "inch")
