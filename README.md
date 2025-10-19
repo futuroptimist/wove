@@ -21,6 +21,9 @@ Key features include:
   `rows_per_meter`), width estimators from stitch counts across those units, and
   simple unit conversion helpers.
   See [docs/gauge.md](docs/gauge.md) for examples.
+- A shared unit registry (`wove.units.UNIT_REGISTRY`) that keeps conversions
+  between imperial and metric measurements consistent across gauge tools,
+  tension analyzers, and motion planners.
 - A pattern translation CLI (`python -m wove.pattern_cli`) that turns a simple
   stitch description into G-code-like motion for early crochet experiments. Use
   `--format planner` to export per-command position snapshots, bounds, and (when

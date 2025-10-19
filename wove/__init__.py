@@ -54,6 +54,7 @@ from .gauge import (
     yards_to_meters,
 )
 from .machine_profile import AxisProfile, MachineProfile, load_machine_profile
+from .units import UNIT_REGISTRY, UnitRegistry
 from .tension import (
     DEFAULT_TRIAL_DURATION_SECONDS,
     TENSION_PROFILES,
@@ -131,6 +132,8 @@ __all__ = [
     "rows_for_meters",
     "yards_to_inches",
     "yards_to_meters",
+    "UnitRegistry",
+    "UNIT_REGISTRY",
     "AxisProfile",
     "MachineProfile",
     "load_machine_profile",

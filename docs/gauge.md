@@ -21,6 +21,23 @@ multiple functions. Gauge conversion helpers (`per_inch_to_per_cm`,
 `per_yard_to_per_meter`, and `per_meter_to_per_yard`) translate stitches- or
 rows-per-unit values across inches, centimeters, yards, and meters.
 
+## Shared unit registry
+
+The conversion helpers rely on `wove.units.UNIT_REGISTRY`, a centralized
+registry that keeps imperial and metric measurements consistent across the
+tooling. Use it directly when you need conversions outside the provided
+wrappers, such as translating machine profiles or tension calibration metadata:
+
+```python
+from wove.units import UNIT_REGISTRY
+
+# Convert 18 inches to centimeters
+UNIT_REGISTRY.convert_length(18.0, "inch", "centimeter")  # 45.72
+
+# Translate 5 stitches per inch into stitches per meter
+UNIT_REGISTRY.convert_per_length(5.0, "inch", "meter")  # ~196.85
+```
+
 Values ending in `.5` are rounded up when using `stitches_for_inches`,
 `stitches_for_cm`, `stitches_for_yards`, `stitches_for_meters`,
 `rows_for_inches`, `rows_for_cm`, `rows_for_yards`, or `rows_for_meters`.
