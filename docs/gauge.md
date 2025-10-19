@@ -47,6 +47,11 @@ Use `stitch_adjustment_for_width` or `row_adjustment_for_height` to convert
 that difference into the number of stitches or rows to add (positive values)
 or remove (negative values) to stay on size.
 
+The registry mirrors the gauge helpers by rejecting negative or non-finite
+values. Passing an invalid measurement to `convert_length` or
+`convert_per_length` raises `ValueError`, preventing downstream tooling from
+propagating impossible dimensions.
+
 To calculate gauge:
 
 1. Knit a swatch at least 4 in (10 cm) square.

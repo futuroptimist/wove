@@ -2,6 +2,7 @@ flake8
 isort
 black
 pytest
+hypothesis
 pre-commit
 pyyaml
 jsonschema

@@ -35,7 +35,8 @@
      `UnitRegistry`, and define APIs consumed by gauge calculators, tension analyzers, and motion
      planners.
    - Cover the registry with Hypothesis-based tests in `tests/units/test_registry.py` asserting
-     round-trip accuracy across imperial, metric, and machine-native systems.
+     round-trip accuracy across imperial, metric, and machine-native systems (now implemented via
+     `tests/units/test_registry.py`).
    - Replace inline conversions inside `wove/pattern_cli/`, `wove/gauge/`, and CAD scripts in
      `scripts/` to eliminate duplicated constants and align tooling.
 
