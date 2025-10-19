@@ -53,9 +53,7 @@ def run_server(host: str, port: int, directory: Path) -> None:
 
     viewer_url = f"http://{host}:{port}/index.html"
     print(f"Serving Wove viewer from {directory}")
-    print(
-        "Open %s in your browser to explore the assembly line." % viewer_url
-    )
+    print("Open %s in your browser to explore the assembly line." % viewer_url)
 
     try:
         httpd.serve_forever()
