@@ -28,9 +28,8 @@ Update `dict/prompt-doc-repos.txt` to control which repositories appear.
   Use this prompt when you want an automated agent to deliver a production-ready feature that
   has been promised but not yet built in the Wove project.
 
-- **Wove Codex Polish Plan** (`evergreen`) — `docs/prompts/codex/polish.md`
-  Copy the primary prompt or the upgrade prompt to steer Codex as it delivers the pedagogy-first
-  polish roadmap and iterates on the plan.
+- **Wove Codex Polish Plan** (`unspecified`) — `docs/prompts/codex/polish.md`
+  No description provided.
 
 - **Codex Prompt Propagation Guide** (`evergreen`) — `docs/prompts/codex/propagate.md`
   Use this guide when copying Wove's Codex prompt catalog into another repository or rotating a

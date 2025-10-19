@@ -44,6 +44,22 @@ Key features include:
 - LLM helpers described in [AGENTS.md](AGENTS.md).
 - Sample Codex prompts in [`docs/prompts/codex/automation.md`](docs/prompts/codex/automation.md).
 
+## Visualize the Product Assembly
+
+Kick the tires on the new Three.js assembly viewer to see how our product lines
+fit together as the roadmap grows. The scene currently spotlights `v1c`, the
+first crochet robot, and is designed for incremental upgrades as new Codex
+tasks expand the experience.
+
+```bash
+python scripts/serve_viewer.py
+# open http://127.0.0.1:8000/index.html in your browser
+```
+
+Each contribution should leave the viewer a little better—add new assets,
+improve lighting, or enhance interactivity—so that future operators can preview
+the entire assembly from a browser.
+
 ## Choose Your Path
 
 Wove supports two complementary learning tracks. Start where your goals align,

@@ -9,6 +9,7 @@ This Agents.md file provides comprehensive guidance for OpenAI Codex and other A
 - `/docs`: Markdown documentation for knitting and CAD modules
 - `/scripts`: Helper scripts for common tasks
 - `/tests`: Pytest suite to validate the codebase
+- `/viewer`: Three.js experience showcasing the product assembly roadmap
 
 ## Coding Conventions for OpenAI Codex
 
@@ -21,6 +22,9 @@ This Agents.md file provides comprehensive guidance for OpenAI Codex and other A
 
 ### Code Agent
 - Suggests formatting fixes if linting fails
+- Prioritize incremental upgrades to the Three.js viewer (`viewer/index.html`)
+  so that each automation run enhances lighting, interactivity, or product-line
+  coverage. Capture before/after screenshots when visual changes are made.
 
 ### CAD Agent
 - Generates new OpenSCAD modules from text prompts
@@ -32,7 +36,11 @@ Run the following commands before opening a PR:
 ```bash
 pre-commit run --all-files
 pytest
+python scripts/serve_viewer.py --host 127.0.0.1 --port 0  # verify the viewer starts
 ```
+
+Stop the viewer with `Ctrl+C` once the startup message appears; the quick spin-up
+helps catch missing dependencies early.
 
 ## Pull Request Guidelines for OpenAI Codex
 
