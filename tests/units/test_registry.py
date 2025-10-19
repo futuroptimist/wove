@@ -107,3 +107,60 @@ def test_convert_length_rejects_non_numeric_input() -> None:
 def test_convert_length_rejects_non_finite_values(bad_value: float) -> None:
     with pytest.raises(ValueError):
         UNIT_REGISTRY.convert_length(bad_value, "meter", "inch")
+
+
+def test_convert_length_rejects_negative_value() -> None:
+    with pytest.raises(ValueError):
+        UNIT_REGISTRY.convert_length(-1.0, "meter", "inch")
+
+
+@pytest.mark.parametrize(
+    "value, from_unit, to_unit, expected",
+    [
+        (10.0, "inch", "centimeter", pytest.approx(3.937007874015748)),
+        (
+            Decimal("2.5"),
+            "meter",
+            "yard",
+            pytest.approx(UNIT_REGISTRY.conversion_ratio("yard", "meter") * 2.5),
+        ),
+        (
+            Fraction(3, 2),
+            "centimeter",
+            "inch",
+            pytest.approx(
+                UNIT_REGISTRY.conversion_ratio("inch", "centimeter") * 1.5,
+                rel=1e-12,
+                abs=1e-12,
+            ),
+        ),
+    ],
+)
+def test_convert_per_length_handles_supported_numbers(
+    value: float | Decimal | Fraction,
+    from_unit: str,
+    to_unit: str,
+    expected,
+) -> None:
+    assert UNIT_REGISTRY.convert_per_length(value, from_unit, to_unit) == expected
+
+
+@pytest.mark.parametrize(
+    "bad_value",
+    [
+        math.inf,
+        float("-inf"),
+        float("nan"),
+        Decimal("Infinity"),
+        Decimal("-Infinity"),
+        Decimal("NaN"),
+    ],
+)
+def test_convert_per_length_rejects_non_finite_values(bad_value: float) -> None:
+    with pytest.raises(ValueError):
+        UNIT_REGISTRY.convert_per_length(bad_value, "meter", "inch")
+
+
+def test_convert_per_length_rejects_negative_value() -> None:
+    with pytest.raises(ValueError):
+        UNIT_REGISTRY.convert_per_length(-0.5, "meter", "inch")
