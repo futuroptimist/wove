@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Serve the Three.js product assembly viewer.
 
-This convenience script wraps ``http.server`` with sensible defaults so contributors
-can preview ``viewer/index.html`` locally.
+This convenience script wraps ``http.server`` with sensible defaults so
+contributors can preview ``viewer/index.html`` locally.
 """
 
 from __future__ import annotations
@@ -53,7 +53,7 @@ def run_server(host: str, port: int, directory: Path) -> None:
     viewer_url = f"http://{host}:{port}/index.html"
     print(f"Serving Wove viewer from {directory}")
     print(
-        f"Open {viewer_url} in your browser to explore the assembly line."
+        "Open %s in your browser to explore the assembly line." % viewer_url
     )
 
     try:
