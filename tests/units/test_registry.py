@@ -114,33 +114,27 @@ def test_convert_length_rejects_negative_value() -> None:
         UNIT_REGISTRY.convert_length(-1.0, "meter", "inch")
 
 
+YARDS_PER_METER = UNIT_REGISTRY.conversion_ratio("yard", "meter")
+INCHES_PER_CENTIMETER = UNIT_REGISTRY.conversion_ratio("inch", "centimeter")
+
+
 @pytest.mark.parametrize(
-    "value, from_unit, to_unit, expected",
+    "value, from_unit, to_unit, expected_value, approx_kwargs",
     [
-        (
-            10.0,
-            "inch",
-            "centimeter",
-            pytest.approx(3.937007874015748),
-        ),
+        (10.0, "inch", "centimeter", 3.937007874015748, {}),
         (
             Decimal("2.5"),
             "meter",
             "yard",
-            pytest.approx(
-                UNIT_REGISTRY.conversion_ratio("yard", "meter") * 2.5,
-            ),
+            YARDS_PER_METER * 2.5,
+            {},
         ),
         (
             Fraction(3, 2),
             "centimeter",
             "inch",
-            pytest.approx(
-                UNIT_REGISTRY.conversion_ratio("inch", "centimeter")
-                * 1.5,
-                rel=1e-12,
-                abs=1e-12,
-            ),
+            INCHES_PER_CENTIMETER * 1.5,
+            {"rel": 1e-12, "abs": 1e-12},
         ),
     ],
 )
@@ -148,10 +142,11 @@ def test_convert_per_length_handles_supported_numbers(
     value: float | Decimal | Fraction,
     from_unit: str,
     to_unit: str,
-    expected,
+    expected_value: float,
+    approx_kwargs: dict[str, float],
 ) -> None:
     result = UNIT_REGISTRY.convert_per_length(value, from_unit, to_unit)
-    assert result == expected
+    assert result == pytest.approx(expected_value, **approx_kwargs)
 
 
 @pytest.mark.parametrize(
