@@ -42,6 +42,23 @@ Key features include:
 - LLM helpers described in [AGENTS.md](AGENTS.md).
 - Sample Codex prompts in [`docs/prompts/codex/automation.md`](docs/prompts/codex/automation.md).
 
+## Choose Your Path
+
+Wove supports two complementary learning tracks. Start where your goals align,
+then cross over as projects grow.
+
+- **Hand-Craft Track** – Learn core techniques with
+  [knitting basics](docs/knitting-basics.md),
+  [crochet primers](docs/crochet-basics.md), and
+  [gauge calculators](docs/gauge.md). These guides build the vocabulary and
+  measurement skills needed before automating motion.
+- **Automation Track** – Explore the mechanical and software stack with the
+  [pattern translation CLI](docs/pattern-cli.md),
+  [mechanical design roadmap](docs/wove-v1c-design.md), and
+  [robotic knitting specification](docs/robotic-knitting-machine.md). Pair these
+  resources with the Hand-Craft Track to validate yarn handling, gauge, and
+  safety considerations as the gantry evolves.
+
 ## Getting Started
 
 This project targets Python 3.12. Ensure your virtual environment uses Python 3.12.
