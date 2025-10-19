@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import sys
+import zipfile
 from pathlib import Path
 
 import pytest
@@ -46,6 +47,7 @@ def test_generate_previews_creates_svgs(tmp_path):
 def test_main_invocation_creates_files(tmp_path, capsys):
     module = _load_module()
     pattern_dir = Path(__file__).resolve().parent / "fixtures" / "patterns"
+    archive_path = tmp_path / "previews.zip"
     args = [
         "--pattern-dir",
         str(pattern_dir),
@@ -54,6 +56,8 @@ def test_main_invocation_creates_files(tmp_path, capsys):
         "--pattern",
         "handwritten",
         "--force",
+        "--archive",
+        str(archive_path),
     ]
     exit_code = module.main(args)
     assert exit_code == 0
@@ -61,9 +65,16 @@ def test_main_invocation_creates_files(tmp_path, capsys):
     timeline_path = tmp_path / "handwritten-timeline.svg"
     assert chart_path.exists()
     assert timeline_path.exists()
+    assert archive_path.exists()
+    with zipfile.ZipFile(archive_path) as bundle:
+        assert set(bundle.namelist()) == {
+            "handwritten-chart.svg",
+            "handwritten-timeline.svg",
+        }
     captured = capsys.readouterr()
     assert "handwritten-chart.svg" in captured.out
     assert "handwritten-timeline.svg" in captured.out
+    assert "Archived previews" in captured.out
 
 
 def test_helper_functions_cover_edge_cases(tmp_path):
@@ -87,6 +98,14 @@ def test_helper_functions_cover_edge_cases(tmp_path):
     # _load_patterns raises when a requested pattern cannot be found.
     with pytest.raises(FileNotFoundError):
         module._load_patterns(tmp_path, ["does-not-exist"])
+
+    # archive_previews produces an empty archive when given no files.
+    archive_path = tmp_path / "empty.zip"
+    result = module.archive_previews([], archive_path)
+    assert result == archive_path
+    assert archive_path.exists()
+    with zipfile.ZipFile(archive_path) as bundle:
+        assert bundle.namelist() == []
 
 
 def test_module_inserts_repo_root_into_sys_path(monkeypatch):

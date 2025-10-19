@@ -93,16 +93,21 @@ Generate educator-friendly previews from those same fixtures with
 `scripts/pattern_visualize.py`. The harness renders an X-Y motion sketch and a
 timeline showing Z height and yarn feed progression for each pattern. Export
 the SVG previews into the Sphinx static assets directory (the defaults target
-`docs/_static/pattern_previews/`):
+`docs/_static/pattern_previews/`) or bundle them as a zip archive for sharing
+with collaborators:
 
 ```bash
 python scripts/pattern_visualize.py --pattern handwritten --force
+python scripts/pattern_visualize.py --pattern handwritten --force \
+  --archive previews.zip
 ```
 
 The command above produces `handwritten-chart.svg` and
 `handwritten-timeline.svg`. Embed them in documentation or share the files
 directly with educators to illustrate how the CLI converts patterns into
-motion. A sample preview is shown below:
+motion. The optional `--archive` flag writes a compressed bundle containing the
+generated SVG files, which the continuous-integration pipeline publishes as a
+non-blocking artifact for quick inspection. A sample preview is shown below:
 
 ![Handwritten pattern preview](_static/pattern_previews/handwritten-chart.svg)
 
