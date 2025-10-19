@@ -28,7 +28,9 @@ Key features include:
   stitch description into G-code-like motion for early crochet experiments. Use
   `--format planner` to export per-command position snapshots, bounds, and (when
   `--machine-profile` is provided) the axis metadata consumed by the
-  browser-based planner roadmap.
+  browser-based planner roadmap. The planner defaults also surface the homing
+  guard (`require_home`) and `home_state` captured during translation so
+  downstream tools can prompt builders before running motion.
 - Yarn tension profile helpers (`wove.tension`) that document tested pull
   forces, trial durations, and feed rates for lace through super bulky yarns.
   Use `find_tension_profile_for_wpi` to map wraps-per-inch measurements to the

@@ -444,6 +444,8 @@ def _planner_payload(
     events: Sequence[PlannerEvent],
     *,
     machine_profile: MachineProfile | None = None,
+    require_home: bool = False,
+    home_state: str = "unknown",
 ) -> dict[str, object]:
     """Return a planner-friendly payload summarizing motion commands."""
 
@@ -477,6 +479,8 @@ def _planner_payload(
             "plunge_feed_rate_mm_min": PLUNGE_FEED_RATE,
             "yarn_feed_rate_mm_min": YARN_FEED_RATE,
             "default_row_height_mm": DEFAULT_ROW_HEIGHT,
+            "require_home": bool(require_home),
+            "home_state": home_state,
         },
         "bounds": {
             "x_mm": bounds(event.x_mm for event in events),
@@ -509,6 +513,8 @@ def _write_output(
     *,
     planner_events: Sequence[PlannerEvent] | None = None,
     machine_profile: MachineProfile | None = None,
+    require_home: bool = False,
+    home_state: str = "unknown",
 ) -> None:
     if fmt == "gcode":
         text = "\n".join(line.as_text() for line in lines) + "\n"
@@ -521,6 +527,8 @@ def _write_output(
         payload = _planner_payload(
             planner_events,
             machine_profile=machine_profile,
+            require_home=require_home,
+            home_state=home_state,
         )
         text = json.dumps(payload, indent=2)
     if output_path is None:
@@ -568,6 +576,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.format,
         planner_events=translator.planner_events,
         machine_profile=machine_profile,
+        require_home=args.require_home,
+        home_state=args.home_state,
     )
     return 0
 

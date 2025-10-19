@@ -69,7 +69,9 @@
         "travel_feed_rate_mm_min",
         "plunge_feed_rate_mm_min",
         "yarn_feed_rate_mm_min",
-        "default_row_height_mm"
+        "default_row_height_mm",
+        "require_home",
+        "home_state"
       ],
       "additionalProperties": false,
       "properties": {
@@ -96,6 +98,18 @@
         "default_row_height_mm": {
           "type": "number",
           "description": "Default Y increment (mm) applied by TURN commands."
+        },
+        "require_home": {
+          "type": "boolean",
+          "description": "Whether the plan requires the machine to be homed before execution."
+        },
+        "home_state": {
+          "type": "string",
+          "enum": [
+            "unknown",
+            "homed"
+          ],
+          "description": "Reported homing state captured when generating the plan."
         }
       }
     },
