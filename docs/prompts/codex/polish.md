@@ -49,7 +49,8 @@ REFACTORS:
    - Move conversion helpers into `wove/units`, expose a canonical `UnitRegistry`, and define an API
      for gauge, tension, and motion planning.
    - Back the registry with property-based tests (Hypothesis) asserting round-trip conversions across
-     imperial, metric, and machine-native unit systems.
+     imperial, metric, and machine-native unit systems (already satisfied by
+     `tests/units/test_registry.py`).
    - Replace ad-hoc conversions inside `pattern_cli`, gauge calculators, and CAD scripts with the
      shared utilities to remove duplicated constants.
 

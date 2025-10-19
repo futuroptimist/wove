@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from typing import Dict
 
@@ -74,6 +75,12 @@ class UnitRegistry:
         to_factor = self._length_factor(to_unit)
         return from_factor / to_factor
 
+    def _validate_value(self, value: float, *, label: str) -> None:
+        if not math.isfinite(value):
+            raise ValueError(f"{label} must be a finite value")
+        if value < 0:
+            raise ValueError(f"{label} must be non-negative")
+
     def convert_length(
         self,
         value: float,
@@ -82,6 +89,7 @@ class UnitRegistry:
     ) -> float:
         """Convert a length value between supported units."""
 
+        self._validate_value(value, label="value")
         ratio = self.conversion_ratio(from_unit, to_unit)
         return value * ratio
 
@@ -93,6 +101,7 @@ class UnitRegistry:
     ) -> float:
         """Convert a per-length density into a different unit."""
 
+        self._validate_value(value, label="value")
         ratio = self.conversion_ratio(to_unit, from_unit)
         return value * ratio
 
