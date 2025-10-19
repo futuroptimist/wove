@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Serve the Three.js product assembly viewer.
 
-This convenience script wraps ``http.server`` with sensible defaults so
-contributors can preview ``viewer/index.html`` locally.
+This script wraps ``http.server`` with defaults so contributors can preview
+``viewer/index.html`` locally without remembering any command-line flags.
 """
 
 from __future__ import annotations
@@ -12,14 +12,15 @@ import functools
 import os
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Tuple
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 VIEWER_ROOT = PROJECT_ROOT / "viewer"
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Serve the Wove Three.js viewer")
+    parser = argparse.ArgumentParser(
+        description="Serve the Wove Three.js viewer",
+    )
     parser.add_argument(
         "--host",
         default="127.0.0.1",
@@ -47,7 +48,7 @@ def run_server(host: str, port: int, directory: Path) -> None:
         SimpleHTTPRequestHandler,
         directory=str(directory),
     )
-    server_address: Tuple[str, int] = (host, port)
+    server_address: tuple[str, int] = (host, port)
     httpd = ThreadingHTTPServer(server_address, handler_factory)
 
     viewer_url = f"http://{host}:{port}/index.html"
