@@ -91,9 +91,9 @@ class UnitRegistry:
     ) -> float:
         """Convert a length value between supported units."""
 
-        self._validate_value(value, label="value")
-        ratio = self.conversion_ratio(from_unit, to_unit)
         numeric = _coerce_real_number(value)
+        self._validate_value(numeric, label="value")
+        ratio = self.conversion_ratio(from_unit, to_unit)
         return numeric * ratio
 
     def convert_per_length(
@@ -104,9 +104,9 @@ class UnitRegistry:
     ) -> float:
         """Convert a per-length density into a different unit."""
 
-        self._validate_value(value, label="value")
-        ratio = self.conversion_ratio(to_unit, from_unit)
         numeric = _coerce_real_number(value)
+        self._validate_value(numeric, label="value")
+        ratio = self.conversion_ratio(to_unit, from_unit)
         return numeric * ratio
 
     @property
