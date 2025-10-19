@@ -5,3 +5,4 @@ pytest
 pre-commit
 pyyaml
 jsonschema
+hypothesis
