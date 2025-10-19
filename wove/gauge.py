@@ -2,11 +2,7 @@ from __future__ import annotations
 
 import math
 
-CM_PER_INCH = 2.54
-CM_PER_METER = 100.0
-M_PER_YARD = 0.9144
-INCHES_PER_YARD = 36.0
-INCHES_PER_METER = CM_PER_METER / CM_PER_INCH
+from .units import UNIT_REGISTRY
 
 
 def _round_half_up(value: float) -> int:
@@ -29,7 +25,7 @@ def inches_to_cm(inches: float) -> float:
 
     if inches < 0:
         raise ValueError("inches must be non-negative")
-    return inches * CM_PER_INCH
+    return UNIT_REGISTRY.convert_length(inches, "inch", "centimeter")
 
 
 def cm_to_inches(cm: float) -> float:
@@ -47,7 +43,7 @@ def cm_to_inches(cm: float) -> float:
 
     if cm < 0:
         raise ValueError("cm must be non-negative")
-    return cm / CM_PER_INCH
+    return UNIT_REGISTRY.convert_length(cm, "centimeter", "inch")
 
 
 def yards_to_inches(yards: float) -> float:
@@ -65,7 +61,7 @@ def yards_to_inches(yards: float) -> float:
 
     if yards < 0:
         raise ValueError("yards must be non-negative")
-    return yards * INCHES_PER_YARD
+    return UNIT_REGISTRY.convert_length(yards, "yard", "inch")
 
 
 def inches_to_yards(inches: float) -> float:
@@ -83,7 +79,7 @@ def inches_to_yards(inches: float) -> float:
 
     if inches < 0:
         raise ValueError("inches must be non-negative")
-    return inches / INCHES_PER_YARD
+    return UNIT_REGISTRY.convert_length(inches, "inch", "yard")
 
 
 def yards_to_cm(yards: float) -> float:
@@ -101,7 +97,7 @@ def yards_to_cm(yards: float) -> float:
 
     if yards < 0:
         raise ValueError("yards must be non-negative")
-    return yards * INCHES_PER_YARD * CM_PER_INCH
+    return UNIT_REGISTRY.convert_length(yards, "yard", "centimeter")
 
 
 def cm_to_yards(cm: float) -> float:
@@ -119,7 +115,7 @@ def cm_to_yards(cm: float) -> float:
 
     if cm < 0:
         raise ValueError("cm must be non-negative")
-    return cm / (INCHES_PER_YARD * CM_PER_INCH)
+    return UNIT_REGISTRY.convert_length(cm, "centimeter", "yard")
 
 
 def yards_to_meters(yards: float) -> float:
@@ -137,7 +133,7 @@ def yards_to_meters(yards: float) -> float:
 
     if yards < 0:
         raise ValueError("yards must be non-negative")
-    return yards * M_PER_YARD
+    return UNIT_REGISTRY.convert_length(yards, "yard", "meter")
 
 
 def meters_to_yards(meters: float) -> float:
@@ -155,7 +151,7 @@ def meters_to_yards(meters: float) -> float:
 
     if meters < 0:
         raise ValueError("meters must be non-negative")
-    return meters / M_PER_YARD
+    return UNIT_REGISTRY.convert_length(meters, "meter", "yard")
 
 
 def meters_to_cm(meters: float) -> float:
@@ -173,7 +169,7 @@ def meters_to_cm(meters: float) -> float:
 
     if meters < 0:
         raise ValueError("meters must be non-negative")
-    return meters * CM_PER_METER
+    return UNIT_REGISTRY.convert_length(meters, "meter", "centimeter")
 
 
 def cm_to_meters(cm: float) -> float:
@@ -191,7 +187,7 @@ def cm_to_meters(cm: float) -> float:
 
     if cm < 0:
         raise ValueError("cm must be non-negative")
-    return cm / CM_PER_METER
+    return UNIT_REGISTRY.convert_length(cm, "centimeter", "meter")
 
 
 def meters_to_inches(meters: float) -> float:
@@ -209,7 +205,7 @@ def meters_to_inches(meters: float) -> float:
 
     if meters < 0:
         raise ValueError("meters must be non-negative")
-    return meters * INCHES_PER_METER
+    return UNIT_REGISTRY.convert_length(meters, "meter", "inch")
 
 
 def inches_to_meters(inches: float) -> float:
@@ -227,7 +223,7 @@ def inches_to_meters(inches: float) -> float:
 
     if inches < 0:
         raise ValueError("inches must be non-negative")
-    return inches / INCHES_PER_METER
+    return UNIT_REGISTRY.convert_length(inches, "inch", "meter")
 
 
 def stitches_per_inch(stitches: int, inches: float) -> float:
@@ -408,7 +404,7 @@ def per_inch_to_per_cm(value: float) -> float:
     """
     if value <= 0:
         raise ValueError("value must be positive")
-    return value / CM_PER_INCH
+    return UNIT_REGISTRY.convert_per_length(value, "inch", "centimeter")
 
 
 def per_cm_to_per_inch(value: float) -> float:
@@ -425,7 +421,7 @@ def per_cm_to_per_inch(value: float) -> float:
     """
     if value <= 0:
         raise ValueError("value must be positive")
-    return value * CM_PER_INCH
+    return UNIT_REGISTRY.convert_per_length(value, "centimeter", "inch")
 
 
 def per_inch_to_per_yard(value: float) -> float:
@@ -443,7 +439,7 @@ def per_inch_to_per_yard(value: float) -> float:
 
     if value <= 0:
         raise ValueError("value must be positive")
-    return value * INCHES_PER_YARD
+    return UNIT_REGISTRY.convert_per_length(value, "inch", "yard")
 
 
 def per_yard_to_per_inch(value: float) -> float:
@@ -461,7 +457,7 @@ def per_yard_to_per_inch(value: float) -> float:
 
     if value <= 0:
         raise ValueError("value must be positive")
-    return value / INCHES_PER_YARD
+    return UNIT_REGISTRY.convert_per_length(value, "yard", "inch")
 
 
 def per_inch_to_per_meter(value: float) -> float:
@@ -479,7 +475,7 @@ def per_inch_to_per_meter(value: float) -> float:
 
     if value <= 0:
         raise ValueError("value must be positive")
-    return value * INCHES_PER_METER
+    return UNIT_REGISTRY.convert_per_length(value, "inch", "meter")
 
 
 def per_meter_to_per_inch(value: float) -> float:
@@ -497,7 +493,7 @@ def per_meter_to_per_inch(value: float) -> float:
 
     if value <= 0:
         raise ValueError("value must be positive")
-    return value / INCHES_PER_METER
+    return UNIT_REGISTRY.convert_per_length(value, "meter", "inch")
 
 
 def per_cm_to_per_meter(value: float) -> float:
@@ -515,7 +511,7 @@ def per_cm_to_per_meter(value: float) -> float:
 
     if value <= 0:
         raise ValueError("value must be positive")
-    return value * CM_PER_METER
+    return UNIT_REGISTRY.convert_per_length(value, "centimeter", "meter")
 
 
 def per_meter_to_per_cm(value: float) -> float:
@@ -533,7 +529,7 @@ def per_meter_to_per_cm(value: float) -> float:
 
     if value <= 0:
         raise ValueError("value must be positive")
-    return value / CM_PER_METER
+    return UNIT_REGISTRY.convert_per_length(value, "meter", "centimeter")
 
 
 def per_cm_to_per_yard(value: float) -> float:
@@ -551,7 +547,7 @@ def per_cm_to_per_yard(value: float) -> float:
 
     if value <= 0:
         raise ValueError("value must be positive")
-    return value * CM_PER_INCH * INCHES_PER_YARD
+    return UNIT_REGISTRY.convert_per_length(value, "centimeter", "yard")
 
 
 def per_yard_to_per_cm(value: float) -> float:
@@ -569,7 +565,7 @@ def per_yard_to_per_cm(value: float) -> float:
 
     if value <= 0:
         raise ValueError("value must be positive")
-    return value / (CM_PER_INCH * INCHES_PER_YARD)
+    return UNIT_REGISTRY.convert_per_length(value, "yard", "centimeter")
 
 
 def per_yard_to_per_meter(value: float) -> float:
@@ -587,7 +583,7 @@ def per_yard_to_per_meter(value: float) -> float:
 
     if value <= 0:
         raise ValueError("value must be positive")
-    return value / M_PER_YARD
+    return UNIT_REGISTRY.convert_per_length(value, "yard", "meter")
 
 
 def per_meter_to_per_yard(value: float) -> float:
@@ -605,7 +601,7 @@ def per_meter_to_per_yard(value: float) -> float:
 
     if value <= 0:
         raise ValueError("value must be positive")
-    return value * M_PER_YARD
+    return UNIT_REGISTRY.convert_per_length(value, "meter", "yard")
 
 
 def stitches_for_inches(gauge: float, inches: float) -> int:
