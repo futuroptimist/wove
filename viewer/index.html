@@ -242,9 +242,125 @@
         return sprite;
       }
 
-      function addHoverInfo(mesh, text) {
+      function addHoverInfo(mesh, text, options = {}) {
         mesh.userData.hoverText = text;
+        mesh.userData.hoverPassthrough = options.passthrough ?? false;
         interactiveMeshes.push(mesh);
+      }
+
+      function createSafetyShield() {
+        const shieldGroup = new THREE.Group();
+        shieldGroup.name = 'safety-shield';
+
+        const shellMaterial = new THREE.MeshPhysicalMaterial({
+          color: 0x9fb7ff,
+          transparent: true,
+          opacity: 0.18,
+          roughness: 0.08,
+          metalness: 0.05,
+          transmission: 0.82,
+          thickness: 0.5,
+          clearcoat: 0.6,
+          clearcoatRoughness: 0.08,
+        });
+
+        const shell = new THREE.Mesh(
+          new THREE.BoxGeometry(7.6, 4.8, 5.6),
+          shellMaterial,
+        );
+        shell.position.set(0, 2.6, 0.3);
+        shell.castShadow = false;
+        shell.receiveShadow = false;
+        shieldGroup.add(shell);
+        addHoverInfo(
+          shell,
+          'Polycarbonate shield: translucent enclosure that keeps hands clear during motion demos.',
+          { passthrough: true },
+        );
+
+        const edgeMaterial = new THREE.LineBasicMaterial({
+          color: 0xc4d7ff,
+          transparent: true,
+          opacity: 0.55,
+        });
+        const shellEdges = new THREE.LineSegments(
+          new THREE.EdgesGeometry(shell.geometry),
+          edgeMaterial,
+        );
+        shell.add(shellEdges);
+
+        const hingeMaterial = new THREE.MeshStandardMaterial({
+          color: 0x4d5c87,
+          metalness: 0.55,
+          roughness: 0.35,
+          emissive: 0x20283f,
+        });
+
+        const hinge = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.08, 0.08, 4.4, 24),
+          hingeMaterial,
+        );
+        hinge.rotation.z = Math.PI / 2;
+        hinge.position.set(3.65, 2.6, 0.3);
+        hinge.castShadow = true;
+        shieldGroup.add(hinge);
+
+        const doorMaterial = new THREE.MeshPhysicalMaterial({
+          color: 0xaec9ff,
+          transparent: true,
+          opacity: 0.22,
+          roughness: 0.1,
+          transmission: 0.88,
+          thickness: 0.45,
+          metalness: 0.02,
+        });
+
+        const doorPivot = new THREE.Group();
+        doorPivot.position.set(3.65, 2.6, 0.3);
+        doorPivot.rotation.y = THREE.MathUtils.degToRad(-18);
+
+        const door = new THREE.Mesh(
+          new THREE.BoxGeometry(0.14, 4.4, 5.2),
+          doorMaterial,
+        );
+        door.castShadow = false;
+        door.receiveShadow = false;
+        doorPivot.add(door);
+        addHoverInfo(
+          door,
+          'Access door swings open for maintenance while keeping bystanders protected.',
+        );
+
+        const doorEdges = new THREE.LineSegments(
+          new THREE.EdgesGeometry(door.geometry),
+          new THREE.LineBasicMaterial({
+            color: 0x90b4ff,
+            transparent: true,
+            opacity: 0.65,
+          }),
+        );
+        door.add(doorEdges);
+        shieldGroup.add(doorPivot);
+
+        const latch = new THREE.Mesh(
+          new THREE.BoxGeometry(0.12, 0.6, 0.6),
+          hingeMaterial,
+        );
+        latch.position.set(3.9, 2.0, 2.8);
+        latch.rotation.y = THREE.MathUtils.degToRad(-18);
+        latch.castShadow = true;
+        shieldGroup.add(latch);
+
+        const glow = new THREE.PointLight(0x9fbfff, 0.8, 7.0);
+        glow.position.set(3.1, 3.8, 2.2);
+        shieldGroup.add(glow);
+
+        const label = buildLabel('Polycarbonate Shield', '#d7e5ff');
+        label.position.set(0, 4.9, 0.3);
+        label.scale.multiplyScalar(0.55);
+        shieldGroup.add(label);
+
+        return shieldGroup;
       }
 
       function createV1CAssembly() {
@@ -419,6 +535,9 @@
         bedLabel.position.set(0, 1.6, -1.6);
         bedLabel.scale.multiplyScalar(0.85);
         group.add(bedLabel);
+
+        const safetyShield = createSafetyShield();
+        group.add(safetyShield);
 
         function createEmergencyStop() {
           const emergencyGroup = new THREE.Group();
@@ -1008,7 +1127,9 @@
         raycaster.setFromCamera(pointer, camera);
         const intersects = raycaster.intersectObjects(interactiveMeshes, false);
         if (intersects.length > 0) {
-          updateStatus(intersects[0].object.userData.hoverText || '');
+          const target =
+            intersects.find((hit) => !hit.object.userData.hoverPassthrough) || intersects[0];
+          updateStatus(target.object.userData.hoverText || '');
         } else {
           updateStatus('Ready for the next Wove product line…');
         }

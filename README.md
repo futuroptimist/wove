@@ -60,18 +60,19 @@ python scripts/serve_viewer.py
 Each contribution should leave the viewer a little better—add new assets,
 improve lighting, or enhance interactivity—so that future operators can preview
 the entire assembly from a browser. Hover the glowing emergency stop or axis
-end stops to see the safety interlocks called out in the v1c roadmap. Click a
-product pedestal to spotlight its roadmap milestone and watch the glowing ring
-track which cluster is selected. The plaza highlights the v1c crochet cell plus
-three supporting pedestals:
+end stops to see the safety interlocks called out in the v1c roadmap. The
+translucent polycarbonate shield now wraps the gantry to mirror the production
+enclosure described in the mechanical roadmap—hover the door to read the
+maintenance callout. Click a product pedestal to spotlight its roadmap
+milestone and watch the glowing ring track which cluster is selected. The plaza
+highlights three milestones today:
 
-- **Tension Lab** – calibrates hall sensors, measures yarn pull force, and
-  tunes servo-driven feed loops before the fixtures ship to the main cell.
-- **Pattern Studio** – previews `wove.pattern_cli --format planner` exports
-  with holographic overlays so operators can rehearse motion before the gantry
-  runs.
-- **v1k Research Rig** – keeps the knitting-focused successor in view while it
-  inherits the motion and safety architecture proven on v1c.
+- **v1c Crochet Robot** – anchors the mechanical platform showcased at the
+  center of the plaza.
+- **Tension Lab** – stages the hall-effect calibration rig that feeds future
+  servo-driven yarn tensioners.
+- **Pattern Studio** – previews the planner workspace that visualizes
+  `wove.pattern_cli --format planner` exports directly in the browser.
 
 ## Choose Your Path
 
