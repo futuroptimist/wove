@@ -60,9 +60,12 @@ python scripts/serve_viewer.py
 Each contribution should leave the viewer a little better—add new assets,
 improve lighting, or enhance interactivity—so that future operators can preview
 the entire assembly from a browser. Hover the glowing emergency stop or axis
-end stops to see the safety interlocks called out in the v1c roadmap. Click a
-product pedestal to spotlight its roadmap milestone and watch the glowing ring
-track which cluster is selected. The plaza highlights three milestones today:
+end stops to see the safety interlocks called out in the v1c roadmap. The
+translucent polycarbonate shield now wraps the gantry to mirror the production
+enclosure described in the mechanical roadmap—hover the door to read the
+maintenance callout. Click a product pedestal to spotlight its roadmap
+milestone and watch the glowing ring track which cluster is selected. The plaza
+highlights three milestones today:
 
 - **v1c Crochet Robot** – anchors the mechanical platform showcased at the
   center of the plaza.

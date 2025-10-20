@@ -35,3 +35,13 @@ def test_viewer_declares_product_clusters() -> None:
         "v1k Research Rig",
     ]:
         assert snippet in viewer_html
+
+
+def test_viewer_includes_safety_shield() -> None:
+    """Ensure the viewer documents the polycarbonate safety enclosure."""
+
+    viewer_html = (
+        Path(__file__).resolve().parents[1] / "viewer" / "index.html"
+    ).read_text(encoding="utf-8")
+
+    assert "Polycarbonate Shield" in viewer_html

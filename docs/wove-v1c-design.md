@@ -164,7 +164,9 @@ target pull force before commanding the actuator.
   roadmap work cells (calibration lab, material prep pod, and the v1k research
   rig) so contributors understand how the crochet platform integrates with the
   broader automation journey.
-- Optional polycarbonate shield with hinged access door for production environments.
+- Optional polycarbonate shield with hinged access door for production environments;
+  the Three.js viewer renders the translucent enclosure so teams can rehearse
+  safe access paths before printing hardware.
 
 ## Electronics and Control
 ### Control Board
