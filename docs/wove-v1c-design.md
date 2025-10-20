@@ -160,7 +160,9 @@ target pull force before commanding the actuator.
 - Firmware-configurable soft limits and homing sequences prevent overtravel.
 - The Three.js assembly viewer in `viewer/index.html` spotlights the emergency
   stop and glowing axis end stops so builders can rehearse the safety flow
-  before powering the hardware.
+  before powering the hardware. Adjacent pedestals mark the tension calibration
+  lab and pattern-planning studio so contributors can preview upcoming roadmap
+  milestones alongside the v1c build.
 - Optional polycarbonate shield with hinged access door for production environments.
 
 ## Electronics and Control

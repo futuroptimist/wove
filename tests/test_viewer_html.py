@@ -18,3 +18,19 @@ def test_viewer_exposes_roadmap_panel() -> None:
         "Click a pedestal to spotlight its roadmap milestone.",
     ]:
         assert snippet in viewer_html
+
+
+def test_viewer_populates_product_clusters() -> None:
+    """The viewer should describe each roadmap pedestal."""
+
+    viewer_html = (
+        Path(__file__).resolve().parents[1] / "viewer" / "index.html"
+    ).read_text(encoding="utf-8")
+
+    for snippet in [
+        "const clustersData = ",
+        "v1c Crochet Robot",
+        "Tension Lab",
+        "Pattern Studio",
+    ]:
+        assert snippet in viewer_html
