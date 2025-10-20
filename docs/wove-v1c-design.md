@@ -160,10 +160,10 @@ target pull force before commanding the actuator.
 - Firmware-configurable soft limits and homing sequences prevent overtravel.
 - The Three.js assembly viewer in `viewer/index.html` spotlights the emergency
   stop and glowing axis end stops so builders can rehearse the safety flow
-  before powering the hardware. Pedestals in the same scene outline adjacent
-  roadmap work cells (calibration lab, material prep pod, and the v1k research
-  rig) so contributors understand how the crochet platform integrates with the
-  broader automation journey.
+  before powering the hardware. Surrounding pedestals now showcase the Tension
+  Lab's calibration bench, the Pattern Studio's holographic planner console,
+  and the v1k research rig so contributors understand how the crochet platform
+  integrates with the broader automation journey.
 - Optional polycarbonate shield with hinged access door for production environments.
 
 ## Electronics and Control
