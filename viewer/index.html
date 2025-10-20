@@ -534,6 +534,7 @@
           hoverColor,
           selectionScale = 0.54,
           selectionHeight = 0.24,
+          topperBuilder = null,
         } = options;
 
         const group = new THREE.Group();
@@ -606,6 +607,160 @@
         label.scale.multiplyScalar(0.6);
         group.add(label);
 
+        if (typeof topperBuilder === 'function') {
+          const topper = topperBuilder();
+          if (topper) {
+            group.add(topper);
+          }
+        }
+
+        return group;
+      }
+
+      function buildTensionLabTopper() {
+        const group = new THREE.Group();
+        group.position.y = 1.72;
+
+        const coilMaterial = new THREE.MeshStandardMaterial({
+          color: 0x7df0ff,
+          emissive: 0x17434a,
+          emissiveIntensity: 0.5,
+          metalness: 0.35,
+          roughness: 0.25,
+        });
+        const coil = new THREE.Mesh(
+          new THREE.TorusGeometry(0.52, 0.05, 16, 80),
+          coilMaterial,
+        );
+        coil.rotation.x = Math.PI / 2;
+        coil.castShadow = true;
+        group.add(coil);
+
+        const probeMaterial = new THREE.MeshStandardMaterial({
+          color: 0xc7f9ff,
+          emissive: 0x19333a,
+          metalness: 0.45,
+          roughness: 0.3,
+        });
+        const probe = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.08, 0.08, 0.6, 24),
+          probeMaterial,
+        );
+        probe.position.set(0, 0.45, 0);
+        probe.castShadow = true;
+        group.add(probe);
+
+        const sensor = new THREE.Mesh(
+          new THREE.BoxGeometry(0.28, 0.18, 0.32),
+          new THREE.MeshStandardMaterial({
+            color: 0x12262d,
+            emissive: 0x0c181d,
+            metalness: 0.6,
+            roughness: 0.4,
+          }),
+        );
+        sensor.position.set(0, 0.75, 0);
+        sensor.castShadow = true;
+        group.add(sensor);
+        addHoverInfo(
+          sensor,
+          'Bench probe: maps hall-effect sensor readings to grams during calibration runs.',
+        );
+
+        return group;
+      }
+
+      function buildPatternStudioTopper() {
+        const group = new THREE.Group();
+        group.position.y = 1.74;
+
+        const standMaterial = new THREE.MeshStandardMaterial({
+          color: 0x2c253d,
+          metalness: 0.4,
+          roughness: 0.5,
+        });
+        const stand = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.14, 0.16, 0.45, 24),
+          standMaterial,
+        );
+        stand.position.y = 0.28;
+        stand.castShadow = true;
+        group.add(stand);
+
+        const screenMaterial = new THREE.MeshStandardMaterial({
+          color: 0x343477,
+          emissive: 0x1b1b5f,
+          emissiveIntensity: 0.75,
+          metalness: 0.2,
+          roughness: 0.35,
+        });
+        const screen = new THREE.Mesh(
+          new THREE.PlaneGeometry(0.95, 0.62),
+          screenMaterial,
+        );
+        screen.position.set(0, 0.66, 0);
+        screen.rotation.y = Math.PI / 6;
+        screen.castShadow = true;
+        group.add(screen);
+        addHoverInfo(
+          screen,
+          'Pattern planner console: visualizes planner exports before robots execute stitches.',
+        );
+
+        const holoMaterial = new THREE.MeshStandardMaterial({
+          color: 0xc0a9ff,
+          emissive: 0x3b2264,
+          emissiveIntensity: 0.65,
+          transparent: true,
+          opacity: 0.7,
+          side: THREE.DoubleSide,
+        });
+        const holo = new THREE.Mesh(new THREE.CircleGeometry(0.55, 40), holoMaterial);
+        holo.rotation.x = -Math.PI / 2;
+        holo.position.set(0, 0.01, 0.35);
+        holo.receiveShadow = true;
+        group.add(holo);
+
+        return group;
+      }
+
+      function buildResearchRigTopper() {
+        const group = new THREE.Group();
+        group.position.y = 1.76;
+
+        const frameMaterial = new THREE.MeshStandardMaterial({
+          color: 0xc0a9ff,
+          emissive: 0x2f1f4d,
+          emissiveIntensity: 0.5,
+          metalness: 0.3,
+          roughness: 0.4,
+        });
+        const frame = new THREE.Mesh(
+          new THREE.TorusKnotGeometry(0.42, 0.08, 80, 12),
+          frameMaterial,
+        );
+        frame.castShadow = true;
+        group.add(frame);
+
+        const yarnGuide = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.05, 0.05, 0.75, 16),
+          new THREE.MeshStandardMaterial({
+            color: 0xf5edff,
+            emissive: 0x40345f,
+            emissiveIntensity: 0.5,
+            metalness: 0.45,
+            roughness: 0.25,
+          }),
+        );
+        yarnGuide.rotation.z = Math.PI / 3;
+        yarnGuide.position.set(0.55, 0.2, -0.1);
+        yarnGuide.castShadow = true;
+        group.add(yarnGuide);
+        addHoverInfo(
+          frame,
+          'Experimental knitting frame: explores the v1k motion envelope and shared tooling.',
+        );
+
         return group;
       }
 
@@ -644,24 +799,26 @@
 
         const clusterDefinitions = [
           {
-            name: 'Calibration Lab',
+            name: 'Tension Lab',
             roadmap:
-              'Metrology pod for yarn trials, sensor bring-up, and hall-effect calibration.',
+              'Calibration pod for yarn trials and hall-effect sensor bring-up before gantry runs.',
             hoverText:
-              'Calibration lab pedestal — stage tension fixtures before they reach the gantry.',
+              'Tension lab pedestal — dial in pull force profiles prior to production workloads.',
             position: new THREE.Vector3(-6.8, 0, -3.5),
             accentColor: 0x7df0ff,
             hoverColor: 0x21404f,
+            topperBuilder: buildTensionLabTopper,
           },
           {
-            name: 'Material Prep Pod',
+            name: 'Pattern Studio',
             roadmap:
-              'Prepares yarn spools, winding caddies, and quality-control swatches for production.',
+              'Interactive planning suite that renders pattern-cli exports before robots stitch.',
             hoverText:
-              'Material prep pedestal — queues spooled yarn and swatch QC ahead of automation.',
+              'Pattern studio pedestal — iterate on toolpaths and planner overlays for future cells.',
             position: new THREE.Vector3(7.1, 0, -2.6),
             accentColor: 0xffc47d,
             hoverColor: 0x47331e,
+            topperBuilder: buildPatternStudioTopper,
           },
           {
             name: 'v1k Research Rig',
@@ -672,6 +829,7 @@
             position: new THREE.Vector3(0, 0, 7.2),
             accentColor: 0xc0a9ff,
             hoverColor: 0x3a2d52,
+            topperBuilder: buildResearchRigTopper,
           },
         ];
 

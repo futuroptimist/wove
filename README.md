@@ -71,6 +71,10 @@ track which cluster is selected. The plaza highlights three milestones today:
 - **Pattern Studio** – previews the planner workspace that visualizes
   `wove.pattern_cli --format planner` exports directly in the browser.
 
+The pedestals now include miniature set pieces—hover over the glowing tension
+probe or the holographic planning console to read how each topper advances the
+roadmap before the hardware ships.
+
 ## Choose Your Path
 
 Wove supports two complementary learning tracks. Start where your goals align,

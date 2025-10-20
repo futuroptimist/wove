@@ -161,9 +161,9 @@ target pull force before commanding the actuator.
 - The Three.js assembly viewer in `viewer/index.html` spotlights the emergency
   stop and glowing axis end stops so builders can rehearse the safety flow
   before powering the hardware. Pedestals in the same scene outline adjacent
-  roadmap work cells (calibration lab, material prep pod, and the v1k research
-  rig) so contributors understand how the crochet platform integrates with the
-  broader automation journey.
+  roadmap work cells (tension lab, pattern studio, and the v1k research rig) so
+  contributors understand how the crochet platform integrates with the broader
+  automation journey.
 - Optional polycarbonate shield with hinged access door for production environments.
 
 ## Electronics and Control

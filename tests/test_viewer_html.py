@@ -30,8 +30,23 @@ def test_viewer_declares_product_clusters() -> None:
     for snippet in [
         "const productClusters = []",
         "function createPedestalCluster",
-        "Calibration Lab",
-        "Material Prep Pod",
+        "Tension Lab",
+        "Pattern Studio",
         "v1k Research Rig",
+    ]:
+        assert snippet in viewer_html
+
+
+def test_viewer_highlights_planning_and_tension_topper_details() -> None:
+    """Ensure the upgraded pedestals document their interactive toppers."""
+
+    viewer_html = (
+        Path(__file__).resolve().parents[1] / "viewer" / "index.html"
+    ).read_text(encoding="utf-8")
+
+    for snippet in [
+        "Pattern planner console: visualizes planner exports",
+        "Bench probe: maps hall-effect sensor readings",
+        "Experimental knitting frame: explores the v1k motion envelope",
     ]:
         assert snippet in viewer_html
