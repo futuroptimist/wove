@@ -96,6 +96,7 @@ YOURTOKEN
 
 html
 htmlcontent
+callout
 installable
 OpenSCAD
 LaTeX
