@@ -354,6 +354,62 @@
           'Yarn management module: active tensioning keeps stitches uniform throughout runs.',
         );
 
+        const sensorAssembly = new THREE.Group();
+        sensorAssembly.position.set(-1.1, 1.9, -1.9);
+
+        const armMaterial = new THREE.MeshStandardMaterial({
+          color: 0x7b8bff,
+          metalness: 0.25,
+          roughness: 0.35,
+          emissive: 0x1c224d,
+        });
+        const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 1.4, 24), armMaterial);
+        arm.rotation.z = Math.PI / 2.6;
+        arm.position.set(0.2, 0.1, 0);
+        arm.castShadow = true;
+        sensorAssembly.add(arm);
+
+        const hinge = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.14, 0.14, 0.32, 24),
+          new THREE.MeshStandardMaterial({
+            color: 0x303756,
+            metalness: 0.5,
+            roughness: 0.2,
+          }),
+        );
+        hinge.rotation.z = Math.PI / 2;
+        hinge.position.set(-0.4, -0.05, 0);
+        hinge.castShadow = true;
+        sensorAssembly.add(hinge);
+
+        const sensorHousing = new THREE.Mesh(
+          new THREE.BoxGeometry(0.5, 0.35, 0.6),
+          new THREE.MeshStandardMaterial({
+            color: 0xffd59d,
+            metalness: 0.2,
+            roughness: 0.25,
+            emissive: 0x3a260a,
+          }),
+        );
+        sensorHousing.position.set(0.6, 0.18, 0);
+        sensorHousing.castShadow = true;
+        sensorAssembly.add(sensorHousing);
+        addHoverInfo(
+          sensorHousing,
+          'Hall-effect tension sensor: monitors deflection in the yarn path for feedback control.',
+        );
+
+        const sensorIndicator = new THREE.PointLight(0xffc98a, 1.4, 3.5);
+        sensorIndicator.position.set(0.6, 0.3, 0);
+        sensorAssembly.add(sensorIndicator);
+
+        const sensorLabel = buildLabel('Hall-Effect Sensor', '#ffd59d');
+        sensorLabel.position.set(0.6, 0.9, 0);
+        sensorLabel.scale.multiplyScalar(0.65);
+        sensorAssembly.add(sensorLabel);
+
+        group.add(sensorAssembly);
+
         const displayLabel = buildLabel('v1c – Crochet Robot', '#8ab4ff');
         displayLabel.position.set(0, 4.3, 0);
         group.add(displayLabel);
