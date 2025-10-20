@@ -252,8 +252,9 @@
         return sprite;
       }
 
-      function addHoverInfo(mesh, text) {
+      function addHoverInfo(mesh, text, options = {}) {
         mesh.userData.hoverText = text;
+        mesh.userData.hoverPassthrough = options.passthrough ?? false;
         interactiveMeshes.push(mesh);
       }
 
@@ -284,6 +285,7 @@
         addHoverInfo(
           shell,
           'Polycarbonate shield: translucent enclosure that keeps hands clear during motion demos.',
+          { passthrough: true },
         );
 
         const edgeMaterial = new THREE.LineBasicMaterial({
@@ -877,7 +879,9 @@
         raycaster.setFromCamera(pointer, camera);
         const intersects = raycaster.intersectObjects(interactiveMeshes, false);
         if (intersects.length > 0) {
-          updateStatus(intersects[0].object.userData.hoverText || '');
+          const target =
+            intersects.find((hit) => !hit.object.userData.hoverPassthrough) || intersects[0];
+          updateStatus(target.object.userData.hoverText || '');
         } else {
           updateStatus('Ready for the next Wove product line…');
         }
