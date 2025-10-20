@@ -91,6 +91,10 @@
           Check back often—new Codex tasks will iterate on this experience over
           time.
         </li>
+        <li>
+          Find the translucent workpiece support bed to see how swatches mount
+          for calibration runs.
+        </li>
       </ul>
     </div>
     <div id="status">Initializing viewer…</div>
@@ -208,6 +212,45 @@
           'v1c base platform — houses the drive electronics and bed alignment rails.',
         );
 
+        const bedMaterial = new THREE.MeshStandardMaterial({
+          color: 0xbfe4ff,
+          metalness: 0.2,
+          roughness: 0.3,
+          transparent: true,
+          opacity: 0.9,
+          emissive: 0x1b3a4f,
+        });
+        const bed = new THREE.Mesh(new THREE.BoxGeometry(4.8, 0.25, 3.2), bedMaterial);
+        bed.position.set(0, 0.9, 0.2);
+        bed.castShadow = true;
+        bed.receiveShadow = true;
+        group.add(bed);
+        addHoverInfo(
+          bed,
+          'Workpiece support bed: removable build plate with magnetic anchors for swatch staging.',
+        );
+
+        const anchorGeometry = new THREE.CylinderGeometry(0.16, 0.16, 0.12, 20);
+        const anchorMaterial = new THREE.MeshStandardMaterial({
+          color: 0xffd27f,
+          metalness: 0.6,
+          roughness: 0.4,
+          emissive: 0x332100,
+        });
+        const anchorPositions = [
+          new THREE.Vector3(-1.8, 1.03, -1.0),
+          new THREE.Vector3(1.8, 1.03, -1.0),
+          new THREE.Vector3(-1.8, 1.03, 1.2),
+          new THREE.Vector3(1.8, 1.03, 1.2),
+        ];
+        anchorPositions.forEach((position) => {
+          const anchor = new THREE.Mesh(anchorGeometry, anchorMaterial);
+          anchor.position.copy(position);
+          anchor.rotation.x = Math.PI / 2;
+          anchor.castShadow = true;
+          group.add(anchor);
+        });
+
         const gantryMaterial = new THREE.MeshStandardMaterial({
           color: 0xffc857,
           metalness: 0.2,
@@ -257,6 +300,11 @@
         const displayLabel = buildLabel('v1c – Crochet Robot', '#8ab4ff');
         displayLabel.position.set(0, 4.3, 0);
         group.add(displayLabel);
+
+        const bedLabel = buildLabel('Workpiece Support Bed', '#b6f0ff');
+        bedLabel.position.set(0, 1.6, -1.6);
+        bedLabel.scale.multiplyScalar(0.85);
+        group.add(bedLabel);
 
         return group;
       }
