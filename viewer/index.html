@@ -198,6 +198,16 @@
       selectionRing.visible = false;
       scene.add(selectionRing);
 
+      const pointer = new THREE.Vector2();
+      const raycaster = new THREE.Raycaster();
+      const statusElement = document.getElementById('status');
+      const roadmapTitleElement = document.getElementById('roadmap-title');
+      const roadmapDescriptionElement = document.getElementById('roadmap-description');
+      const interactiveMeshes = [];
+      const productClusters = [];
+      const selectionRingHeight = 0.06;
+      let activeCluster = null;
+
       function buildLabel(text, color = '#f5f5f5') {
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
@@ -317,7 +327,8 @@
           metalness: 0.15,
           emissive: 0x401220,
         });
-        const effector = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.6, 2.2, 32), effectorMaterial);
+        const effectorGeometry = new THREE.CylinderGeometry(0.45, 0.6, 2.2, 32);
+        const effector = new THREE.Mesh(effectorGeometry, effectorMaterial);
         effector.rotation.z = Math.PI / 2;
         effector.position.set(1.8, 2.4, 0.6);
         effector.castShadow = true;
@@ -445,6 +456,164 @@
         return group;
       }
 
+      function createPedestalCluster(options) {
+        const {
+          name,
+          roadmap,
+          hoverText,
+          position,
+          accentColor,
+          hoverColor,
+          selectionScale = 0.32,
+          selectionHeight = 0.05,
+        } = options;
+
+        const group = new THREE.Group();
+        group.position.copy(position);
+        group.userData.name = name;
+        group.userData.roadmap = roadmap;
+        group.userData.selectionScale = selectionScale;
+        group.userData.selectionHeight = selectionHeight;
+
+        const base = new THREE.Mesh(
+          new THREE.CylinderGeometry(1.5, 1.8, 0.4, 48),
+          new THREE.MeshStandardMaterial({
+            color: 0x191c2a,
+            roughness: 0.8,
+            metalness: 0.15,
+          }),
+        );
+        base.castShadow = true;
+        base.receiveShadow = true;
+        group.add(base);
+
+        const column = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.55, 0.75, 1.3, 48),
+          new THREE.MeshStandardMaterial({
+            color: accentColor,
+            emissive: new THREE.Color(accentColor).multiplyScalar(0.35),
+            metalness: 0.25,
+            roughness: 0.45,
+          }),
+        );
+        column.position.y = 0.85;
+        column.castShadow = true;
+        group.add(column);
+
+        const platform = new THREE.Mesh(
+          new THREE.CylinderGeometry(1.1, 1.1, 0.22, 48),
+          new THREE.MeshStandardMaterial({
+            color: hoverColor,
+            emissive: new THREE.Color(hoverColor).multiplyScalar(0.25),
+            metalness: 0.35,
+            roughness: 0.3,
+          }),
+        );
+        platform.position.y = 1.48;
+        platform.castShadow = true;
+        platform.name = `${name.toLowerCase().replace(/\s+/g, '-')}-pedestal`;
+        group.add(platform);
+        addHoverInfo(platform, hoverText);
+
+        const glow = new THREE.PointLight(accentColor, 1.2, 8.0);
+        glow.position.y = 1.7;
+        group.add(glow);
+
+        const halo = new THREE.Mesh(
+          new THREE.TorusGeometry(1.05, 0.04, 16, 96),
+          new THREE.MeshStandardMaterial({
+            color: accentColor,
+            emissive: new THREE.Color(accentColor).multiplyScalar(0.5),
+            emissiveIntensity: 0.6,
+            transparent: true,
+            opacity: 0.8,
+          }),
+        );
+        halo.rotation.x = Math.PI / 2;
+        halo.position.y = 1.62;
+        group.add(halo);
+
+        const label = buildLabel(name, '#f5f9ff');
+        label.position.set(0, 2.25, 0);
+        label.scale.multiplyScalar(0.6);
+        group.add(label);
+
+        return group;
+      }
+
+      function populateProductLines() {
+        const dais = new THREE.Mesh(
+          new THREE.CylinderGeometry(4.2, 4.6, 0.6, 72),
+          new THREE.MeshStandardMaterial({
+            color: 0x151726,
+            roughness: 0.85,
+            metalness: 0.2,
+          }),
+        );
+        dais.position.y = 0.3;
+        dais.receiveShadow = true;
+        dais.castShadow = true;
+
+        const v1cCluster = new THREE.Group();
+        v1cCluster.add(dais);
+        const v1cAssembly = createV1CAssembly();
+        v1cCluster.add(v1cAssembly);
+        v1cCluster.userData.name = 'v1c Crochet Cell';
+        v1cCluster.userData.roadmap =
+          'Launch-ready crochet automation cell with emergency stop, gantry, and tension lab.';
+        v1cCluster.userData.selectionScale = 1.0;
+        v1cCluster.userData.selectionHeight = 0.32;
+        scene.add(v1cCluster);
+        productClusters.push(v1cCluster);
+        addHoverInfo(
+          dais,
+          'Central robotics cell — houses the v1c crochet robot and its safety perimeter.',
+        );
+
+        const daisGlow = new THREE.PointLight(0x7fa8ff, 1.6, 26.0);
+        daisGlow.position.set(0, 4.8, 0);
+        v1cCluster.add(daisGlow);
+
+        const clusterDefinitions = [
+          {
+            name: 'Calibration Lab',
+            roadmap:
+              'Metrology pod for yarn trials, sensor bring-up, and hall-effect calibration.',
+            hoverText:
+              'Calibration lab pedestal — stage tension fixtures before they reach the gantry.',
+            position: new THREE.Vector3(-6.8, 0, -3.5),
+            accentColor: 0x7df0ff,
+            hoverColor: 0x21404f,
+          },
+          {
+            name: 'Material Prep Pod',
+            roadmap:
+              'Prepares yarn spools, winding caddies, and quality-control swatches for production.',
+            hoverText:
+              'Material prep pedestal — queues spooled yarn and swatch QC ahead of automation.',
+            position: new THREE.Vector3(7.1, 0, -2.6),
+            accentColor: 0xffc47d,
+            hoverColor: 0x47331e,
+          },
+          {
+            name: 'v1k Research Rig',
+            roadmap:
+              'Future knitting-focused platform inheriting motion control and safety architecture.',
+            hoverText:
+              'v1k research pedestal — staging area for the knitting-focused successor platform.',
+            position: new THREE.Vector3(0, 0, 7.2),
+            accentColor: 0xc0a9ff,
+            hoverColor: 0x3a2d52,
+          },
+        ];
+
+        clusterDefinitions.forEach((definition) => {
+          const cluster = createPedestalCluster(definition);
+          scene.add(cluster);
+          productClusters.push(cluster);
+        });
+      }
+
       populateProductLines();
 
       function updateRoadmapPanel(title, description) {
@@ -469,7 +638,10 @@
 
         activeCluster = cluster;
         selectionRing.visible = true;
-        selectionRing.position.set(cluster.position.x, selectionRingHeight, cluster.position.z);
+        const targetScale = cluster.userData.selectionScale ?? 1;
+        selectionRing.scale.setScalar(targetScale);
+        const targetHeight = cluster.userData.selectionHeight ?? selectionRingHeight;
+        selectionRing.position.set(cluster.position.x, targetHeight, cluster.position.z);
         updateRoadmapPanel(cluster.userData.name, cluster.userData.roadmap);
       }
 
