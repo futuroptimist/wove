@@ -3,7 +3,6 @@
 import re
 from pathlib import Path
 
-
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 VIEWER_HTML = PROJECT_ROOT / "viewer" / "index.html"
 
