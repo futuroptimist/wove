@@ -20,17 +20,18 @@ def test_viewer_exposes_roadmap_panel() -> None:
         assert snippet in viewer_html
 
 
-def test_viewer_populates_product_clusters() -> None:
-    """The viewer should describe each roadmap pedestal."""
+def test_viewer_declares_product_clusters() -> None:
+    """Ensure the viewer script ships the product cluster pedestals."""
 
     viewer_html = (
         Path(__file__).resolve().parents[1] / "viewer" / "index.html"
     ).read_text(encoding="utf-8")
 
     for snippet in [
-        "const clustersData = ",
-        "v1c Crochet Robot",
-        "Tension Lab",
-        "Pattern Studio",
+        "const productClusters = []",
+        "function createPedestalCluster",
+        "Calibration Lab",
+        "Material Prep Pod",
+        "v1k Research Rig",
     ]:
         assert snippet in viewer_html
