@@ -91,6 +91,10 @@
           Check back often—new Codex tasks will iterate on this experience over
           time.
         </li>
+        <li>
+          The glowing safety interlocks mark physical end stops and the
+          emergency stop switch described in the v1c roadmap.
+        </li>
       </ul>
     </div>
     <div id="status">Initializing viewer…</div>
@@ -257,6 +261,97 @@
         const displayLabel = buildLabel('v1c – Crochet Robot', '#8ab4ff');
         displayLabel.position.set(0, 4.3, 0);
         group.add(displayLabel);
+
+        function createEmergencyStop() {
+          const emergencyGroup = new THREE.Group();
+          emergencyGroup.position.set(2.2, 0.6, 1.35);
+
+          const base = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.55, 0.55, 0.16, 48),
+            new THREE.MeshStandardMaterial({
+              color: 0x15161f,
+              metalness: 0.5,
+              roughness: 0.2,
+            }),
+          );
+          base.castShadow = true;
+          emergencyGroup.add(base);
+
+          const button = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.45, 0.5, 0.28, 48),
+            new THREE.MeshStandardMaterial({
+              color: 0xff4d4f,
+              emissive: 0x5f0608,
+              emissiveIntensity: 0.8,
+              metalness: 0.2,
+              roughness: 0.35,
+            }),
+          );
+          button.position.y = 0.21;
+          button.castShadow = true;
+          emergencyGroup.add(button);
+          addHoverInfo(
+            button,
+            'Emergency stop switch — instantly cuts power to the v1c motion system.',
+          );
+
+          const halo = new THREE.Mesh(
+            new THREE.TorusGeometry(0.52, 0.05, 16, 64),
+            new THREE.MeshStandardMaterial({
+              color: 0xff8083,
+              emissive: 0x701010,
+              emissiveIntensity: 0.7,
+              metalness: 0.35,
+              roughness: 0.15,
+              transparent: true,
+              opacity: 0.85,
+            }),
+          );
+          halo.rotation.x = Math.PI / 2;
+          halo.position.y = 0.08;
+          emergencyGroup.add(halo);
+
+          const indicator = new THREE.PointLight(0xff494c, 2.3, 4.2);
+          indicator.position.y = 0.45;
+          emergencyGroup.add(indicator);
+
+          const label = buildLabel('Safety Interlock', '#ffb3b3');
+          label.position.set(0, 0.95, 0);
+          emergencyGroup.add(label);
+
+          return emergencyGroup;
+        }
+
+        function createEndStop(position, axisLabel) {
+          const endStop = new THREE.Mesh(
+            new THREE.BoxGeometry(0.35, 0.5, 0.35),
+            new THREE.MeshStandardMaterial({
+              color: 0xffc285,
+              metalness: 0.4,
+              roughness: 0.25,
+              emissive: 0x462501,
+              emissiveIntensity: 0.4,
+            }),
+          );
+          endStop.position.copy(position);
+          endStop.castShadow = true;
+          endStop.name = `end-stop-${axisLabel.toLowerCase()}`;
+          addHoverInfo(
+            endStop,
+            `${axisLabel}-axis end stop — trips firmware limits before overtravel can occur.`,
+          );
+          return endStop;
+        }
+
+        const emergencyStop = createEmergencyStop();
+        group.add(emergencyStop);
+
+        const endStops = [
+          createEndStop(new THREE.Vector3(3.1, 2.1, 1.1), 'X'),
+          createEndStop(new THREE.Vector3(-2.2, 3.6, -2.6), 'Y'),
+          createEndStop(new THREE.Vector3(-1.0, 0.95, -1.4), 'Z'),
+        ];
+        endStops.forEach((stop) => group.add(stop));
 
         return group;
       }
