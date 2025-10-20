@@ -62,7 +62,8 @@ improve lighting, or enhance interactivity—so that future operators can previe
 the entire assembly from a browser. Hover the glowing emergency stop or axis
 end stops to see the safety interlocks called out in the v1c roadmap. Click a
 product pedestal to spotlight its roadmap milestone and watch the glowing ring
-track which cluster is selected.
+track which cluster is selected. A new hall-effect tension sensor now glows next to the yarn
+path so builders can visualize how feedback hardware bolts onto the v1c frame.
 
 ## Choose Your Path
 
