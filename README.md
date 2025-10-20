@@ -49,7 +49,8 @@ Key features include:
 Kick the tires on the new Three.js assembly viewer to see how our product lines
 fit together as the roadmap grows. The scene currently spotlights `v1c`, the
 first crochet robot, and is designed for incremental upgrades as new Codex
-tasks expand the experience.
+tasks expand the experience. Hover the translucent workpiece support bed to see
+where swatches land while the gantry executes calibration moves.
 
 ```bash
 python scripts/serve_viewer.py

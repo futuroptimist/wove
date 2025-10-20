@@ -113,6 +113,10 @@
           time.
         </li>
         <li>
+          Find the translucent workpiece support bed to see how swatches mount
+          for calibration runs.
+        </li>
+        <li>
           The glowing safety interlocks mark physical end stops and the
           emergency stop switch described in the v1c roadmap.
         </li>
@@ -253,6 +257,45 @@
           'v1c base platform — houses the drive electronics and bed alignment rails.',
         );
 
+        const bedMaterial = new THREE.MeshStandardMaterial({
+          color: 0xbfe4ff,
+          metalness: 0.2,
+          roughness: 0.3,
+          transparent: true,
+          opacity: 0.9,
+          emissive: 0x1b3a4f,
+        });
+        const bed = new THREE.Mesh(new THREE.BoxGeometry(4.8, 0.25, 3.2), bedMaterial);
+        bed.position.set(0, 0.9, 0.2);
+        bed.castShadow = true;
+        bed.receiveShadow = true;
+        group.add(bed);
+        addHoverInfo(
+          bed,
+          'Workpiece support bed: removable build plate with magnetic anchors for swatch staging.',
+        );
+
+        const anchorGeometry = new THREE.CylinderGeometry(0.16, 0.16, 0.12, 20);
+        const anchorMaterial = new THREE.MeshStandardMaterial({
+          color: 0xffd27f,
+          metalness: 0.6,
+          roughness: 0.4,
+          emissive: 0x332100,
+        });
+        const anchorPositions = [
+          new THREE.Vector3(-1.8, 1.03, -1.0),
+          new THREE.Vector3(1.8, 1.03, -1.0),
+          new THREE.Vector3(-1.8, 1.03, 1.2),
+          new THREE.Vector3(1.8, 1.03, 1.2),
+        ];
+        anchorPositions.forEach((position) => {
+          const anchor = new THREE.Mesh(anchorGeometry, anchorMaterial);
+          anchor.position.copy(position);
+          anchor.rotation.x = Math.PI / 2;
+          anchor.castShadow = true;
+          group.add(anchor);
+        });
+
         const gantryMaterial = new THREE.MeshStandardMaterial({
           color: 0xffc857,
           metalness: 0.2,
@@ -302,6 +345,11 @@
         const displayLabel = buildLabel('v1c – Crochet Robot', '#8ab4ff');
         displayLabel.position.set(0, 4.3, 0);
         group.add(displayLabel);
+
+        const bedLabel = buildLabel('Workpiece Support Bed', '#b6f0ff');
+        bedLabel.position.set(0, 1.6, -1.6);
+        bedLabel.scale.multiplyScalar(0.85);
+        group.add(bedLabel);
 
         function createEmergencyStop() {
           const emergencyGroup = new THREE.Group();
@@ -395,58 +443,6 @@
         endStops.forEach((stop) => group.add(stop));
 
         return group;
-      }
-
-      const productLines = [
-        {
-          id: 'v1c',
-          name: 'v1c Crochet Robot',
-          position: new THREE.Vector3(0, 0, 0),
-          builder: createV1CAssembly,
-          roadmap: 'First production crochet robot. Establishes assembly reference for future lines.',
-        },
-      ];
-
-      const interactiveMeshes = [];
-      const productClusters = [];
-
-      const raycaster = new THREE.Raycaster();
-      const pointer = new THREE.Vector2();
-      const statusElement = document.getElementById('status');
-      const roadmapTitleElement = document.getElementById('roadmap-title');
-      const roadmapDescriptionElement = document.getElementById('roadmap-description');
-      const selectionRingHeight = selectionRing.position.y;
-
-      let activeCluster = null;
-
-      function populateProductLines() {
-        productLines.forEach((product, index) => {
-          const cluster = new THREE.Group();
-          cluster.position.copy(product.position);
-          cluster.userData.name = product.name;
-          cluster.userData.roadmap = product.roadmap;
-
-          const assembly = product.builder();
-          cluster.add(assembly);
-
-          const plinthGeometry = new THREE.CylinderGeometry(3.2, 3.6, 0.5, 48);
-          const plinthMaterial = new THREE.MeshStandardMaterial({
-            color: index === 0 ? 0x29304b : 0x1a1d2b,
-            metalness: 0.15,
-            roughness: 0.7,
-          });
-          const plinth = new THREE.Mesh(plinthGeometry, plinthMaterial);
-          plinth.position.y = 0.25;
-          plinth.receiveShadow = true;
-          cluster.add(plinth);
-          addHoverInfo(
-            plinth,
-            `${product.name} pedestal — staging zone for module calibration and QA checks.`,
-          );
-
-          scene.add(cluster);
-          productClusters.push(cluster);
-        });
       }
 
       populateProductLines();
