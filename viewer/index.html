@@ -54,6 +54,27 @@
         line-height: 1.35;
       }
 
+      #roadmap-panel {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(245, 245, 245, 0.15);
+      }
+
+      #roadmap-panel h2 {
+        margin: 0 0 0.4rem;
+        font-size: 1rem;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        color: #9bb7ff;
+      }
+
+      #roadmap-panel p {
+        margin: 0;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        color: #e5e7ff;
+      }
+
       #status {
         position: fixed;
         bottom: 1.2rem;
@@ -95,7 +116,18 @@
           Find the translucent workpiece support bed to see how swatches mount
           for calibration runs.
         </li>
+        <li>
+          The glowing safety interlocks mark physical end stops and the
+          emergency stop switch described in the v1c roadmap.
+        </li>
+        <li>Click a pedestal to spotlight its roadmap milestone.</li>
       </ul>
+      <div id="roadmap-panel">
+        <h2 id="roadmap-title">Assembly Roadmap</h2>
+        <p id="roadmap-description">
+          Select a product cluster to learn how it advances the automation journey.
+        </p>
+      </div>
     </div>
     <div id="status">Initializing viewer…</div>
     <script type="module">
@@ -152,6 +184,19 @@
 
       const gridHelper = new THREE.GridHelper(32, 32, 0x2e3a68, 0x1d233c);
       scene.add(gridHelper);
+
+      const selectionRingGeometry = new THREE.RingGeometry(3.45, 3.8, 64);
+      const selectionRingMaterial = new THREE.MeshBasicMaterial({
+        color: 0x8ab4ff,
+        transparent: true,
+        opacity: 0.45,
+        side: THREE.DoubleSide,
+      });
+      const selectionRing = new THREE.Mesh(selectionRingGeometry, selectionRingMaterial);
+      selectionRing.rotation.x = -Math.PI / 2;
+      selectionRing.position.y = 0.02;
+      selectionRing.visible = false;
+      scene.add(selectionRing);
 
       function buildLabel(text, color = '#f5f5f5') {
         const canvas = document.createElement('canvas');
@@ -306,54 +351,148 @@
         bedLabel.scale.multiplyScalar(0.85);
         group.add(bedLabel);
 
+        function createEmergencyStop() {
+          const emergencyGroup = new THREE.Group();
+          emergencyGroup.position.set(2.2, 0.6, 1.35);
+
+          const base = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.55, 0.55, 0.16, 48),
+            new THREE.MeshStandardMaterial({
+              color: 0x15161f,
+              metalness: 0.5,
+              roughness: 0.2,
+            }),
+          );
+          base.castShadow = true;
+          emergencyGroup.add(base);
+
+          const button = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.45, 0.5, 0.28, 48),
+            new THREE.MeshStandardMaterial({
+              color: 0xff4d4f,
+              emissive: 0x5f0608,
+              emissiveIntensity: 0.8,
+              metalness: 0.2,
+              roughness: 0.35,
+            }),
+          );
+          button.position.y = 0.21;
+          button.castShadow = true;
+          emergencyGroup.add(button);
+          addHoverInfo(
+            button,
+            'Emergency stop switch — instantly cuts power to the v1c motion system.',
+          );
+
+          const halo = new THREE.Mesh(
+            new THREE.TorusGeometry(0.52, 0.05, 16, 64),
+            new THREE.MeshStandardMaterial({
+              color: 0xff8083,
+              emissive: 0x701010,
+              emissiveIntensity: 0.7,
+              metalness: 0.35,
+              roughness: 0.15,
+              transparent: true,
+              opacity: 0.85,
+            }),
+          );
+          halo.rotation.x = Math.PI / 2;
+          halo.position.y = 0.08;
+          emergencyGroup.add(halo);
+
+          const indicator = new THREE.PointLight(0xff494c, 2.3, 4.2);
+          indicator.position.y = 0.45;
+          emergencyGroup.add(indicator);
+
+          const label = buildLabel('Safety Interlock', '#ffb3b3');
+          label.position.set(0, 0.95, 0);
+          emergencyGroup.add(label);
+
+          return emergencyGroup;
+        }
+
+        function createEndStop(position, axisLabel) {
+          const endStop = new THREE.Mesh(
+            new THREE.BoxGeometry(0.35, 0.5, 0.35),
+            new THREE.MeshStandardMaterial({
+              color: 0xffc285,
+              metalness: 0.4,
+              roughness: 0.25,
+              emissive: 0x462501,
+              emissiveIntensity: 0.4,
+            }),
+          );
+          endStop.position.copy(position);
+          endStop.castShadow = true;
+          endStop.name = `end-stop-${axisLabel.toLowerCase()}`;
+          addHoverInfo(
+            endStop,
+            `${axisLabel}-axis end stop — trips firmware limits before overtravel can occur.`,
+          );
+          return endStop;
+        }
+
+        const emergencyStop = createEmergencyStop();
+        group.add(emergencyStop);
+
+        const endStops = [
+          createEndStop(new THREE.Vector3(3.1, 2.1, 1.1), 'X'),
+          createEndStop(new THREE.Vector3(-2.2, 3.6, -2.6), 'Y'),
+          createEndStop(new THREE.Vector3(-1.0, 0.95, -1.4), 'Z'),
+        ];
+        endStops.forEach((stop) => group.add(stop));
+
         return group;
       }
 
-      const productLines = [
-        {
-          id: 'v1c',
-          name: 'v1c Crochet Robot',
-          position: new THREE.Vector3(0, 0, 0),
-          builder: createV1CAssembly,
-          roadmap: 'First production crochet robot. Establishes assembly reference for future lines.',
-        },
-      ];
+      populateProductLines();
 
-      const interactiveMeshes = [];
-
-      const raycaster = new THREE.Raycaster();
-      const pointer = new THREE.Vector2();
-      const statusElement = document.getElementById('status');
-
-      function populateProductLines() {
-        productLines.forEach((product, index) => {
-          const cluster = new THREE.Group();
-          cluster.position.copy(product.position);
-          cluster.userData.roadmap = product.roadmap;
-
-          const assembly = product.builder();
-          cluster.add(assembly);
-
-          const plinthGeometry = new THREE.CylinderGeometry(3.2, 3.6, 0.5, 48);
-          const plinthMaterial = new THREE.MeshStandardMaterial({
-            color: index === 0 ? 0x29304b : 0x1a1d2b,
-            metalness: 0.15,
-            roughness: 0.7,
-          });
-          const plinth = new THREE.Mesh(plinthGeometry, plinthMaterial);
-          plinth.position.y = 0.25;
-          plinth.receiveShadow = true;
-          cluster.add(plinth);
-          addHoverInfo(
-            plinth,
-            `${product.name} pedestal — staging zone for module calibration and QA checks.`,
-          );
-
-          scene.add(cluster);
-        });
+      function updateRoadmapPanel(title, description) {
+        roadmapTitleElement.textContent = title;
+        roadmapDescriptionElement.textContent = description;
       }
 
-      populateProductLines();
+      function selectCluster(cluster) {
+        if (!cluster) {
+          activeCluster = null;
+          selectionRing.visible = false;
+          updateRoadmapPanel(
+            'Assembly Roadmap',
+            'Select a product cluster to learn how it advances the automation journey.',
+          );
+          return;
+        }
+
+        if (activeCluster === cluster) {
+          return;
+        }
+
+        activeCluster = cluster;
+        selectionRing.visible = true;
+        selectionRing.position.set(cluster.position.x, selectionRingHeight, cluster.position.z);
+        updateRoadmapPanel(cluster.userData.name, cluster.userData.roadmap);
+      }
+
+      if (productClusters.length > 0) {
+        selectCluster(productClusters[0]);
+      }
+
+      function setPointerFromEvent(event) {
+        const bounds = renderer.domElement.getBoundingClientRect();
+        pointer.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
+        pointer.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
+      }
+
+      function findClusterFromObject(object) {
+        let current = object;
+        while (current) {
+          if (current.userData && current.userData.roadmap) {
+            return current;
+          }
+          current = current.parent;
+        }
+        return null;
+      }
 
       const clock = new THREE.Clock();
 
@@ -376,9 +515,7 @@
       }
 
       function onPointerMove(event) {
-        const bounds = renderer.domElement.getBoundingClientRect();
-        pointer.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
-        pointer.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
+        setPointerFromEvent(event);
 
         raycaster.setFromCamera(pointer, camera);
         const intersects = raycaster.intersectObjects(interactiveMeshes, false);
@@ -390,6 +527,23 @@
       }
 
       window.addEventListener('pointermove', onPointerMove);
+
+      function onPointerDown(event) {
+        setPointerFromEvent(event);
+
+        raycaster.setFromCamera(pointer, camera);
+        const intersects = raycaster.intersectObjects(scene.children, true);
+        if (intersects.length === 0) {
+          return;
+        }
+
+        const cluster = findClusterFromObject(intersects[0].object);
+        if (cluster) {
+          selectCluster(cluster);
+        }
+      }
+
+      window.addEventListener('pointerdown', onPointerDown);
 
       window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;

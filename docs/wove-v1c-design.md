@@ -158,6 +158,9 @@ target pull force before commanding the actuator.
 - Full-travel physical end stops on X, Y, and Z with printable housings.
 - Snap-on belt guards protect against accidental entanglement.
 - Firmware-configurable soft limits and homing sequences prevent overtravel.
+- The Three.js assembly viewer in `viewer/index.html` spotlights the emergency
+  stop and glowing axis end stops so builders can rehearse the safety flow
+  before powering the hardware.
 - Optional polycarbonate shield with hinged access door for production environments.
 
 ## Electronics and Control
