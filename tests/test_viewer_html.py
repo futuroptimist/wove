@@ -30,8 +30,8 @@ def test_viewer_declares_product_clusters() -> None:
     for snippet in [
         "const productClusters = []",
         "function createPedestalCluster",
-        "Calibration Lab",
-        "Material Prep Pod",
+        "Tension Lab",
+        "Pattern Studio",
         "v1k Research Rig",
     ]:
         assert snippet in viewer_html

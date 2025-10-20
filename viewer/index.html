@@ -152,7 +152,7 @@
       const interactiveMeshes = [];
       const productClusters = [];
       let activeCluster = null;
-      const selectionRingHeight = 0.46;
+      const selectionRingHeight = 0.06;
 
       const camera = new THREE.PerspectiveCamera(
         45,
@@ -209,16 +209,6 @@
       selectionRing.visible = false;
       selectionRing.scale.setScalar(1.0);
       scene.add(selectionRing);
-
-      const pointer = new THREE.Vector2();
-      const raycaster = new THREE.Raycaster();
-      const statusElement = document.getElementById('status');
-      const roadmapTitleElement = document.getElementById('roadmap-title');
-      const roadmapDescriptionElement = document.getElementById('roadmap-description');
-      const interactiveMeshes = [];
-      const productClusters = [];
-      const selectionRingHeight = 0.06;
-      let activeCluster = null;
 
       function buildLabel(text, color = '#f5f5f5') {
         const canvas = document.createElement('canvas');
@@ -653,6 +643,8 @@
           hoverColor,
           selectionScale = 0.54,
           selectionHeight = 0.24,
+          buildDisplay,
+          displayOffset = 0,
         } = options;
 
         const group = new THREE.Group();
@@ -725,6 +717,260 @@
         label.scale.multiplyScalar(0.6);
         group.add(label);
 
+        if (typeof buildDisplay === 'function') {
+          const display = buildDisplay();
+          if (display) {
+            const platformTop = 1.48 + 0.11;
+            display.position.y += platformTop + displayOffset;
+            group.add(display);
+          }
+        }
+
+        return group;
+      }
+
+      function createTensionLabDisplay() {
+        const group = new THREE.Group();
+        group.name = 'tension-lab-display';
+
+        const bench = new THREE.Mesh(
+          new THREE.BoxGeometry(1.9, 0.12, 1.1),
+          new THREE.MeshStandardMaterial({
+            color: 0x1a2f3a,
+            metalness: 0.35,
+            roughness: 0.4,
+          }),
+        );
+        bench.position.y = 0.18;
+        bench.castShadow = true;
+        bench.receiveShadow = true;
+        group.add(bench);
+        addHoverInfo(
+          bench,
+          'Calibration bench — stages load cells and fixture rails for yarn testing.',
+        );
+
+        const rail = new THREE.Mesh(
+          new THREE.BoxGeometry(1.6, 0.08, 0.14),
+          new THREE.MeshStandardMaterial({
+            color: 0x0f1f28,
+            metalness: 0.3,
+            roughness: 0.35,
+          }),
+        );
+        rail.position.set(-0.2, 0.32, -0.04);
+        rail.castShadow = true;
+        group.add(rail);
+
+        const spoolRig = new THREE.Group();
+        spoolRig.position.set(0.38, 0.36, 0.02);
+
+        const spoolCore = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.12, 0.12, 0.92, 24),
+          new THREE.MeshStandardMaterial({
+            color: 0x324451,
+            metalness: 0.55,
+            roughness: 0.28,
+          }),
+        );
+        spoolCore.rotation.z = Math.PI / 2;
+        spoolCore.castShadow = true;
+        spoolRig.add(spoolCore);
+
+        const spool = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.42, 0.42, 0.8, 48),
+          new THREE.MeshStandardMaterial({
+            color: 0xffe3a1,
+            emissive: 0x94763a,
+            emissiveIntensity: 0.35,
+            roughness: 0.45,
+          }),
+        );
+        spool.rotation.z = Math.PI / 2;
+        spool.castShadow = true;
+        spoolRig.add(spool);
+        addHoverInfo(
+          spool,
+          'Tension spool rig — calibrates hall-effect sensors before they reach production cells.',
+        );
+
+        group.add(spoolRig);
+
+        const carriage = new THREE.Mesh(
+          new THREE.BoxGeometry(0.34, 0.26, 0.86),
+          new THREE.MeshStandardMaterial({
+            color: 0x1c4f5c,
+            metalness: 0.3,
+            roughness: 0.32,
+          }),
+        );
+        carriage.position.set(-0.62, 0.42, -0.05);
+        carriage.castShadow = true;
+        group.add(carriage);
+        addHoverInfo(
+          carriage,
+          'Sensor carriage — slides along the rail to align load cells with the yarn path.',
+        );
+
+        const sensorTower = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.12, 0.12, 0.62, 32),
+          new THREE.MeshStandardMaterial({
+            color: 0x7df0ff,
+            emissive: 0x1b6d7d,
+            emissiveIntensity: 0.6,
+            metalness: 0.4,
+            roughness: 0.25,
+          }),
+        );
+        sensorTower.position.set(-0.62, 0.74, 0.24);
+        sensorTower.castShadow = true;
+        group.add(sensorTower);
+
+        const gaugeDisplay = new THREE.Mesh(
+          new THREE.BoxGeometry(0.34, 0.24, 0.18),
+          new THREE.MeshStandardMaterial({
+            color: 0x0d1c28,
+            emissive: 0x163b4d,
+            emissiveIntensity: 0.55,
+            metalness: 0.28,
+            roughness: 0.32,
+          }),
+        );
+        gaugeDisplay.position.set(-0.62, 0.82, 0.52);
+        gaugeDisplay.castShadow = true;
+        group.add(gaugeDisplay);
+        addHoverInfo(
+          gaugeDisplay,
+          'Live tension telemetry — maps hall sensor readings to grams for planner feedback.',
+        );
+
+        const indicator = new THREE.PointLight(0x7df0ff, 1.4, 4.0);
+        indicator.position.set(-0.62, 1.18, 0.52);
+        group.add(indicator);
+
+        return group;
+      }
+
+      function createPatternStudioDisplay() {
+        const group = new THREE.Group();
+        group.name = 'pattern-studio-display';
+
+        const desk = new THREE.Mesh(
+          new THREE.BoxGeometry(1.9, 0.12, 1.1),
+          new THREE.MeshStandardMaterial({
+            color: 0x2d1f24,
+            metalness: 0.38,
+            roughness: 0.45,
+          }),
+        );
+        desk.position.y = 0.2;
+        desk.castShadow = true;
+        desk.receiveShadow = true;
+        group.add(desk);
+
+        const legGeometry = new THREE.BoxGeometry(0.12, 0.42, 0.12);
+        const legMaterial = new THREE.MeshStandardMaterial({
+          color: 0x1b1318,
+          metalness: 0.35,
+          roughness: 0.4,
+        });
+        [
+          [-0.78, 0.01, -0.46],
+          [0.78, 0.01, -0.46],
+          [-0.78, 0.01, 0.46],
+          [0.78, 0.01, 0.46],
+        ].forEach(([x, y, z]) => {
+          const leg = new THREE.Mesh(legGeometry, legMaterial);
+          leg.position.set(x, y, z);
+          leg.castShadow = true;
+          group.add(leg);
+        });
+
+        const monitorGeometry = new THREE.BoxGeometry(0.08, 0.64, 0.92);
+        const monitorMaterial = new THREE.MeshStandardMaterial({
+          color: 0x111527,
+          emissive: 0x3d4eff,
+          emissiveIntensity: 0.68,
+          metalness: 0.25,
+          roughness: 0.24,
+        });
+        const leftMonitor = new THREE.Mesh(monitorGeometry, monitorMaterial);
+        leftMonitor.position.set(-0.45, 0.6, -0.08);
+        leftMonitor.rotation.y = 0.18;
+        leftMonitor.castShadow = true;
+        group.add(leftMonitor);
+        addHoverInfo(
+          leftMonitor,
+          'Planner console — previews pattern_cli exports with motion overlays.',
+        );
+
+        const rightMonitor = leftMonitor.clone();
+        rightMonitor.position.set(0.2, 0.6, -0.08);
+        rightMonitor.rotation.y = -0.12;
+        group.add(rightMonitor);
+
+        const keyboard = new THREE.Mesh(
+          new THREE.BoxGeometry(0.62, 0.05, 0.26),
+          new THREE.MeshStandardMaterial({
+            color: 0x37262d,
+            metalness: 0.28,
+            roughness: 0.45,
+          }),
+        );
+        keyboard.position.set(-0.1, 0.28, 0.18);
+        keyboard.castShadow = true;
+        group.add(keyboard);
+
+        const holoBase = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.36, 0.36, 0.04, 48),
+          new THREE.MeshStandardMaterial({
+            color: 0x3a2d52,
+            metalness: 0.3,
+            roughness: 0.35,
+          }),
+        );
+        holoBase.position.set(0.58, 0.28, 0.3);
+        holoBase.castShadow = true;
+        group.add(holoBase);
+
+        const holoEmitter = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.1, 0.3, 0.5, 32, 1, true),
+          new THREE.MeshStandardMaterial({
+            color: 0x8c7dff,
+            emissive: 0x4a3aff,
+            emissiveIntensity: 0.7,
+            transparent: true,
+            opacity: 0.7,
+            side: THREE.DoubleSide,
+          }),
+        );
+        holoEmitter.position.set(0.58, 0.58, 0.3);
+        holoEmitter.castShadow = true;
+        group.add(holoEmitter);
+        addHoverInfo(
+          holoEmitter,
+          'Holographic planner table — projects stitch simulations for operator dry runs.',
+        );
+
+        const planGrid = new THREE.Mesh(
+          new THREE.PlaneGeometry(0.72, 0.52),
+          new THREE.MeshStandardMaterial({
+            color: 0x90a4ff,
+            emissive: 0x5367ff,
+            emissiveIntensity: 0.75,
+            transparent: true,
+            opacity: 0.78,
+            side: THREE.DoubleSide,
+          }),
+        );
+        planGrid.position.set(0.58, 0.78, 0.3);
+        planGrid.rotation.y = Math.PI / 6;
+        group.add(planGrid);
+
+        const holoLight = new THREE.PointLight(0x8c7dff, 1.3, 4.5);
+        holoLight.position.set(0.58, 1.2, 0.3);
+        group.add(holoLight);
+
         return group;
       }
 
@@ -763,24 +1009,26 @@
 
         const clusterDefinitions = [
           {
-            name: 'Calibration Lab',
+            name: 'Tension Lab',
             roadmap:
-              'Metrology pod for yarn trials, sensor bring-up, and hall-effect calibration.',
+              'Calibrates hall sensors, measures yarn pull force, and tunes servo-driven feed loops.',
             hoverText:
-              'Calibration lab pedestal — stage tension fixtures before they reach the gantry.',
+              'Tension lab pedestal — stage load cells and spool fixtures before gantry trials.',
             position: new THREE.Vector3(-6.8, 0, -3.5),
             accentColor: 0x7df0ff,
             hoverColor: 0x21404f,
+            buildDisplay: createTensionLabDisplay,
           },
           {
-            name: 'Material Prep Pod',
+            name: 'Pattern Studio',
             roadmap:
-              'Prepares yarn spools, winding caddies, and quality-control swatches for production.',
+              'Interactive planner hub translating pattern_cli exports into operator-ready motion previews.',
             hoverText:
-              'Material prep pedestal — queues spooled yarn and swatch QC ahead of automation.',
+              'Pattern studio pedestal — review planner exports and prep automation scripts.',
             position: new THREE.Vector3(7.1, 0, -2.6),
             accentColor: 0xffc47d,
             hoverColor: 0x47331e,
+            buildDisplay: createPatternStudioDisplay,
           },
           {
             name: 'v1k Research Rig',
