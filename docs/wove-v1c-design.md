@@ -182,6 +182,8 @@ target pull force before commanding the actuator.
 ### Sensors and Switches
 - Mechanical limit switches on each axis (Omron D2F or similar).
 - Optional hall-effect sensor for yarn tension measurement via flexible arm deflection.
+- The Three.js assembly viewer now spotlights the hall-effect sensor beside the yarn path so
+  builders can rehearse how feedback hardware integrates before printing the mount.
 - Emergency stop wired in series with board power.
 - Thermistor channel reserved for future heated bed accessory.
 
