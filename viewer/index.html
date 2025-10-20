@@ -143,6 +143,17 @@
       const scene = new THREE.Scene();
       scene.background = new THREE.Color(0x0b0c13);
 
+      const statusElement = document.getElementById('status');
+      const roadmapTitleElement = document.getElementById('roadmap-title');
+      const roadmapDescriptionElement = document.getElementById('roadmap-description');
+
+      const pointer = new THREE.Vector2();
+      const raycaster = new THREE.Raycaster();
+      const interactiveMeshes = [];
+      const productClusters = [];
+      let activeCluster = null;
+      const selectionRingHeight = 0.46;
+
       const camera = new THREE.PerspectiveCamera(
         45,
         window.innerWidth / window.innerHeight,
@@ -185,7 +196,7 @@
       const gridHelper = new THREE.GridHelper(32, 32, 0x2e3a68, 0x1d233c);
       scene.add(gridHelper);
 
-      const selectionRingGeometry = new THREE.RingGeometry(3.45, 3.8, 64);
+      const selectionRingGeometry = new THREE.RingGeometry(1.0, 1.3, 64);
       const selectionRingMaterial = new THREE.MeshBasicMaterial({
         color: 0x8ab4ff,
         transparent: true,
@@ -194,8 +205,9 @@
       });
       const selectionRing = new THREE.Mesh(selectionRingGeometry, selectionRingMaterial);
       selectionRing.rotation.x = -Math.PI / 2;
-      selectionRing.position.y = 0.02;
+      selectionRing.position.y = selectionRingHeight;
       selectionRing.visible = false;
+      selectionRing.scale.setScalar(1.0);
       scene.add(selectionRing);
 
       function buildLabel(text, color = '#f5f5f5') {
@@ -445,6 +457,257 @@
         return group;
       }
 
+      function populateProductLines() {
+        const clustersData = [
+          {
+            name: 'v1c Crochet Robot',
+            roadmap:
+              'Launch platform for mechanical crochet with modular gantry, safety interlocks, and calibration tooling.',
+            position: new THREE.Vector3(0, 0, 0),
+            baseRadius: 4.2,
+            baseHeight: 0.45,
+            topRadius: 3.5,
+            topHeight: 0.2,
+            accentColor: 0x8ab4ff,
+            labelColor: '#8ab4ff',
+            highlightColor: 0x8ab4ff,
+            ringScale: 3.3,
+            hover:
+              'Pedestal anchoring the v1c crochet robot — the current production automation platform.',
+            contentBuilder: ({ baseHeight, topHeight }) => {
+              const assembly = createV1CAssembly();
+              assembly.position.y = baseHeight + topHeight;
+              return assembly;
+            },
+          },
+          {
+            name: 'Tension Lab',
+            roadmap:
+              'Sensor calibration lab preparing servo-driven yarn tension upgrades outlined in the v1c roadmap.',
+            position: new THREE.Vector3(8.5, 0, -5.5),
+            baseRadius: 2.4,
+            baseHeight: 0.4,
+            topRadius: 1.9,
+            topHeight: 0.18,
+            accentColor: 0xffc857,
+            labelColor: '#ffd59a',
+            highlightColor: 0xffc857,
+            ringScale: 1.5,
+            hover:
+              'Tension lab pedestal — hall-effect sensor experiments and servo-driven yarn handling prototypes.',
+            contentBuilder: ({ baseHeight, topHeight }) => {
+              const labGroup = new THREE.Group();
+
+              const spool = new THREE.Mesh(
+                new THREE.TorusGeometry(1.0, 0.22, 32, 80),
+                new THREE.MeshStandardMaterial({
+                  color: 0xffc857,
+                  metalness: 0.55,
+                  roughness: 0.25,
+                  emissive: 0x3b1e00,
+                  emissiveIntensity: 0.35,
+                }),
+              );
+              spool.rotation.x = Math.PI / 2;
+              spool.position.y = baseHeight + topHeight + 0.18;
+              spool.castShadow = true;
+              labGroup.add(spool);
+              addHoverInfo(
+                spool,
+                'Calibration spool for documenting pull-force profiles that feed the servo-tension roadmap.',
+              );
+
+              const sensorTower = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.22, 0.22, 0.9, 32),
+                new THREE.MeshStandardMaterial({
+                  color: 0xbfe4ff,
+                  metalness: 0.3,
+                  roughness: 0.3,
+                  emissive: 0x1a2740,
+                  emissiveIntensity: 0.25,
+                }),
+              );
+              sensorTower.position.set(0.75, baseHeight + topHeight + 0.58, 0);
+              sensorTower.castShadow = true;
+              labGroup.add(sensorTower);
+              addHoverInfo(
+                sensorTower,
+                'Sensor tower prototype converts hall-effect readings into grams for live calibration.',
+              );
+
+              const uplight = new THREE.PointLight(0xffc857, 0.9, 7, 2);
+              uplight.position.set(0, baseHeight + topHeight + 0.9, 0);
+              labGroup.add(uplight);
+
+              return labGroup;
+            },
+          },
+          {
+            name: 'Pattern Studio',
+            roadmap:
+              'Planner studio that visualizes `--format planner` exports so browser tools can stage interactive previews.',
+            position: new THREE.Vector3(-8.5, 0, -5.5),
+            baseRadius: 2.4,
+            baseHeight: 0.4,
+            topRadius: 1.9,
+            topHeight: 0.18,
+            accentColor: 0x9bb7ff,
+            labelColor: '#b7c8ff',
+            highlightColor: 0x9bb7ff,
+            ringScale: 1.5,
+            hover:
+              'Pattern studio pedestal — stitches together CLI planner data with upcoming web-based tooling.',
+            contentBuilder: ({ baseHeight, topHeight }) => {
+              const studioGroup = new THREE.Group();
+
+              const console = new THREE.Mesh(
+                new THREE.BoxGeometry(2.4, 0.12, 1.3),
+                new THREE.MeshStandardMaterial({
+                  color: 0x1f2236,
+                  metalness: 0.4,
+                  roughness: 0.45,
+                }),
+              );
+              console.position.y = baseHeight + topHeight + 0.06;
+              console.castShadow = true;
+              console.receiveShadow = true;
+              studioGroup.add(console);
+              addHoverInfo(
+                console,
+                'Planner console surfaces motion bounds, safe heights, and feed defaults from CLI exports.',
+              );
+
+              const screenMaterial = new THREE.MeshStandardMaterial({
+                color: 0x9bb7ff,
+                emissive: 0x3b4f88,
+                emissiveIntensity: 0.9,
+                roughness: 0.2,
+              });
+              const screen = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 1.1), screenMaterial);
+              screen.position.set(0, baseHeight + topHeight + 0.75, -0.62);
+              screen.rotation.x = -0.28;
+              screen.castShadow = true;
+              studioGroup.add(screen);
+              addHoverInfo(
+                screen,
+                'Interactive viewport mock-up shows how planner payloads animate in the browser.',
+              );
+
+              const tablet = new THREE.Mesh(
+                new THREE.PlaneGeometry(0.9, 0.6),
+                new THREE.MeshStandardMaterial({
+                  color: 0xb6f0ff,
+                  emissive: 0x2f5468,
+                  emissiveIntensity: 0.6,
+                  roughness: 0.3,
+                }),
+              );
+              tablet.position.set(-0.95, baseHeight + topHeight + 0.4, 0.45);
+              tablet.rotation.x = -Math.PI / 2 + 0.18;
+              tablet.castShadow = true;
+              studioGroup.add(tablet);
+              addHoverInfo(
+                tablet,
+                'Tablet mock-up captures documentation previews for educators exploring automation lessons.',
+              );
+
+              const lamp = new THREE.PointLight(0x9bb7ff, 0.85, 7, 2);
+              lamp.position.set(0.4, baseHeight + topHeight + 1.1, 0);
+              studioGroup.add(lamp);
+
+              return studioGroup;
+            },
+          },
+        ];
+
+        clustersData.forEach((data) => {
+          const clusterGroup = new THREE.Group();
+          clusterGroup.position.copy(data.position);
+          clusterGroup.userData = {
+            name: data.name,
+            roadmap: data.roadmap,
+            ringScale: data.ringScale,
+            highlightColor: data.highlightColor,
+          };
+
+          const walkway = new THREE.Mesh(
+            new THREE.CylinderGeometry(data.baseRadius + 0.12, data.baseRadius + 0.12, 0.04, 64),
+            new THREE.MeshStandardMaterial({
+              color: 0x0f101c,
+              metalness: 0.2,
+              roughness: 0.85,
+            }),
+          );
+          walkway.position.y = 0.02;
+          walkway.receiveShadow = true;
+          clusterGroup.add(walkway);
+
+          const base = new THREE.Mesh(
+            new THREE.CylinderGeometry(data.baseRadius, data.baseRadius, data.baseHeight, 64),
+            new THREE.MeshStandardMaterial({
+              color: 0x181b2c,
+              metalness: 0.35,
+              roughness: 0.45,
+            }),
+          );
+          base.position.y = data.baseHeight / 2;
+          base.castShadow = true;
+          base.receiveShadow = true;
+          clusterGroup.add(base);
+          addHoverInfo(base, data.hover);
+
+          const accent = new THREE.Mesh(
+            new THREE.CylinderGeometry(data.topRadius * 1.05, data.topRadius * 1.05, 0.04, 48),
+            new THREE.MeshStandardMaterial({
+              color: data.accentColor,
+              emissive: data.accentColor,
+              emissiveIntensity: 0.4,
+              transparent: true,
+              opacity: 0.35,
+            }),
+          );
+          accent.position.y = data.baseHeight + 0.02;
+          accent.receiveShadow = false;
+          clusterGroup.add(accent);
+
+          const top = new THREE.Mesh(
+            new THREE.CylinderGeometry(data.topRadius, data.topRadius, data.topHeight, 48),
+            new THREE.MeshStandardMaterial({
+              color: 0x121422,
+              metalness: 0.4,
+              roughness: 0.35,
+            }),
+          );
+          top.position.y = data.baseHeight + data.topHeight / 2;
+          top.castShadow = true;
+          top.receiveShadow = true;
+          clusterGroup.add(top);
+          addHoverInfo(top, data.hover);
+
+          if (typeof data.contentBuilder === 'function') {
+            const content = data.contentBuilder({
+              baseHeight: data.baseHeight,
+              topHeight: data.topHeight,
+            });
+            if (content) {
+              clusterGroup.add(content);
+            }
+          }
+
+          const label = buildLabel(data.name, data.labelColor);
+          label.position.set(0, data.baseHeight + data.topHeight + 1.05, 0);
+          label.scale.multiplyScalar(data.ringScale > 2 ? 0.45 : 0.3);
+          clusterGroup.add(label);
+
+          const accentLight = new THREE.PointLight(data.accentColor, 0.8, 10, 2);
+          accentLight.position.set(0, data.baseHeight + data.topHeight + 0.8, 0);
+          clusterGroup.add(accentLight);
+
+          scene.add(clusterGroup);
+          productClusters.push(clusterGroup);
+        });
+      }
+
       populateProductLines();
 
       function updateRoadmapPanel(title, description) {
@@ -469,6 +732,13 @@
 
         activeCluster = cluster;
         selectionRing.visible = true;
+        const ringScale = cluster.userData?.ringScale ?? 1;
+        selectionRing.scale.setScalar(ringScale);
+        if (cluster.userData?.highlightColor) {
+          selectionRingMaterial.color.set(cluster.userData.highlightColor);
+        } else {
+          selectionRingMaterial.color.set(0x8ab4ff);
+        }
         selectionRing.position.set(cluster.position.x, selectionRingHeight, cluster.position.z);
         updateRoadmapPanel(cluster.userData.name, cluster.userData.roadmap);
       }

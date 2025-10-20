@@ -62,7 +62,14 @@ improve lighting, or enhance interactivity—so that future operators can previe
 the entire assembly from a browser. Hover the glowing emergency stop or axis
 end stops to see the safety interlocks called out in the v1c roadmap. Click a
 product pedestal to spotlight its roadmap milestone and watch the glowing ring
-track which cluster is selected.
+track which cluster is selected. The plaza highlights three milestones today:
+
+- **v1c Crochet Robot** – anchors the mechanical platform showcased at the
+  center of the plaza.
+- **Tension Lab** – stages the hall-effect calibration rig that feeds future
+  servo-driven yarn tensioners.
+- **Pattern Studio** – previews the planner workspace that visualizes
+  `wove.pattern_cli --format planner` exports directly in the browser.
 
 ## Choose Your Path
 
