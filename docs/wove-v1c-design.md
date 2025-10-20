@@ -163,7 +163,9 @@ target pull force before commanding the actuator.
   before powering the hardware. Pedestals in the same scene outline adjacent
   roadmap work cells (calibration lab, material prep pod, and the v1k research
   rig) so contributors understand how the crochet platform integrates with the
-  broader automation journey.
+  broader automation journey. The material prep pod pedestal now highlights the
+  cone tree, staging bins, inspection scale, and traceability cards that feed
+  yarn into the crochet cell.
 - Optional polycarbonate shield with hinged access door for production environments;
   the Three.js viewer renders the translucent enclosure so teams can rehearse
   safe access paths before printing hardware.

@@ -851,6 +851,166 @@
         return group;
       }
 
+      function createMaterialPrepDisplay() {
+        const group = new THREE.Group();
+        group.name = 'material-prep-display';
+
+        const table = new THREE.Mesh(
+          new THREE.BoxGeometry(2.1, 0.14, 1.2),
+          new THREE.MeshStandardMaterial({
+            color: 0x1f2d24,
+            metalness: 0.32,
+            roughness: 0.48,
+          }),
+        );
+        table.position.y = 0.18;
+        table.castShadow = true;
+        table.receiveShadow = true;
+        group.add(table);
+        addHoverInfo(
+          table,
+          'Material prep bench — stages yarn cones and QA tools before automation.',
+        );
+
+        const legGeometry = new THREE.BoxGeometry(0.16, 0.42, 0.16);
+        const legMaterial = new THREE.MeshStandardMaterial({
+          color: 0x16251b,
+          metalness: 0.28,
+          roughness: 0.42,
+        });
+        [
+          [-0.92, 0.0, -0.5],
+          [0.92, 0.0, -0.5],
+          [-0.92, 0.0, 0.5],
+          [0.92, 0.0, 0.5],
+        ].forEach(([x, y, z]) => {
+          const leg = new THREE.Mesh(legGeometry, legMaterial);
+          leg.position.set(x, y, z);
+          leg.castShadow = true;
+          group.add(leg);
+        });
+
+        const coneTree = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.18, 0.18, 0.92, 24),
+          new THREE.MeshStandardMaterial({
+            color: 0x2a3f30,
+            metalness: 0.33,
+            roughness: 0.36,
+            emissive: 0x102216,
+            emissiveIntensity: 0.4,
+          }),
+        );
+        coneTree.position.set(-0.62, 0.64, 0.1);
+        coneTree.castShadow = true;
+        group.add(coneTree);
+
+        const coneColors = [0xffe1a1, 0xffc4d0, 0xb8ecff];
+        coneColors.forEach((color, index) => {
+          const cone = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.34, 0.22, 0.46, 32),
+            new THREE.MeshStandardMaterial({
+              color,
+              emissive: new THREE.Color(color).multiplyScalar(0.2),
+              emissiveIntensity: 0.35,
+              roughness: 0.38,
+            }),
+          );
+          cone.rotation.z = Math.PI / 2;
+          cone.position.set(-0.62, 0.48 + index * 0.24, 0.1);
+          cone.castShadow = true;
+          group.add(cone);
+        });
+        addHoverInfo(
+          coneTree,
+          'Cone tree — organizes dyed yarn sets with quick-grab color tags.',
+        );
+
+        const prepBins = new THREE.Group();
+        prepBins.position.set(0.58, 0.36, -0.32);
+        group.add(prepBins);
+
+        const binGeometry = new THREE.BoxGeometry(0.46, 0.26, 0.46);
+        const binColors = [0x325444, 0x3e6150, 0x274236];
+        binColors.forEach((color, index) => {
+          const bin = new THREE.Mesh(
+            binGeometry,
+            new THREE.MeshStandardMaterial({
+              color,
+              metalness: 0.18,
+              roughness: 0.4,
+              emissive: new THREE.Color(color).multiplyScalar(0.18),
+            }),
+          );
+          bin.position.set(index * 0.52 - 0.52, 0, 0);
+          bin.castShadow = true;
+          prepBins.add(bin);
+        });
+        addHoverInfo(
+          prepBins,
+          'Prep bins — stage bobbins, winding tools, and pre-measured skeins.',
+        );
+
+        const scaleBase = new THREE.Mesh(
+          new THREE.BoxGeometry(0.5, 0.08, 0.34),
+          new THREE.MeshStandardMaterial({
+            color: 0x1f1d2d,
+            metalness: 0.4,
+            roughness: 0.32,
+          }),
+        );
+        scaleBase.position.set(0.38, 0.32, 0.42);
+        scaleBase.castShadow = true;
+        group.add(scaleBase);
+
+        const scaleDeck = new THREE.Mesh(
+          new THREE.BoxGeometry(0.46, 0.04, 0.3),
+          new THREE.MeshStandardMaterial({
+            color: 0x6b76ff,
+            emissive: 0x2c3080,
+            emissiveIntensity: 0.6,
+            roughness: 0.28,
+          }),
+        );
+        scaleDeck.position.set(0.38, 0.38, 0.42);
+        scaleDeck.castShadow = true;
+        group.add(scaleDeck);
+        addHoverInfo(
+          scaleDeck,
+          'Inspection scale — verifies yarn weight and cone swaps before runs.',
+        );
+
+        const checklist = new THREE.Mesh(
+          new THREE.PlaneGeometry(0.42, 0.58),
+          new THREE.MeshStandardMaterial({
+            color: 0xc5f1d6,
+            emissive: 0x4a8d65,
+            emissiveIntensity: 0.5,
+            transparent: true,
+            opacity: 0.8,
+            side: THREE.DoubleSide,
+          }),
+        );
+        checklist.position.set(0.1, 0.72, -0.46);
+        checklist.rotation.y = -Math.PI / 6;
+        checklist.castShadow = true;
+        group.add(checklist);
+        addHoverInfo(
+          checklist,
+          'Run cards — log dye lots, spool counts, and prep checks for traceability.',
+        );
+
+        const prepLabel = buildLabel('Prep & QA', '#d4ffe5');
+        prepLabel.position.set(0.0, 1.0, 0.0);
+        prepLabel.scale.multiplyScalar(0.4);
+        group.add(prepLabel);
+
+        const workLight = new THREE.PointLight(0x82ffb2, 1.1, 4.8);
+        workLight.position.set(-0.6, 1.4, 0.1);
+        group.add(workLight);
+
+        return group;
+      }
+
       function createPatternStudioDisplay() {
         const group = new THREE.Group();
         group.name = 'pattern-studio-display';
@@ -1018,6 +1178,17 @@
             accentColor: 0x7df0ff,
             hoverColor: 0x21404f,
             buildDisplay: createTensionLabDisplay,
+          },
+          {
+            name: 'Material Prep Pod',
+            roadmap:
+              'Preps yarn cones, QA scales, and dye lots before the crochet cell loads them.',
+            hoverText:
+              'Material prep pedestal — organize cones, prep bins, and traceability run cards.',
+            position: new THREE.Vector3(-6.4, 0, 3.5),
+            accentColor: 0x82ffb2,
+            hoverColor: 0x1a3525,
+            buildDisplay: createMaterialPrepDisplay,
           },
           {
             name: 'Pattern Studio',
