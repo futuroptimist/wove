@@ -58,7 +58,8 @@ python scripts/serve_viewer.py
 
 Each contribution should leave the viewer a little better—add new assets,
 improve lighting, or enhance interactivity—so that future operators can preview
-the entire assembly from a browser.
+the entire assembly from a browser. Click a product pedestal to spotlight its
+roadmap milestone and watch the glowing ring track which cluster is selected.
 
 ## Choose Your Path
 
