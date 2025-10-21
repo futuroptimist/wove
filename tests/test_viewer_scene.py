@@ -15,3 +15,10 @@ def test_hall_effect_sensor_is_documented():
     """The viewer should surface the hall-effect yarn tension sensor."""
     html = VIEWER_HTML.read_text(encoding="utf-8")
     assert "hall-effect tension sensor" in html.lower()
+
+
+def test_safety_shield_includes_access_path():
+    """The enclosure should highlight a safe walkway for maintenance rehearsals."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+    assert "safe access path" in html.lower()

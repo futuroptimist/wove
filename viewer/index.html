@@ -351,6 +351,73 @@
         latch.castShadow = true;
         shieldGroup.add(latch);
 
+        const walkwayGeometry = new THREE.PlaneGeometry(3.6, 1.8);
+        const walkwayMaterial = new THREE.MeshStandardMaterial({
+          color: 0x5efed8,
+          emissive: 0x1b7a63,
+          emissiveIntensity: 0.6,
+          metalness: 0.1,
+          roughness: 0.45,
+          transparent: true,
+          opacity: 0.55,
+          side: THREE.DoubleSide,
+        });
+        const walkway = new THREE.Mesh(walkwayGeometry, walkwayMaterial);
+        walkway.rotation.x = -Math.PI / 2;
+        walkway.position.set(1.4, 0.06, 0.3);
+        walkway.castShadow = false;
+        walkway.receiveShadow = false;
+        shieldGroup.add(walkway);
+        addHoverInfo(
+          walkway,
+          'Safe access path — follow the highlighted lane when stepping into the enclosure.',
+        );
+
+        const walkwayEdges = new THREE.LineSegments(
+          new THREE.EdgesGeometry(new THREE.PlaneGeometry(3.6, 1.8)),
+          new THREE.LineBasicMaterial({
+            color: 0x96ffe6,
+            transparent: true,
+            opacity: 0.8,
+          }),
+        );
+        walkwayEdges.rotation.x = -Math.PI / 2;
+        walkwayEdges.position.copy(walkway.position);
+        shieldGroup.add(walkwayEdges);
+
+        const walkwayLight = new THREE.PointLight(0x82ffe0, 1.2, 6.0);
+        walkwayLight.position.set(0.4, 1.1, 0.3);
+        shieldGroup.add(walkwayLight);
+
+        const footMaterial = new THREE.MeshStandardMaterial({
+          color: 0xd9fff2,
+          emissive: 0x2f8f6b,
+          emissiveIntensity: 0.45,
+          transparent: true,
+          opacity: 0.85,
+          side: THREE.DoubleSide,
+        });
+        const footGeometry = new THREE.CircleGeometry(0.32, 32);
+        const footPositions = [
+          new THREE.Vector3(2.3, 0.07, 0.55),
+          new THREE.Vector3(1.4, 0.07, 0.1),
+          new THREE.Vector3(0.5, 0.07, -0.25),
+        ];
+        footPositions.forEach((position, index) => {
+          const foot = new THREE.Mesh(footGeometry, footMaterial);
+          foot.rotation.x = -Math.PI / 2;
+          foot.scale.set(0.55 + (index % 2) * 0.08, 1.0, 1.0);
+          foot.position.copy(position);
+          foot.castShadow = false;
+          foot.receiveShadow = false;
+          shieldGroup.add(foot);
+        });
+
+        const walkwayLabel = buildLabel('Safe Access Path', '#b9ffe9');
+        walkwayLabel.position.set(0.4, 0.95, -0.4);
+        walkwayLabel.scale.multiplyScalar(0.42);
+        shieldGroup.add(walkwayLabel);
+
         const glow = new THREE.PointLight(0x9fbfff, 0.8, 7.0);
         glow.position.set(3.1, 3.8, 2.2);
         shieldGroup.add(glow);
