@@ -842,6 +842,105 @@
           'Crochet effector: hooks yarn, executes stitch choreography, and measures tension.',
         );
 
+        const fanGroup = new THREE.Group();
+        fanGroup.name = 'cooling-fan-assembly';
+        fanGroup.position.set(2.35, 2.7, 0.6);
+
+        const bracketMaterial = new THREE.MeshStandardMaterial({
+          color: 0x2f3a55,
+          metalness: 0.55,
+          roughness: 0.35,
+          emissive: 0x101627,
+          emissiveIntensity: 0.6,
+        });
+        const bracket = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.92, 0.68), bracketMaterial);
+        bracket.position.set(-0.18, 0.02, 0.02);
+        bracket.castShadow = true;
+        bracket.receiveShadow = true;
+        fanGroup.add(bracket);
+
+        const strut = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.18, 0.28), bracketMaterial);
+        strut.position.set(-0.36, -0.22, 0.0);
+        strut.castShadow = true;
+        strut.receiveShadow = true;
+        fanGroup.add(strut);
+
+        const housingMaterial = new THREE.MeshStandardMaterial({
+          color: 0x445d89,
+          metalness: 0.45,
+          roughness: 0.28,
+          emissive: 0x1b2744,
+          emissiveIntensity: 0.55,
+        });
+        const housing = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.36, 0.22, 48), housingMaterial);
+        housing.rotation.z = Math.PI / 2;
+        housing.position.set(0.1, 0, 0);
+        housing.castShadow = true;
+        housing.receiveShadow = true;
+        fanGroup.add(housing);
+        addHoverInfo(
+          housing,
+          'Cooling fan mount — 20 mm fan keeps the hook actuator cool during long runs.',
+        );
+
+        const hub = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.09, 0.09, 0.22, 24),
+          new THREE.MeshStandardMaterial({
+            color: 0xf5f9ff,
+            emissive: 0x7fa6ff,
+            emissiveIntensity: 0.45,
+            metalness: 0.65,
+            roughness: 0.18,
+          }),
+        );
+        hub.rotation.z = Math.PI / 2;
+        hub.position.set(0.1, 0, 0);
+        hub.castShadow = true;
+        fanGroup.add(hub);
+
+        const bladesGroup = new THREE.Group();
+        bladesGroup.position.set(0.2, 0, 0);
+        const bladeMaterial = new THREE.MeshStandardMaterial({
+          color: 0xe4ecff,
+          emissive: 0x6f8cff,
+          emissiveIntensity: 0.4,
+          metalness: 0.32,
+          roughness: 0.36,
+          side: THREE.DoubleSide,
+        });
+        const bladeGeometry = new THREE.BoxGeometry(0.02, 0.54, 0.16);
+        for (let index = 0; index < 3; index += 1) {
+          const blade = new THREE.Mesh(bladeGeometry, bladeMaterial);
+          blade.rotation.x = (Math.PI / 3) * index;
+          blade.castShadow = true;
+          bladesGroup.add(blade);
+        }
+        fanGroup.add(bladesGroup);
+
+        const guardMaterial = new THREE.MeshStandardMaterial({
+          color: 0xaec4ff,
+          emissive: 0x3246a1,
+          emissiveIntensity: 0.4,
+          transparent: true,
+          opacity: 0.65,
+          side: THREE.DoubleSide,
+        });
+        const guard = new THREE.Mesh(new THREE.TorusGeometry(0.34, 0.01, 16, 64), guardMaterial);
+        guard.rotation.z = Math.PI / 2;
+        guard.position.set(0.2, 0, 0);
+        fanGroup.add(guard);
+
+        const fanGlow = new THREE.PointLight(0x9ec4ff, 0.8, 1.8);
+        fanGlow.position.set(0.24, 0.1, 0);
+        fanGroup.add(fanGlow);
+
+        const fanLabel = buildLabel('Cooling Fan Mount', '#d7e5ff');
+        fanLabel.position.set(0.0, 0.95, 0);
+        fanLabel.scale.multiplyScalar(0.42);
+        fanGroup.add(fanLabel);
+
+        group.add(fanGroup);
+
         const spoolMaterial = new THREE.MeshStandardMaterial({
           color: 0xd1d5ff,
           metalness: 0.1,

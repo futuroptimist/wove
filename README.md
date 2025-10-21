@@ -66,7 +66,9 @@ enclosure described in the mechanical roadmap—hover the door to read the
 maintenance callout. A mint-lit safe access path now guides operators through
 the open doorway so maintenance rehearsals in the browser mirror the shop
 floor. Click a product pedestal to spotlight its roadmap
-milestone and watch the glowing ring track which cluster is selected. The plaza
+milestone and watch the glowing ring track which cluster is selected. The hook
+carriage's 20 mm cooling fan mount now spins beside the effector so builders can
+see the passive cooling hardware described in the design doc. The plaza
 highlights these milestones today:
 
 - **v1c Crochet Robot** – anchors the mechanical platform showcased at the
