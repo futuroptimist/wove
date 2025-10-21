@@ -63,7 +63,9 @@ the entire assembly from a browser. Hover the glowing emergency stop or axis
 end stops to see the safety interlocks called out in the v1c roadmap. The
 translucent polycarbonate shield now wraps the gantry to mirror the production
 enclosure described in the mechanical roadmap—hover the door to read the
-maintenance callout. Click a product pedestal to spotlight its roadmap
+maintenance callout. Follow the aluminum extrusion frame around the base to
+preview the 20×20 mm perimeter, corner cubes, and leveling feet highlighted in
+the mechanical roadmap. Click a product pedestal to spotlight its roadmap
 milestone and watch the glowing ring track which cluster is selected. The plaza
 highlights these milestones today:
 
