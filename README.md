@@ -64,8 +64,11 @@ end stops to see the safety interlocks called out in the v1c roadmap. The
 translucent polycarbonate shield now wraps the gantry to mirror the production
 enclosure described in the mechanical roadmap—hover the door to read the
 maintenance callout. Click a product pedestal to spotlight its roadmap
-milestone and watch the glowing ring track which cluster is selected. The plaza
-highlights these milestones today:
+milestone and watch the glowing ring track which cluster is selected. The
+Pattern Studio holographic table now loops a base chain row exported with
+`wove.pattern_cli --format planner`, giving builders a live sense of how the
+planner payload animates across the workspace. The plaza highlights these
+milestones today:
 
 - **v1c Crochet Robot** – anchors the mechanical platform showcased at the
   center of the plaza.
@@ -74,7 +77,8 @@ highlights these milestones today:
 - **Material Prep Pod** – organizes yarn cones, prep bins, and inspection
   checklists so dye lots and weights are verified before automation runs.
 - **Pattern Studio** – previews the planner workspace that visualizes
-  `wove.pattern_cli --format planner` exports directly in the browser.
+  `wove.pattern_cli --format planner` exports directly in the browser and
+  replays the base chain row hologram for pattern dry runs.
 
 ## Choose Your Path
 
