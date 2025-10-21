@@ -194,7 +194,7 @@ target pull force before commanding the actuator.
 - Optional hall-effect sensor for yarn tension measurement via flexible arm deflection.
 - The Three.js assembly viewer now spotlights the hall-effect sensor beside the yarn path so
   builders can rehearse how feedback hardware integrates before printing the mount.
-- A tinted electronics bay beneath the workbed now reveals the SKR Mini controller
+- A tinted electronics bay beneath the work bed now reveals the SKR Mini controller
   stack, cooling fan, and cable harness routing so operators can plan airflow and wiring
   alongside the rest of the assembly.
 - Emergency stop wired in series with board power.

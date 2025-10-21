@@ -63,6 +63,14 @@ def test_viewer_highlights_electronics_bay() -> None:
 
     viewer_html = _load_viewer_html()
 
-    assert "Electronics bay — shields the controller, drivers, and airflow ducting." in viewer_html
-    assert "Controller stack — SKR Mini and stepper drivers route motion commands." in viewer_html
+    # fmt: off
+    assert (
+        "Electronics bay — shields the controller, drivers, "
+        "and airflow ducting."
+    ) in viewer_html
+    assert (
+        "Controller stack — SKR Mini and stepper drivers "
+        "route motion commands."
+    ) in viewer_html
+    # fmt: on
     assert "Electronics Bay" in viewer_html

@@ -69,7 +69,7 @@ floor. Click a product pedestal to spotlight its roadmap
 milestone and watch the glowing ring track which cluster is selected. The plaza
 highlights these milestones today:
 
-Peek through the tinted electronics bay under the workbed to see the SKR Mini
+Peek through the tinted electronics bay under the work bed to see the SKR Mini
 controller stack, cooling fan, and glowing status LED that route motion power up
 to the gantry.
 
