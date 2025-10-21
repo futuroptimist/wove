@@ -31,7 +31,8 @@ Key modules include:
   linear rail upgrade path; default uses 8 mm smooth rods with LM8UU bearings to minimize cost.
 - **Hook Carriage**: Modular interface accepting either a rotary hook drive (geared stepper) or a
   cam-based oscillation module (MG90S metal gear servo). 20 mm fan mount supports passive cooling
-  of the actuator.
+  of the actuator. The Three.js viewer now renders the fan mount and blades so teams can spot the
+  cooling hardware during walkthroughs.
 - **Z Motion**: Leadscrew-driven lift (T8x2) moved by a compact stepper to set hook penetration
   depth. Anti-backlash nut and printed flexures reduce play.
 
