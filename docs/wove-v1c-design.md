@@ -159,7 +159,9 @@ target pull force before commanding the actuator.
 
 ### Safety Features
 - Full-travel physical end stops on X, Y, and Z with printable housings.
-- Snap-on belt guards protect against accidental entanglement.
+- Snap-on belt guards protect against accidental entanglement. The Three.js viewer now renders the
+  clip-on covers hugging the CoreXY belts so build crews can rehearse clearances before printing
+  hardware.
 - Firmware-configurable soft limits and homing sequences prevent overtravel.
 - The Three.js assembly viewer in `viewer/index.html` spotlights the emergency
   stop and glowing axis end stops so builders can rehearse the safety flow
