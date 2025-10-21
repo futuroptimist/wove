@@ -25,3 +25,12 @@ def test_pattern_planner_preview_is_documented():
     assert "patternPlannerEvents" in html
     assert "base chain row" in html.lower()
     assert "pattern_cli --format planner" in html
+
+
+def test_viewer_mentions_cooling_fan_mount() -> None:
+    """The hook carriage cooling fan mount should be called out."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "Cooling fan mount" in html
+    assert "20 mm fan" in html

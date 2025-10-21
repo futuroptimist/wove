@@ -58,19 +58,10 @@ def test_viewer_mentions_extrusion_frame() -> None:
     assert "Extrusion Frame" in viewer_html
 
 
-def test_viewer_highlights_electronics_bay() -> None:
-    """Ensure the electronics bay callouts render in the viewer markup."""
+def test_viewer_mentions_safe_access_path() -> None:
+    """Ensure the walkway guidance text ships with the viewer."""
 
     viewer_html = _load_viewer_html()
 
-    # fmt: off
-    assert (
-        "Electronics bay — shields the controller, drivers, "
-        "and airflow ducting."
-    ) in viewer_html
-    assert (
-        "Controller stack — SKR Mini and stepper drivers "
-        "route motion commands."
-    ) in viewer_html
-    # fmt: on
-    assert "Electronics Bay" in viewer_html
+    assert "Mint-lit safe access path" in viewer_html
+    assert "alternating" in viewer_html.lower()

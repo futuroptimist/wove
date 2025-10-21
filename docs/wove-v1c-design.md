@@ -31,7 +31,8 @@ Key modules include:
   linear rail upgrade path; default uses 8 mm smooth rods with LM8UU bearings to minimize cost.
 - **Hook Carriage**: Modular interface accepting either a rotary hook drive (geared stepper) or a
   cam-based oscillation module (MG90S metal gear servo). 20 mm fan mount supports passive cooling
-  of the actuator.
+  of the actuator. The Three.js viewer now renders the fan mount and blades so teams can spot the
+  cooling hardware during walkthroughs.
 - **Z Motion**: Leadscrew-driven lift (T8x2) moved by a compact stepper to set hook penetration
   depth. Anti-backlash nut and printed flexures reduce play.
 
@@ -158,7 +159,9 @@ target pull force before commanding the actuator.
 
 ### Safety Features
 - Full-travel physical end stops on X, Y, and Z with printable housings.
-- Snap-on belt guards protect against accidental entanglement.
+- Snap-on belt guards protect against accidental entanglement. The Three.js viewer now renders the
+  clip-on covers hugging the CoreXY belts so build crews can rehearse clearances before printing
+  hardware.
 - Firmware-configurable soft limits and homing sequences prevent overtravel.
 - The Three.js assembly viewer in `viewer/index.html` spotlights the emergency
   stop and glowing axis end stops so builders can rehearse the safety flow
@@ -173,8 +176,9 @@ target pull force before commanding the actuator.
 - Optional polycarbonate shield with hinged access door for production environments;
   the Three.js viewer renders the translucent enclosure so teams can rehearse
   safe access paths before printing hardware. Mint-highlighted floor markings
-  and footstep guides show how to step through the doorway without clipping the
-  gantry or tension hardware.
+  now extend through the open doorway with alternating, pulsing footprints so
+  operators can practice each step without clipping the gantry or tension
+  hardware.
 
 ## Electronics and Control
 ### Control Board
