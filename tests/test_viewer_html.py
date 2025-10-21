@@ -56,3 +56,12 @@ def test_viewer_mentions_extrusion_frame() -> None:
     )
     assert hover_copy in viewer_html
     assert "Extrusion Frame" in viewer_html
+
+
+def test_viewer_mentions_safe_access_path() -> None:
+    """Ensure the walkway guidance text ships with the viewer."""
+
+    viewer_html = _load_viewer_html()
+
+    assert "Mint-lit safe access path" in viewer_html
+    assert "alternating" in viewer_html.lower()

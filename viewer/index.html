@@ -151,6 +151,7 @@
       const raycaster = new THREE.Raycaster();
       const interactiveMeshes = [];
       const productClusters = [];
+      const safeAccessHighlights = [];
       let activeCluster = null;
       const selectionRingHeight = 0.06;
       const patternPlannerEvents = [
@@ -564,74 +565,6 @@
         latch.castShadow = true;
         shieldGroup.add(latch);
 
-        const walkwayGeometry = new THREE.PlaneGeometry(3.6, 1.8);
-        const walkwayMaterial = new THREE.MeshStandardMaterial({
-          color: 0x5efed8,
-          emissive: 0x1b7a63,
-          emissiveIntensity: 0.6,
-          metalness: 0.1,
-          roughness: 0.45,
-          transparent: true,
-          opacity: 0.55,
-          side: THREE.DoubleSide,
-        });
-        const walkway = new THREE.Mesh(walkwayGeometry, walkwayMaterial);
-        walkway.rotation.x = -Math.PI / 2;
-        walkway.position.set(1.4, 0.06, 0.3);
-        walkway.castShadow = false;
-        walkway.receiveShadow = false;
-        shieldGroup.add(walkway);
-        addHoverInfo(
-          walkway,
-          'Safe access path — follow the highlighted lane when stepping into the enclosure.',
-          { passthrough: true },
-        );
-
-        const walkwayEdges = new THREE.LineSegments(
-          new THREE.EdgesGeometry(new THREE.PlaneGeometry(3.6, 1.8)),
-          new THREE.LineBasicMaterial({
-            color: 0x96ffe6,
-            transparent: true,
-            opacity: 0.8,
-          }),
-        );
-        walkwayEdges.rotation.x = -Math.PI / 2;
-        walkwayEdges.position.copy(walkway.position);
-        shieldGroup.add(walkwayEdges);
-
-        const walkwayLight = new THREE.PointLight(0x82ffe0, 1.2, 6.0);
-        walkwayLight.position.set(0.4, 1.1, 0.3);
-        shieldGroup.add(walkwayLight);
-
-        const footMaterial = new THREE.MeshStandardMaterial({
-          color: 0xd9fff2,
-          emissive: 0x2f8f6b,
-          emissiveIntensity: 0.45,
-          transparent: true,
-          opacity: 0.85,
-          side: THREE.DoubleSide,
-        });
-        const footGeometry = new THREE.CircleGeometry(0.32, 32);
-        const footPositions = [
-          new THREE.Vector3(2.3, 0.07, 0.55),
-          new THREE.Vector3(1.4, 0.07, 0.1),
-          new THREE.Vector3(0.5, 0.07, -0.25),
-        ];
-        footPositions.forEach((position, index) => {
-          const foot = new THREE.Mesh(footGeometry, footMaterial);
-          foot.rotation.x = -Math.PI / 2;
-          foot.scale.set(0.55 + (index % 2) * 0.08, 1.0, 1.0);
-          foot.position.copy(position);
-          foot.castShadow = false;
-          foot.receiveShadow = false;
-          shieldGroup.add(foot);
-        });
-
-        const walkwayLabel = buildLabel('Safe Access Path', '#b9ffe9');
-        walkwayLabel.position.set(0.4, 0.95, -0.4);
-        walkwayLabel.scale.multiplyScalar(0.42);
-        shieldGroup.add(walkwayLabel);
-
         const glow = new THREE.PointLight(0x9fbfff, 0.8, 7.0);
         glow.position.set(3.1, 3.8, 2.2);
         shieldGroup.add(glow);
@@ -642,6 +575,159 @@
         shieldGroup.add(label);
 
         return shieldGroup;
+      }
+
+      function createSafeAccessPath() {
+        const group = new THREE.Group();
+        group.name = 'safe-access-path';
+
+        const pathGeometry = new THREE.PlaneGeometry(3.0, 1.8);
+        const pathMaterial = new THREE.MeshStandardMaterial({
+          color: 0x66fddf,
+          emissive: 0x1b7561,
+          emissiveIntensity: 0.5,
+          metalness: 0.08,
+          roughness: 0.3,
+          transparent: true,
+          opacity: 0.72,
+          side: THREE.DoubleSide,
+          depthWrite: false,
+        });
+        const path = new THREE.Mesh(pathGeometry, pathMaterial);
+        path.rotation.x = -Math.PI / 2;
+        path.position.set(4.5, 0.025, 0.35);
+        path.receiveShadow = false;
+        group.add(path);
+        addHoverInfo(
+          path,
+          'Mint-lit safe access path — follow the alternating, pulsing footprints to service the crochet cell without clipping hardware.',
+        );
+        safeAccessHighlights.push({
+          material: pathMaterial,
+          baseIntensity: 0.5,
+          amplitude: 0.25,
+          speed: 1.8,
+          baseOpacity: 0.72,
+          opacityAmplitude: 0.1,
+          phaseOffset: 0,
+        });
+
+        const outline = new THREE.LineSegments(
+          new THREE.EdgesGeometry(pathGeometry),
+          new THREE.LineBasicMaterial({
+            color: 0xa9fff0,
+            transparent: true,
+            opacity: 0.65,
+          }),
+        );
+        outline.rotation.x = -Math.PI / 2;
+        outline.position.copy(path.position);
+        outline.position.y += 0.002;
+        group.add(outline);
+
+        const arrowMaterial = new THREE.MeshStandardMaterial({
+          color: 0xc4fff3,
+          emissive: 0x2c9c83,
+          emissiveIntensity: 0.6,
+          metalness: 0.12,
+          roughness: 0.25,
+        });
+        const arrow = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.46, 32), arrowMaterial);
+        arrow.rotation.z = -Math.PI / 2;
+        arrow.position.set(3.55, 0.38, 0.35);
+        arrow.castShadow = true;
+        group.add(arrow);
+        safeAccessHighlights.push({
+          material: arrowMaterial,
+          baseIntensity: 0.6,
+          amplitude: 0.25,
+          speed: 2.3,
+          phaseOffset: Math.PI / 3,
+        });
+
+        const footstepGeometry = new THREE.CircleGeometry(0.26, 40);
+
+        function addFootstep(x, z, rotationDegrees, phaseOffset) {
+          const footprintMaterial = new THREE.MeshStandardMaterial({
+            color: 0xdbfff4,
+            emissive: 0x2f9270,
+            emissiveIntensity: 0.48,
+            metalness: 0.08,
+            roughness: 0.24,
+            transparent: true,
+            opacity: 0.86,
+            side: THREE.DoubleSide,
+            depthWrite: false,
+          });
+          const footprint = new THREE.Mesh(footstepGeometry, footprintMaterial);
+          footprint.rotation.x = -Math.PI / 2;
+          footprint.rotation.y = THREE.MathUtils.degToRad(rotationDegrees);
+          footprint.position.set(x, 0.03, z);
+          footprint.scale.set(1.45, 1.0, 1.15);
+          footprint.renderOrder = 3;
+          group.add(footprint);
+          safeAccessHighlights.push({
+            material: footprintMaterial,
+            baseIntensity: 0.48,
+            amplitude: 0.32,
+            speed: 2.6,
+            phaseOffset,
+            baseOpacity: 0.86,
+            opacityAmplitude: 0.18,
+          });
+
+          const toeMaterial = new THREE.MeshStandardMaterial({
+            color: 0xf0fff9,
+            emissive: 0x42c9a2,
+            emissiveIntensity: 0.55,
+            metalness: 0.05,
+            roughness: 0.22,
+            transparent: true,
+            opacity: 0.78,
+            depthWrite: false,
+          });
+          const toe = new THREE.Mesh(new THREE.CircleGeometry(0.1, 24), toeMaterial);
+          toe.rotation.x = -Math.PI / 2;
+          toe.rotation.y = footprint.rotation.y;
+          toe.position.set(
+            x + Math.cos(footprint.rotation.y) * 0.22,
+            0.031,
+            z - Math.sin(footprint.rotation.y) * 0.22,
+          );
+          toe.scale.set(1.25, 1.0, 1.2);
+          toe.renderOrder = 4;
+          group.add(toe);
+          safeAccessHighlights.push({
+            material: toeMaterial,
+            baseIntensity: 0.55,
+            amplitude: 0.25,
+            speed: 2.6,
+            phaseOffset: phaseOffset + 0.7,
+            baseOpacity: 0.78,
+            opacityAmplitude: 0.15,
+          });
+        }
+
+        const stepSequence = [
+          { x: 3.85, z: 0.12, rotation: 8, phase: 0.0 },
+          { x: 4.15, z: 0.58, rotation: 12, phase: 0.45 },
+          { x: 4.45, z: 0.12, rotation: 8, phase: 0.9 },
+          { x: 4.75, z: 0.58, rotation: 12, phase: 1.35 },
+          { x: 5.05, z: 0.12, rotation: 8, phase: 1.8 },
+          { x: 5.35, z: 0.58, rotation: 12, phase: 2.25 },
+        ];
+        stepSequence.forEach((step) => addFootstep(step.x, step.z, step.rotation, step.phase));
+
+        const label = buildLabel('Safe Access Path', '#baffec');
+        label.position.set(4.6, 0.92, -0.45);
+        label.scale.multiplyScalar(0.44);
+        group.add(label);
+
+        const guideLight = new THREE.PointLight(0x8affe4, 1.15, 5.5);
+        guideLight.position.set(4.25, 0.9, 0.35);
+        group.add(guideLight);
+
+        return group;
       }
 
       function createBeltGuards() {
@@ -1163,6 +1249,9 @@
 
         const safetyShield = createSafetyShield();
         group.add(safetyShield);
+
+        const safeAccessPath = createSafeAccessPath();
+        group.add(safeAccessPath);
 
         function createEmergencyStop() {
           const emergencyGroup = new THREE.Group();
@@ -2096,6 +2185,31 @@
         scene.traverse((object) => {
           if (object.name === 'v1c-assembly') {
             object.rotation.y = Math.sin(elapsed * 0.15) * 0.15;
+          }
+        });
+        safeAccessHighlights.forEach((highlight) => {
+          const {
+            material,
+            baseIntensity = 0,
+            amplitude = 0,
+            speed = 1,
+            phaseOffset = 0,
+            baseOpacity,
+            opacityAmplitude = 0,
+          } = highlight;
+          if (material && typeof material.emissiveIntensity === 'number') {
+            const emissivePulse =
+              baseIntensity + Math.sin(elapsed * speed + phaseOffset) * amplitude;
+            material.emissiveIntensity = Math.max(0, emissivePulse);
+          }
+          if (
+            typeof baseOpacity === 'number' &&
+            typeof material.opacity === 'number' &&
+            material.transparent
+          ) {
+            const opacityPulse =
+              baseOpacity + Math.sin(elapsed * speed + phaseOffset) * opacityAmplitude;
+            material.opacity = THREE.MathUtils.clamp(opacityPulse, 0, 1);
           }
         });
         updatePatternPreview(elapsed);
