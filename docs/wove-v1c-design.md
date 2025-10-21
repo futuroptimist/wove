@@ -167,10 +167,14 @@ target pull force before commanding the actuator.
   rig) so contributors understand how the crochet platform integrates with the
   broader automation journey. The material prep pod pedestal now highlights the
   cone tree, staging bins, inspection scale, and traceability cards that feed
-  yarn into the crochet cell.
+  yarn into the crochet cell. The Pattern Studio hologram loops a base chain
+  row exported from `wove.pattern_cli --format planner`, previewing how planner
+  payloads animate across the workspace before firmware executes them.
 - Optional polycarbonate shield with hinged access door for production environments;
   the Three.js viewer renders the translucent enclosure so teams can rehearse
-  safe access paths before printing hardware.
+  safe access paths before printing hardware. Mint-highlighted floor markings
+  and footstep guides show how to step through the doorway without clipping the
+  gantry or tension hardware.
 
 ## Electronics and Control
 ### Control Board
@@ -204,10 +208,11 @@ target pull force before commanding the actuator.
 - Companion Python CLI handles pattern translation from custom stitch descriptions to
   G-code-like motion sequences. Initial DSL support is complete, and a lightweight SVG polyline
   importer converts sketches into travel moves for rapid prototyping.
-- Future roadmap: integrate with browser-based planner for interactive pattern design.
-  The pattern CLI now emits planner-oriented JSON via `--format planner`,
- packaging command snapshots and motion bounds so the front-end can visualize
-  sequences without parsing raw G-code.
+- Browser-based planner integration has started: the Pattern Studio hologram in
+  the Three.js viewer replays a base chain row exported via
+  `wove.pattern_cli --format planner`, showcasing how planner payloads map to
+  motion without parsing raw G-code while leaving room for deeper
+  interactivity.
 
 ## Bill of Materials (Initial Release)
 | Subsystem | Component | Qty | Notes |

@@ -63,9 +63,9 @@ the entire assembly from a browser. Hover the glowing emergency stop or axis
 end stops to see the safety interlocks called out in the v1c roadmap. The
 translucent polycarbonate shield now wraps the gantry to mirror the production
 enclosure described in the mechanical roadmap—hover the door to read the
-maintenance callout. Follow the aluminum extrusion frame around the base to
-preview the 20×20 mm perimeter, corner cubes, and leveling feet highlighted in
-the mechanical roadmap. Click a product pedestal to spotlight its roadmap
+maintenance callout. A mint-lit safe access path now guides operators through
+the open doorway so maintenance rehearsals in the browser mirror the shop
+floor. Click a product pedestal to spotlight its roadmap
 milestone and watch the glowing ring track which cluster is selected. The plaza
 highlights these milestones today:
 
@@ -76,7 +76,8 @@ highlights these milestones today:
 - **Material Prep Pod** – organizes yarn cones, prep bins, and inspection
   checklists so dye lots and weights are verified before automation runs.
 - **Pattern Studio** – previews the planner workspace that visualizes
-  `wove.pattern_cli --format planner` exports directly in the browser.
+  `wove.pattern_cli --format planner` exports directly in the browser and
+  replays the base chain row hologram for pattern dry runs.
 
 ## Choose Your Path
 
