@@ -28,7 +28,7 @@ def test_pattern_planner_preview_is_documented():
 
 
 def test_safe_access_path_extends_outside_shield():
-    """Mint-lit walkway guidance should be surfaced for maintenance rehearsals."""
+    """Mint-lit walkway guidance supports maintenance rehearsals."""
 
     html = VIEWER_HTML.read_text(encoding="utf-8")
 
