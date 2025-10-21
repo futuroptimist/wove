@@ -56,3 +56,13 @@ def test_viewer_mentions_extrusion_frame() -> None:
     )
     assert hover_copy in viewer_html
     assert "Extrusion Frame" in viewer_html
+
+
+def test_viewer_highlights_electronics_bay() -> None:
+    """Ensure the electronics bay callouts render in the viewer markup."""
+
+    viewer_html = _load_viewer_html()
+
+    assert "Electronics bay — shields the controller, drivers, and airflow ducting." in viewer_html
+    assert "Controller stack — SKR Mini and stepper drivers route motion commands." in viewer_html
+    assert "Electronics Bay" in viewer_html

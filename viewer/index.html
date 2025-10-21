@@ -638,6 +638,152 @@
         return shieldGroup;
       }
 
+      function createElectronicsBay() {
+        const group = new THREE.Group();
+        group.name = 'electronics-bay';
+
+        const enclosureMaterial = new THREE.MeshStandardMaterial({
+          color: 0x1d2639,
+          metalness: 0.48,
+          roughness: 0.42,
+          emissive: 0x0c1321,
+          emissiveIntensity: 0.35,
+        });
+        const enclosure = new THREE.Mesh(
+          new THREE.BoxGeometry(1.8, 0.9, 1.2),
+          enclosureMaterial,
+        );
+        enclosure.position.y = 0.45;
+        enclosure.castShadow = true;
+        group.add(enclosure);
+        addHoverInfo(
+          enclosure,
+          'Electronics bay — shields the controller, drivers, and airflow ducting.',
+          { passthrough: true },
+        );
+
+        const accessPanel = new THREE.Mesh(
+          new THREE.PlaneGeometry(1.4, 0.6),
+          new THREE.MeshStandardMaterial({
+            color: 0x253656,
+            emissive: 0x37548e,
+            emissiveIntensity: 0.55,
+            transparent: true,
+            opacity: 0.65,
+            side: THREE.DoubleSide,
+          }),
+        );
+        accessPanel.position.set(0, 0.5, 0.62);
+        group.add(accessPanel);
+
+        const vent = new THREE.Mesh(
+          new THREE.BoxGeometry(1.5, 0.08, 0.08),
+          new THREE.MeshStandardMaterial({
+            color: 0x455b83,
+            metalness: 0.52,
+            roughness: 0.34,
+          }),
+        );
+        vent.position.set(0, 0.86, 0.56);
+        vent.castShadow = true;
+        group.add(vent);
+
+        const controller = new THREE.Mesh(
+          new THREE.BoxGeometry(1.2, 0.1, 0.68),
+          new THREE.MeshStandardMaterial({
+            color: 0x1c3d33,
+            emissive: 0x0c231d,
+            emissiveIntensity: 0.65,
+            metalness: 0.32,
+            roughness: 0.36,
+          }),
+        );
+        controller.position.set(0, 0.32, 0);
+        controller.castShadow = true;
+        group.add(controller);
+        addHoverInfo(
+          controller,
+          'Controller stack — SKR Mini and stepper drivers route motion commands.',
+        );
+
+        const heatsink = new THREE.Mesh(
+          new THREE.BoxGeometry(0.5, 0.16, 0.3),
+          new THREE.MeshStandardMaterial({
+            color: 0x89a8ff,
+            emissive: 0x2b448a,
+            emissiveIntensity: 0.7,
+            metalness: 0.68,
+            roughness: 0.28,
+          }),
+        );
+        heatsink.position.set(-0.32, 0.5, -0.12);
+        heatsink.castShadow = true;
+        group.add(heatsink);
+
+        const fan = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.26, 0.26, 0.12, 32),
+          new THREE.MeshStandardMaterial({
+            color: 0x121722,
+            metalness: 0.42,
+            roughness: 0.38,
+          }),
+        );
+        fan.rotation.x = Math.PI / 2;
+        fan.position.set(0.54, 0.48, 0);
+        fan.castShadow = true;
+        group.add(fan);
+        addHoverInfo(fan, 'Cooling fan — pulls heat away from the driver stack.');
+
+        const fanGlow = new THREE.PointLight(0x6fd8ff, 1.4, 2.8);
+        fanGlow.position.set(0.54, 0.88, 0.1);
+        group.add(fanGlow);
+
+        const harness = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.05, 0.05, 1.6, 16),
+          new THREE.MeshStandardMaterial({
+            color: 0x2c3b52,
+            metalness: 0.3,
+            roughness: 0.4,
+            emissive: 0x111a2a,
+            emissiveIntensity: 0.4,
+          }),
+        );
+        harness.rotation.z = Math.PI / 2.4;
+        harness.position.set(-0.15, 0.18, 0.38);
+        harness.castShadow = true;
+        group.add(harness);
+        addHoverInfo(
+          harness,
+          'Cable harness — bundles stepper power and sensor leads toward the gantry.',
+        );
+
+        const statusLed = new THREE.Mesh(
+          new THREE.SphereGeometry(0.08, 16, 16),
+          new THREE.MeshStandardMaterial({
+            color: 0x7dffbe,
+            emissive: 0x33d18a,
+            emissiveIntensity: 1.0,
+            metalness: 0.2,
+            roughness: 0.25,
+          }),
+        );
+        statusLed.position.set(-0.68, 0.68, 0.58);
+        statusLed.castShadow = true;
+        group.add(statusLed);
+
+        const statusLight = new THREE.PointLight(0x66ffc2, 1.2, 2.2);
+        statusLight.position.copy(statusLed.position);
+        statusLight.position.y += 0.2;
+        group.add(statusLight);
+
+        const label = buildLabel('Electronics Bay', '#a9c8ff');
+        label.position.set(0, 1.02, 0.62);
+        label.scale.multiplyScalar(0.42);
+        group.add(label);
+
+        return group;
+      }
+
       function createExtrusionFrame() {
         const frameGroup = new THREE.Group();
         frameGroup.name = 'extrusion-frame';
@@ -788,6 +934,10 @@
           bed,
           'Workpiece support bed: removable build plate with magnetic anchors for swatch staging.',
         );
+
+        const electronicsBay = createElectronicsBay();
+        electronicsBay.position.set(-2.1, 0.4, -1.4);
+        group.add(electronicsBay);
 
         const anchorGeometry = new THREE.CylinderGeometry(0.16, 0.16, 0.12, 20);
         const anchorMaterial = new THREE.MeshStandardMaterial({
