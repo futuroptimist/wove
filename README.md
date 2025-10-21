@@ -75,6 +75,9 @@ highlights these milestones today:
   checklists so dye lots and weights are verified before automation runs.
 - **Pattern Studio** – previews the planner workspace that visualizes
   `wove.pattern_cli --format planner` exports directly in the browser.
+- **v1k Research Rig** – teases the knitting successor with prototype rails,
+  a modular carriage sled, and telemetry pods collecting load data for future
+  toolheads.
 
 ## Choose Your Path
 

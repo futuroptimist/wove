@@ -165,7 +165,9 @@ target pull force before commanding the actuator.
   rig) so contributors understand how the crochet platform integrates with the
   broader automation journey. The material prep pod pedestal now highlights the
   cone tree, staging bins, inspection scale, and traceability cards that feed
-  yarn into the crochet cell.
+  yarn into the crochet cell. The v1k research rig pedestal now features the
+  prototype knitting deck, carriage sled, and telemetry pod that inform the
+  successor platform.
 - Optional polycarbonate shield with hinged access door for production environments;
   the Three.js viewer renders the translucent enclosure so teams can rehearse
   safe access paths before printing hardware.
