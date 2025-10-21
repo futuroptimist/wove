@@ -27,11 +27,10 @@ def test_pattern_planner_preview_is_documented():
     assert "pattern_cli --format planner" in html
 
 
-def test_safe_access_path_extends_outside_shield():
-    """Mint-lit walkway guidance supports maintenance rehearsals."""
+def test_viewer_mentions_cooling_fan_mount() -> None:
+    """The hook carriage cooling fan mount should be called out."""
 
     html = VIEWER_HTML.read_text(encoding="utf-8")
 
-    assert "createSafeAccessPath" in html
-    assert "Mint-lit safe access path" in html
-    assert "pulsing" in html.lower()
+    assert "Cooling fan mount" in html
+    assert "20 mm fan" in html

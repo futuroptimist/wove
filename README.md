@@ -63,11 +63,10 @@ the entire assembly from a browser. Hover the glowing emergency stop or axis
 end stops to see the safety interlocks called out in the v1c roadmap. The
 translucent polycarbonate shield now wraps the gantry to mirror the production
 enclosure described in the mechanical roadmap—hover the door to read the
-  maintenance callout. A mint-lit safe access path now pulses outside the
-  doorway with alternating footprints so maintenance rehearsals in the browser
-  mirror the shop floor. Click a product pedestal to spotlight its roadmap
-milestone and watch the glowing ring track which cluster is selected. The plaza
-highlights these milestones today:
+maintenance callout. Snap-on belt guards now clip over the CoreXY loops so stray
+yarn or tools stay clear while operators inspect motion from above. Click a
+product pedestal to spotlight its roadmap milestone and watch the glowing ring
+track which cluster is selected. The plaza highlights these milestones today:
 
 - **v1c Crochet Robot** – anchors the mechanical platform showcased at the
   center of the plaza.
