@@ -65,7 +65,8 @@ translucent polycarbonate shield now wraps the gantry to mirror the production
 enclosure described in the mechanical roadmap—hover the door to read the
 maintenance callout. A mint-lit safe access path now guides operators through
 the open doorway so maintenance rehearsals in the browser mirror the shop
-floor. Click a product pedestal to spotlight its roadmap
+floor. Snap-on belt guards now clip over the CoreXY loops so stray yarn or tools stay clear while
+operators inspect motion from above. Click a product pedestal to spotlight its roadmap
 milestone and watch the glowing ring track which cluster is selected. The plaza
 highlights these milestones today:
 
