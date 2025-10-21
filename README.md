@@ -63,12 +63,11 @@ the entire assembly from a browser. Hover the glowing emergency stop or axis
 end stops to see the safety interlocks called out in the v1c roadmap. The
 translucent polycarbonate shield now wraps the gantry to mirror the production
 enclosure described in the mechanical roadmap—hover the door to read the
-maintenance callout. Click a product pedestal to spotlight its roadmap
-milestone and watch the glowing ring track which cluster is selected. The
-Pattern Studio holographic table now loops a base chain row exported with
-`wove.pattern_cli --format planner`, giving builders a live sense of how the
-planner payload animates across the workspace. The plaza highlights these
-milestones today:
+maintenance callout. A mint-lit safe access path now guides operators through
+the open doorway so maintenance rehearsals in the browser mirror the shop
+floor. Click a product pedestal to spotlight its roadmap
+milestone and watch the glowing ring track which cluster is selected. The plaza
+highlights these milestones today:
 
 - **v1c Crochet Robot** – anchors the mechanical platform showcased at the
   center of the plaza.

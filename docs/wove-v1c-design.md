@@ -170,7 +170,9 @@ target pull force before commanding the actuator.
   payloads animate across the workspace before firmware executes them.
 - Optional polycarbonate shield with hinged access door for production environments;
   the Three.js viewer renders the translucent enclosure so teams can rehearse
-  safe access paths before printing hardware.
+  safe access paths before printing hardware. Mint-highlighted floor markings
+  and footstep guides show how to step through the doorway without clipping the
+  gantry or tension hardware.
 
 ## Electronics and Control
 ### Control Board
