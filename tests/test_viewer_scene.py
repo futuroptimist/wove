@@ -15,3 +15,13 @@ def test_hall_effect_sensor_is_documented():
     """The viewer should surface the hall-effect yarn tension sensor."""
     html = VIEWER_HTML.read_text(encoding="utf-8")
     assert "hall-effect tension sensor" in html.lower()
+
+
+def test_pattern_planner_preview_is_documented():
+    """The Pattern Studio hologram should advertise the planner preview."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "patternPlannerEvents" in html
+    assert "base chain row" in html.lower()
+    assert "pattern_cli --format planner" in html

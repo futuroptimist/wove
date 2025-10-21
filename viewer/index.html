@@ -153,6 +153,43 @@
       const productClusters = [];
       let activeCluster = null;
       const selectionRingHeight = 0.06;
+      const patternPlannerEvents = [
+        { comment: 'use millimeters', x: 0.0, y: 0.0, z: 4.0, extrusion: 0.0 },
+        { comment: 'absolute positioning', x: 0.0, y: 0.0, z: 4.0, extrusion: 0.0 },
+        { comment: 'zero axes', x: 0.0, y: 0.0, z: 4.0, extrusion: 0.0 },
+        { comment: 'chain stitch 1 of 4: plunge', x: 0.0, y: 0.0, z: -1.5, extrusion: 0.0 },
+        { comment: 'chain stitch 1 of 4: feed yarn', x: 0.0, y: 0.0, z: -1.5, extrusion: 0.5 },
+        { comment: 'chain stitch 1 of 4: raise', x: 0.0, y: 0.0, z: 4.0, extrusion: 0.5 },
+        { comment: 'chain stitch 1 of 4: advance', x: 5.0, y: 0.0, z: 4.0, extrusion: 0.5 },
+        { comment: 'chain stitch 2 of 4: plunge', x: 5.0, y: 0.0, z: -1.5, extrusion: 0.5 },
+        { comment: 'chain stitch 2 of 4: feed yarn', x: 5.0, y: 0.0, z: -1.5, extrusion: 1.0 },
+        { comment: 'chain stitch 2 of 4: raise', x: 5.0, y: 0.0, z: 4.0, extrusion: 1.0 },
+        { comment: 'chain stitch 2 of 4: advance', x: 10.0, y: 0.0, z: 4.0, extrusion: 1.0 },
+        { comment: 'chain stitch 3 of 4: plunge', x: 10.0, y: 0.0, z: -1.5, extrusion: 1.0 },
+        { comment: 'chain stitch 3 of 4: feed yarn', x: 10.0, y: 0.0, z: -1.5, extrusion: 1.5 },
+        { comment: 'chain stitch 3 of 4: raise', x: 10.0, y: 0.0, z: 4.0, extrusion: 1.5 },
+        { comment: 'chain stitch 3 of 4: advance', x: 15.0, y: 0.0, z: 4.0, extrusion: 1.5 },
+        { comment: 'chain stitch 4 of 4: plunge', x: 15.0, y: 0.0, z: -1.5, extrusion: 1.5 },
+        { comment: 'chain stitch 4 of 4: feed yarn', x: 15.0, y: 0.0, z: -1.5, extrusion: 2.0 },
+        { comment: 'chain stitch 4 of 4: raise', x: 15.0, y: 0.0, z: 4.0, extrusion: 2.0 },
+        { comment: 'chain stitch 4 of 4: advance', x: 20.0, y: 0.0, z: 4.0, extrusion: 2.0 },
+        { comment: 'turn to next row', x: 0.0, y: 6.0, z: 4.0, extrusion: 2.0 },
+        { comment: 'single stitch 1 of 3: plunge', x: 0.0, y: 6.0, z: -2.0, extrusion: 2.0 },
+        { comment: 'single stitch 1 of 3: feed yarn', x: 0.0, y: 6.0, z: -2.0, extrusion: 2.6 },
+        { comment: 'single stitch 1 of 3: raise', x: 0.0, y: 6.0, z: 4.0, extrusion: 2.6 },
+        { comment: 'single stitch 1 of 3: advance', x: 4.5, y: 6.0, z: 4.0, extrusion: 2.6 },
+        { comment: 'single stitch 2 of 3: plunge', x: 4.5, y: 6.0, z: -2.0, extrusion: 2.6 },
+        { comment: 'single stitch 2 of 3: feed yarn', x: 4.5, y: 6.0, z: -2.0, extrusion: 3.2 },
+        { comment: 'single stitch 2 of 3: raise', x: 4.5, y: 6.0, z: 4.0, extrusion: 3.2 },
+        { comment: 'single stitch 2 of 3: advance', x: 9.0, y: 6.0, z: 4.0, extrusion: 3.2 },
+        { comment: 'single stitch 3 of 3: plunge', x: 9.0, y: 6.0, z: -2.0, extrusion: 3.2 },
+        { comment: 'single stitch 3 of 3: feed yarn', x: 9.0, y: 6.0, z: -2.0, extrusion: 3.8 },
+        { comment: 'single stitch 3 of 3: raise', x: 9.0, y: 6.0, z: 4.0, extrusion: 3.8 },
+        { comment: 'single stitch 3 of 3: advance', x: 13.5, y: 6.0, z: 4.0, extrusion: 3.8 },
+      ];
+      Object.freeze(patternPlannerEvents);
+      let patternPreviewGroup = null;
+      const patternPreviewDurationSeconds = 14;
 
       const camera = new THREE.PerspectiveCamera(
         45,
@@ -246,6 +283,176 @@
         mesh.userData.hoverText = text;
         mesh.userData.hoverPassthrough = options.passthrough ?? false;
         interactiveMeshes.push(mesh);
+      }
+
+      function buildPlannerPreview(events) {
+        const group = new THREE.Group();
+        group.name = 'pattern-planner-preview';
+
+        if (!Array.isArray(events) || events.length === 0) {
+          return group;
+        }
+
+        let minX = events[0].x;
+        let maxX = events[0].x;
+        let minY = events[0].y;
+        let maxY = events[0].y;
+        let maxExtrusion = events[0].extrusion;
+
+        events.forEach((event) => {
+          minX = Math.min(minX, event.x);
+          maxX = Math.max(maxX, event.x);
+          minY = Math.min(minY, event.y);
+          maxY = Math.max(maxY, event.y);
+          maxExtrusion = Math.max(maxExtrusion, event.extrusion);
+        });
+
+        const planeWidth = 0.72;
+        const planeHeight = 0.52;
+        const usableWidth = planeWidth * 0.88;
+        const usableHeight = planeHeight * 0.82;
+
+        const xSpan = Math.max(maxX - minX, 1);
+        const ySpan = Math.max(maxY - minY, 1);
+        const extrusionSpan = Math.max(maxExtrusion, 0.01);
+
+        const positions = new Float32Array(events.length * 3);
+        const colors = new Float32Array(events.length * 3);
+        const points = [];
+
+        events.forEach((event, index) => {
+          const normalizedX = (event.x - minX) / xSpan;
+          const normalizedY = (event.y - minY) / ySpan;
+          const centeredX = normalizedX - 0.5;
+          const centeredY = normalizedY - 0.5;
+          const xPos = centeredX * usableWidth;
+          const yPos = centeredY * usableHeight;
+          const extrusionRatio = Math.max(event.extrusion, 0) / extrusionSpan;
+          const zPos = 0.02 + extrusionRatio * 0.06;
+          const point = new THREE.Vector3(xPos, yPos, zPos);
+          points.push(point);
+
+          positions[index * 3] = point.x;
+          positions[index * 3 + 1] = point.y;
+          positions[index * 3 + 2] = point.z;
+
+          const isExtruding =
+            typeof event.comment === 'string' && event.comment.includes('feed yarn');
+          const color = new THREE.Color(isExtruding ? 0xffb46b : 0x7fb3ff);
+          colors[index * 3] = color.r;
+          colors[index * 3 + 1] = color.g;
+          colors[index * 3 + 2] = color.b;
+        });
+
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        const lineMaterial = new THREE.LineBasicMaterial({
+          vertexColors: true,
+          transparent: true,
+          opacity: 0.95,
+        });
+
+        const line = new THREE.Line(geometry, lineMaterial);
+        line.renderOrder = 2;
+        group.add(line);
+
+        const cumulativeDistances = [0];
+        for (let index = 1; index < points.length; index += 1) {
+          const previous = points[index - 1];
+          const current = points[index];
+          const distance = current.distanceTo(previous);
+          cumulativeDistances.push(cumulativeDistances[index - 1] + distance);
+        }
+        const totalDistance =
+          cumulativeDistances[cumulativeDistances.length - 1] || 1.0;
+
+        const marker = new THREE.Mesh(
+          new THREE.SphereGeometry(0.02, 20, 20),
+          new THREE.MeshStandardMaterial({
+            color: 0xf5f9ff,
+            emissive: 0x88aaff,
+            emissiveIntensity: 1.2,
+            metalness: 0.35,
+            roughness: 0.25,
+          }),
+        );
+        marker.castShadow = true;
+        marker.position.copy(points[0]);
+        group.add(marker);
+
+        const haloMaterial = new THREE.MeshBasicMaterial({
+          color: 0xb9caff,
+          transparent: true,
+          opacity: 0.5,
+          side: THREE.DoubleSide,
+        });
+        const halo = new THREE.Mesh(
+          new THREE.RingGeometry(0.04, 0.065, 32),
+          haloMaterial,
+        );
+        halo.rotation.x = Math.PI / 2;
+        halo.position.copy(marker.position);
+        group.add(halo);
+
+        const previewLabel = buildLabel('Base Chain Row', '#ffe7c9');
+        previewLabel.position.set(0, usableHeight * 0.75, 0.05);
+        previewLabel.scale.multiplyScalar(0.28);
+        group.add(previewLabel);
+
+        group.userData.preview = {
+          points,
+          cumulativeDistances,
+          totalDistance,
+          marker,
+          halo,
+          haloMaterial,
+        };
+
+        return group;
+      }
+
+      function updatePatternPreview(elapsedSeconds) {
+        if (!patternPreviewGroup) {
+          return;
+        }
+        const preview = patternPreviewGroup.userData.preview;
+        if (!preview || preview.totalDistance <= 0) {
+          return;
+        }
+
+        const cycle = patternPreviewDurationSeconds;
+        const wrapped = cycle > 0 ? elapsedSeconds % cycle : elapsedSeconds;
+        const progress = wrapped / cycle;
+        const targetDistance = progress * preview.totalDistance;
+
+        let index = 0;
+        while (
+          index < preview.cumulativeDistances.length - 1 &&
+          preview.cumulativeDistances[index + 1] < targetDistance
+        ) {
+          index += 1;
+        }
+
+        const startPoint = preview.points[index];
+        const endPoint = preview.points[Math.min(index + 1, preview.points.length - 1)];
+        const startDistance = preview.cumulativeDistances[index];
+        const endDistance = preview.cumulativeDistances[
+          Math.min(index + 1, preview.cumulativeDistances.length - 1)
+        ];
+        const segmentSpan = Math.max(endDistance - startDistance, 1e-6);
+        const segmentProgress = (targetDistance - startDistance) / segmentSpan;
+
+        preview.marker.position.lerpVectors(startPoint, endPoint, segmentProgress);
+        const pulse = 0.6 + 0.4 * Math.sin(elapsedSeconds * 3.0);
+        preview.marker.material.emissiveIntensity = pulse;
+
+        if (preview.halo) {
+          preview.halo.position.copy(preview.marker.position);
+          const haloPulse = 0.35 + 0.3 * Math.sin(elapsedSeconds * 2.2);
+          preview.haloMaterial.opacity = haloPulse;
+        }
       }
 
       function createSafetyShield() {
@@ -350,6 +557,74 @@
         latch.rotation.y = THREE.MathUtils.degToRad(-18);
         latch.castShadow = true;
         shieldGroup.add(latch);
+
+        const walkwayGeometry = new THREE.PlaneGeometry(3.6, 1.8);
+        const walkwayMaterial = new THREE.MeshStandardMaterial({
+          color: 0x5efed8,
+          emissive: 0x1b7a63,
+          emissiveIntensity: 0.6,
+          metalness: 0.1,
+          roughness: 0.45,
+          transparent: true,
+          opacity: 0.55,
+          side: THREE.DoubleSide,
+        });
+        const walkway = new THREE.Mesh(walkwayGeometry, walkwayMaterial);
+        walkway.rotation.x = -Math.PI / 2;
+        walkway.position.set(1.4, 0.06, 0.3);
+        walkway.castShadow = false;
+        walkway.receiveShadow = false;
+        shieldGroup.add(walkway);
+        addHoverInfo(
+          walkway,
+          'Safe access path — follow the highlighted lane when stepping into the enclosure.',
+          { passthrough: true },
+        );
+
+        const walkwayEdges = new THREE.LineSegments(
+          new THREE.EdgesGeometry(new THREE.PlaneGeometry(3.6, 1.8)),
+          new THREE.LineBasicMaterial({
+            color: 0x96ffe6,
+            transparent: true,
+            opacity: 0.8,
+          }),
+        );
+        walkwayEdges.rotation.x = -Math.PI / 2;
+        walkwayEdges.position.copy(walkway.position);
+        shieldGroup.add(walkwayEdges);
+
+        const walkwayLight = new THREE.PointLight(0x82ffe0, 1.2, 6.0);
+        walkwayLight.position.set(0.4, 1.1, 0.3);
+        shieldGroup.add(walkwayLight);
+
+        const footMaterial = new THREE.MeshStandardMaterial({
+          color: 0xd9fff2,
+          emissive: 0x2f8f6b,
+          emissiveIntensity: 0.45,
+          transparent: true,
+          opacity: 0.85,
+          side: THREE.DoubleSide,
+        });
+        const footGeometry = new THREE.CircleGeometry(0.32, 32);
+        const footPositions = [
+          new THREE.Vector3(2.3, 0.07, 0.55),
+          new THREE.Vector3(1.4, 0.07, 0.1),
+          new THREE.Vector3(0.5, 0.07, -0.25),
+        ];
+        footPositions.forEach((position, index) => {
+          const foot = new THREE.Mesh(footGeometry, footMaterial);
+          foot.rotation.x = -Math.PI / 2;
+          foot.scale.set(0.55 + (index % 2) * 0.08, 1.0, 1.0);
+          foot.position.copy(position);
+          foot.castShadow = false;
+          foot.receiveShadow = false;
+          shieldGroup.add(foot);
+        });
+
+        const walkwayLabel = buildLabel('Safe Access Path', '#b9ffe9');
+        walkwayLabel.position.set(0.4, 0.95, -0.4);
+        walkwayLabel.scale.multiplyScalar(0.42);
+        shieldGroup.add(walkwayLabel);
 
         const glow = new THREE.PointLight(0x9fbfff, 0.8, 7.0);
         glow.position.set(3.1, 3.8, 2.2);
@@ -1109,7 +1384,7 @@
         group.add(holoEmitter);
         addHoverInfo(
           holoEmitter,
-          'Holographic planner table — projects stitch simulations for operator dry runs.',
+          'Holographic planner table — replays pattern_cli --format planner exports for dry runs.',
         );
 
         const planGrid = new THREE.Mesh(
@@ -1126,6 +1401,14 @@
         planGrid.position.set(0.58, 0.78, 0.3);
         planGrid.rotation.y = Math.PI / 6;
         group.add(planGrid);
+        patternPreviewGroup = buildPlannerPreview(patternPlannerEvents);
+        patternPreviewGroup.position.set(0, 0, 0.01);
+        planGrid.add(patternPreviewGroup);
+        addHoverInfo(
+          planGrid,
+          'Planner hologram — loops a base chain row captured from pattern_cli --format planner.',
+          { passthrough: true },
+        );
 
         const holoLight = new THREE.PointLight(0x8c7dff, 1.3, 4.5);
         holoLight.position.set(0.58, 1.2, 0.3);
@@ -1465,6 +1748,7 @@
             object.rotation.y = Math.sin(elapsed * 0.15) * 0.15;
           }
         });
+        updatePatternPreview(elapsed);
 
         controls.update();
         renderer.render(scene, camera);
