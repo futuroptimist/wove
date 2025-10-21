@@ -25,3 +25,13 @@ def test_pattern_planner_preview_is_documented():
     assert "patternPlannerEvents" in html
     assert "base chain row" in html.lower()
     assert "pattern_cli --format planner" in html
+
+
+def test_safe_access_path_extends_outside_shield():
+    """Mint-lit walkway guidance should be surfaced for maintenance rehearsals."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "createSafeAccessPath" in html
+    assert "Mint-lit safe access path" in html
+    assert "pulsing" in html.lower()
