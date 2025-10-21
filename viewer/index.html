@@ -638,9 +638,120 @@
         return shieldGroup;
       }
 
+      function createExtrusionFrame() {
+        const frameGroup = new THREE.Group();
+        frameGroup.name = 'extrusion-frame';
+
+        const aluminumMaterial = new THREE.MeshStandardMaterial({
+          color: 0xa8b4c9,
+          metalness: 0.65,
+          roughness: 0.28,
+          emissive: 0x1c2331,
+          emissiveIntensity: 0.25,
+        });
+
+        const cornerMaterial = new THREE.MeshStandardMaterial({
+          color: 0x2d3a52,
+          metalness: 0.45,
+          roughness: 0.4,
+          emissive: 0x121826,
+          emissiveIntensity: 0.55,
+        });
+
+        const footMaterial = new THREE.MeshStandardMaterial({
+          color: 0x14181f,
+          metalness: 0.3,
+          roughness: 0.55,
+          emissive: 0x050608,
+          emissiveIntensity: 0.45,
+        });
+
+        const lowerRailY = 0.25;
+        const upperRailY = 4.3;
+        const railThickness = 0.22;
+        const frameHalfWidth = 3.6;
+        const frameHalfDepth = 2.6;
+
+        const longRailGeometry = new THREE.BoxGeometry(frameHalfWidth * 2, railThickness, railThickness);
+        const shortRailGeometry = new THREE.BoxGeometry(railThickness, railThickness, frameHalfDepth * 2);
+
+        const rails = [
+          { geometry: longRailGeometry, position: new THREE.Vector3(0, lowerRailY, frameHalfDepth) },
+          { geometry: longRailGeometry, position: new THREE.Vector3(0, lowerRailY, -frameHalfDepth) },
+          { geometry: shortRailGeometry, position: new THREE.Vector3(frameHalfWidth, lowerRailY, 0.3) },
+          { geometry: shortRailGeometry, position: new THREE.Vector3(-frameHalfWidth, lowerRailY, 0.3) },
+          { geometry: longRailGeometry, position: new THREE.Vector3(0, upperRailY, frameHalfDepth) },
+          { geometry: longRailGeometry, position: new THREE.Vector3(0, upperRailY, -frameHalfDepth) },
+          { geometry: shortRailGeometry, position: new THREE.Vector3(frameHalfWidth, upperRailY, 0.3) },
+          { geometry: shortRailGeometry, position: new THREE.Vector3(-frameHalfWidth, upperRailY, 0.3) },
+        ];
+
+        rails.forEach(({ geometry, position }, index) => {
+          const rail = new THREE.Mesh(geometry, aluminumMaterial);
+          rail.position.copy(position);
+          rail.castShadow = true;
+          frameGroup.add(rail);
+
+          if (index === 0) {
+            addHoverInfo(
+              rail,
+              'Aluminum extrusion frame — 20×20 mm perimeter with corner cubes and leveling feet.',
+            );
+          }
+        });
+
+        const postHeight = upperRailY - lowerRailY;
+        const postGeometry = new THREE.BoxGeometry(railThickness, postHeight, railThickness);
+        const postPositions = [
+          [frameHalfWidth, (upperRailY + lowerRailY) / 2, frameHalfDepth],
+          [-frameHalfWidth, (upperRailY + lowerRailY) / 2, frameHalfDepth],
+          [frameHalfWidth, (upperRailY + lowerRailY) / 2, -frameHalfDepth],
+          [-frameHalfWidth, (upperRailY + lowerRailY) / 2, -frameHalfDepth],
+        ];
+        postPositions.forEach(([x, y, z]) => {
+          const post = new THREE.Mesh(postGeometry, aluminumMaterial);
+          post.position.set(x, y, z);
+          post.castShadow = true;
+          frameGroup.add(post);
+        });
+
+        const cornerGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+        const cornerY = lowerRailY + 0.16;
+        postPositions.forEach(([x, , z]) => {
+          const cube = new THREE.Mesh(cornerGeometry, cornerMaterial);
+          cube.position.set(x, cornerY, z);
+          cube.castShadow = true;
+          frameGroup.add(cube);
+        });
+
+        const footGeometry = new THREE.CylinderGeometry(0.3, 0.34, 0.28, 24);
+        const footY = 0.14;
+        postPositions.forEach(([x, , z]) => {
+          const foot = new THREE.Mesh(footGeometry, footMaterial);
+          foot.position.set(x, footY, z);
+          foot.castShadow = true;
+          frameGroup.add(foot);
+          addHoverInfo(foot, 'Leveling foot — printed pad keeps the frame stable on workbenches.');
+        });
+
+        const accentLight = new THREE.PointLight(0xb7c9ff, 1.1, 12.0);
+        accentLight.position.set(0, upperRailY + 0.5, 0.2);
+        frameGroup.add(accentLight);
+
+        const frameLabel = buildLabel('Extrusion Frame', '#dbe8ff');
+        frameLabel.position.set(0, upperRailY + 0.6, -frameHalfDepth - 0.2);
+        frameLabel.scale.multiplyScalar(0.5);
+        frameGroup.add(frameLabel);
+
+        return frameGroup;
+      }
+
       function createV1CAssembly() {
         const group = new THREE.Group();
         group.name = 'v1c-assembly';
+
+        const extrusionFrame = createExtrusionFrame();
+        group.add(extrusionFrame);
 
         const chassisMaterial = new THREE.MeshStandardMaterial({
           color: 0x5a9bff,

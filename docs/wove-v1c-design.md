@@ -150,7 +150,9 @@ target pull force before commanding the actuator.
 
 ### Frame and Build Volume
 - **Frame**: 20x20 mm aluminum extrusion perimeter with printed corner cubes and feet. Designed for
-  250 mm × 250 mm working area; printable parts cap at 220 mm to fit standard beds.
+  250 mm × 250 mm working area; printable parts cap at 220 mm to fit standard beds. The
+  Three.js assembly viewer mirrors this perimeter with the same corner cubes and leveling feet so
+  teams can visualize the bench footprint before cutting extrusion to length.
 - **Bed**: Magnetic stainless sheet bonded to a printed base with embedded M3 heat-set inserts for
   accessory mounting.
 
