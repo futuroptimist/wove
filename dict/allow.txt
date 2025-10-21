@@ -118,6 +118,7 @@ config
 PRs
 changelogs
 STLs
+toolheads
 sugarkube
 DIY
 deps

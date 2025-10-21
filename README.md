@@ -78,6 +78,9 @@ highlights these milestones today:
 - **Pattern Studio** – previews the planner workspace that visualizes
   `wove.pattern_cli --format planner` exports directly in the browser and
   replays the base chain row hologram for pattern dry runs.
+- **v1k Research Rig** – teases the knitting successor with prototype rails,
+  a modular carriage sled, and telemetry pods collecting load data for future
+  toolheads.
 
 ## Choose Your Path
 

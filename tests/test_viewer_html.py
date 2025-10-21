@@ -35,6 +35,7 @@ def test_viewer_declares_product_clusters() -> None:
         "Pattern Studio",
         "v1k Research Rig",
         "function createMaterialPrepDisplay",
+        "function createV1KResearchDisplay",
     ]:
         assert snippet in viewer_html
 
