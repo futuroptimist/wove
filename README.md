@@ -76,7 +76,8 @@ highlights these milestones today:
 - **Material Prep Pod** – organizes yarn cones, prep bins, and inspection
   checklists so dye lots and weights are verified before automation runs.
 - **Pattern Studio** – previews the planner workspace that visualizes
-  `wove.pattern_cli --format planner` exports directly in the browser.
+  `wove.pattern_cli --format planner` exports directly in the browser and
+  replays the base chain row hologram for pattern dry runs.
 
 ## Choose Your Path
 

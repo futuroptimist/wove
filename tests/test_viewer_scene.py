@@ -17,8 +17,11 @@ def test_hall_effect_sensor_is_documented():
     assert "hall-effect tension sensor" in html.lower()
 
 
-def test_safety_shield_includes_access_path():
-    """The enclosure should highlight a safe walkway for maintenance rehearsals."""
+def test_pattern_planner_preview_is_documented():
+    """The Pattern Studio hologram should advertise the planner preview."""
 
     html = VIEWER_HTML.read_text(encoding="utf-8")
-    assert "safe access path" in html.lower()
+
+    assert "patternPlannerEvents" in html
+    assert "base chain row" in html.lower()
+    assert "pattern_cli --format planner" in html
