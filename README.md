@@ -70,6 +70,10 @@ yarn or tools stay clear while operators inspect motion from above. Click a
 product pedestal to spotlight its roadmap milestone and watch the glowing ring
 track which cluster is selected. The plaza highlights these milestones today:
 
+Use the Pattern Studio hologram controls to pause the base chain playback or
+scrub through individual stitches exported from
+`wove.pattern_cli --format planner` before committing motion to hardware.
+
 Pulsing magnetic anchor pucks now mark the removable workpiece bed so crews can
 practice swapping swatch plates into position before the gantry starts tracing
 calibration paths.
