@@ -222,8 +222,8 @@ target pull force before commanding the actuator.
 - Browser-based planner integration has started: the Pattern Studio hologram in
   the Three.js viewer replays a base chain row exported via
   `wove.pattern_cli --format planner`, showcasing how planner payloads map to
-  motion without parsing raw G-code while leaving room for deeper
-  interactivity.
+  motion without parsing raw G-code. Pause playback or scrub through individual
+  stitches with the new hologram controls before committing motion on hardware.
 
 ## Bill of Materials (Initial Release)
 | Subsystem | Component | Qty | Notes |

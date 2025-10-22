@@ -75,6 +75,82 @@
         color: #e5e7ff;
       }
 
+      #planner-panel {
+        margin-top: 1.1rem;
+        padding-top: 1.1rem;
+        border-top: 1px solid rgba(245, 245, 245, 0.15);
+      }
+
+      #planner-panel h2 {
+        margin: 0 0 0.4rem;
+        font-size: 1rem;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        color: #ffd6a3;
+      }
+
+      #planner-panel p {
+        margin: 0 0 0.65rem;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        color: #fbead5;
+      }
+
+      .planner-controls {
+        display: grid;
+        gap: 0.55rem;
+      }
+
+      .planner-controls button {
+        justify-self: start;
+        padding: 0.4rem 0.9rem;
+        border: 1px solid rgba(255, 231, 201, 0.35);
+        border-radius: 999px;
+        background: rgba(255, 188, 122, 0.16);
+        color: #ffe7c9;
+        font-size: 0.85rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: background 0.2s ease, border-color 0.2s ease;
+      }
+
+      .planner-controls button:hover,
+      .planner-controls button:focus {
+        background: rgba(255, 188, 122, 0.28);
+        border-color: rgba(255, 231, 201, 0.6);
+        outline: none;
+      }
+
+      .planner-controls input[type='range'] {
+        width: 100%;
+        accent-color: #ffc47d;
+      }
+
+      .planner-status {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        font-size: 0.85rem;
+        color: #ffe7c9;
+      }
+
+      .planner-status span {
+        white-space: nowrap;
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
+      }
+
       #status {
         position: fixed;
         bottom: 1.2rem;
@@ -128,6 +204,29 @@
           Select a product cluster to learn how it advances the automation journey.
         </p>
       </div>
+      <div id="planner-panel">
+        <h2>Planner Hologram Controls</h2>
+        <p>
+          Inspect the <code>pattern_cli --format planner</code> hologram. Pause the loop or scrub
+          through stitches to focus on individual commands before running them on hardware.
+        </p>
+        <div class="planner-controls">
+          <button id="planner-toggle" type="button">Pause hologram</button>
+          <label class="sr-only" for="planner-progress">Planner hologram progress</label>
+          <input
+            id="planner-progress"
+            type="range"
+            min="0"
+            max="1000"
+            value="0"
+            aria-describedby="planner-progress-help"
+          />
+          <div class="planner-status" id="planner-progress-help">
+            <span id="planner-step">01 / 28</span>
+            <span id="planner-current-comment">use millimeters</span>
+          </div>
+        </div>
+      </div>
     </div>
     <div id="status">Initializing viewer…</div>
     <script type="module">
@@ -146,6 +245,12 @@
       const statusElement = document.getElementById('status');
       const roadmapTitleElement = document.getElementById('roadmap-title');
       const roadmapDescriptionElement = document.getElementById('roadmap-description');
+      const plannerToggleButton = document.getElementById('planner-toggle');
+      const plannerProgressElement = document.getElementById('planner-progress');
+      const plannerCurrentCommentElement = document.getElementById(
+        'planner-current-comment',
+      );
+      const plannerStepElement = document.getElementById('planner-step');
 
       const pointer = new THREE.Vector2();
       const raycaster = new THREE.Raycaster();
@@ -154,6 +259,11 @@
       const safeAccessHighlights = [];
       let activeCluster = null;
       const selectionRingHeight = 0.06;
+      const patternPreviewState = {
+        time: 0,
+        paused: false,
+        speed: 1.0,
+      };
       const patternPlannerEvents = [
         { comment: 'use millimeters', x: 0.0, y: 0.0, z: 4.0, extrusion: 0.0 },
         { comment: 'absolute positioning', x: 0.0, y: 0.0, z: 4.0, extrusion: 0.0 },
@@ -191,6 +301,44 @@
       Object.freeze(patternPlannerEvents);
       let patternPreviewGroup = null;
       const patternPreviewDurationSeconds = 14;
+
+      function updatePlannerToggleLabel() {
+        if (!plannerToggleButton) {
+          return;
+        }
+        const label = patternPreviewState.paused ? 'Resume hologram' : 'Pause hologram';
+        plannerToggleButton.textContent = label;
+        plannerToggleButton.setAttribute(
+          'aria-pressed',
+          patternPreviewState.paused ? 'true' : 'false',
+        );
+        plannerToggleButton.title = patternPreviewState.paused
+          ? 'Resume the planner hologram playback'
+          : 'Pause the planner hologram playback';
+      }
+
+      if (plannerToggleButton) {
+        plannerToggleButton.addEventListener('click', () => {
+          patternPreviewState.paused = !patternPreviewState.paused;
+          updatePlannerToggleLabel();
+        });
+        updatePlannerToggleLabel();
+      }
+
+      if (plannerProgressElement) {
+        const sliderMax = Number(plannerProgressElement.max || 1);
+        plannerProgressElement.addEventListener('input', (event) => {
+          const value = Number(plannerProgressElement.value);
+          const fraction = sliderMax > 0 ? value / sliderMax : 0;
+          patternPreviewState.time =
+            patternPreviewDurationSeconds > 0
+              ? fraction * patternPreviewDurationSeconds
+              : 0;
+          patternPreviewState.paused = true;
+          updatePlannerToggleLabel();
+          updatePatternPreview(0);
+        });
+      }
 
       const FRAME_HALF_WIDTH = 3.6;
       const FRAME_HALF_DEPTH = 2.6;
@@ -409,6 +557,7 @@
         group.add(previewLabel);
 
         group.userData.preview = {
+          events,
           points,
           cumulativeDistances,
           totalDistance,
@@ -420,7 +569,7 @@
         return group;
       }
 
-      function updatePatternPreview(elapsedSeconds) {
+      function updatePatternPreview(deltaSeconds = 0) {
         if (!patternPreviewGroup) {
           return;
         }
@@ -429,9 +578,22 @@
           return;
         }
 
-        const cycle = patternPreviewDurationSeconds;
-        const wrapped = cycle > 0 ? elapsedSeconds % cycle : elapsedSeconds;
-        const progress = wrapped / cycle;
+        if (!patternPreviewState.paused) {
+          patternPreviewState.time += deltaSeconds * patternPreviewState.speed;
+        }
+        if (patternPreviewDurationSeconds > 0) {
+          patternPreviewState.time %= patternPreviewDurationSeconds;
+          if (patternPreviewState.time < 0) {
+            patternPreviewState.time += patternPreviewDurationSeconds;
+          }
+        } else {
+          patternPreviewState.time = 0;
+        }
+
+        const progress =
+          patternPreviewDurationSeconds > 0
+            ? patternPreviewState.time / patternPreviewDurationSeconds
+            : 0;
         const targetDistance = progress * preview.totalDistance;
 
         let index = 0;
@@ -443,22 +605,48 @@
         }
 
         const startPoint = preview.points[index];
-        const endPoint = preview.points[Math.min(index + 1, preview.points.length - 1)];
+        const nextIndex = Math.min(index + 1, preview.points.length - 1);
+        const endPoint = preview.points[nextIndex];
         const startDistance = preview.cumulativeDistances[index];
-        const endDistance = preview.cumulativeDistances[
-          Math.min(index + 1, preview.cumulativeDistances.length - 1)
-        ];
+        const endDistance = preview.cumulativeDistances[nextIndex];
         const segmentSpan = Math.max(endDistance - startDistance, 1e-6);
-        const segmentProgress = (targetDistance - startDistance) / segmentSpan;
+        const segmentProgress = THREE.MathUtils.clamp(
+          (targetDistance - startDistance) / segmentSpan,
+          0,
+          1,
+        );
 
         preview.marker.position.lerpVectors(startPoint, endPoint, segmentProgress);
-        const pulse = 0.6 + 0.4 * Math.sin(elapsedSeconds * 3.0);
+        const pulse = 0.6 + 0.4 * Math.sin(patternPreviewState.time * 3.0);
         preview.marker.material.emissiveIntensity = pulse;
 
         if (preview.halo) {
           preview.halo.position.copy(preview.marker.position);
-          const haloPulse = 0.35 + 0.3 * Math.sin(elapsedSeconds * 2.2);
+          const haloPulse = 0.35 + 0.3 * Math.sin(patternPreviewState.time * 2.2);
           preview.haloMaterial.opacity = haloPulse;
+        }
+
+        if (plannerProgressElement) {
+          const sliderMax = Number(plannerProgressElement.max || 1);
+          plannerProgressElement.value = String(
+            Math.round(progress * sliderMax),
+          );
+        }
+
+        if (plannerStepElement) {
+          plannerStepElement.textContent = `${String(index + 1).padStart(
+            2,
+            '0',
+          )} / ${String(preview.events.length).padStart(2, '0')}`;
+        }
+
+        if (plannerCurrentCommentElement) {
+          const event = preview.events[index];
+          const comment =
+            typeof event?.comment === 'string' && event.comment.trim()
+              ? event.comment
+              : `Command ${index + 1}`;
+          plannerCurrentCommentElement.textContent = comment;
         }
       }
 
@@ -2148,6 +2336,7 @@
         patternPreviewGroup = buildPlannerPreview(patternPlannerEvents);
         patternPreviewGroup.position.set(0, 0, 0.01);
         planGrid.add(patternPreviewGroup);
+        updatePatternPreview(0);
         addHoverInfo(
           planGrid,
           'Planner hologram — loops a base chain row captured from pattern_cli --format planner.',
@@ -2486,7 +2675,8 @@
       const clock = new THREE.Clock();
 
       function animate() {
-        const elapsed = clock.getElapsedTime();
+        const delta = clock.getDelta();
+        const elapsed = clock.elapsedTime;
         scene.traverse((object) => {
           if (object.name === 'v1c-assembly') {
             object.rotation.y = Math.sin(elapsed * 0.15) * 0.15;
@@ -2517,7 +2707,7 @@
             material.opacity = THREE.MathUtils.clamp(opacityPulse, 0, 1);
           }
         });
-        updatePatternPreview(elapsed);
+        updatePatternPreview(delta);
 
         controls.update();
         renderer.render(scene, camera);

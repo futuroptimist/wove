@@ -77,3 +77,18 @@ def test_viewer_spotlights_magnetic_anchors() -> None:
         in viewer_html
     )
     assert "Magnetic Anchors" in viewer_html
+
+
+def test_viewer_exposes_planner_controls() -> None:
+    """Ensure the planner hologram controls are shipped with the viewer."""
+
+    viewer_html = _load_viewer_html()
+
+    for snippet in [
+        'id="planner-panel"',
+        'Planner Hologram Controls',
+        'id="planner-toggle"',
+        'id="planner-progress"',
+        'id="planner-current-comment"',
+    ]:
+        assert snippet in viewer_html
