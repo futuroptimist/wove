@@ -84,9 +84,9 @@ back to inches or centimeters first.
 
 - Review the [Learning resources](learning-resources.md) guide for material
   science primers, fiber selection tips, and additional stitch tutorials.
-- Read the [Wove v1c mechanical crochet system design](wove-v1c-design.md#yarn-handling)
-  document for sensor calibration context and yarn tension workflow notes that
-  bridge into automation experiments.
+- Read the {ref}`Wove v1c mechanical crochet system design's yarn handling section <yarn-handling>`
+  for sensor calibration context and yarn tension workflow notes that bridge
+  into automation experiments.
 - Explore the [Pattern translation CLI](pattern-cli.md) once you are ready to
   convert swatches into motion; it shows how hand-driven practice feeds the
   browser planner and gantry tests.

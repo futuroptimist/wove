@@ -40,7 +40,7 @@ Crochet rewards patience—practice each step slowly and enjoy the process of cr
 
 - Browse the [Learning resources](learning-resources.md) collection for fiber
   primers, material science refreshers, and additional technique references.
-- Study the [Wove v1c mechanical crochet system design](wove-v1c-design.md#yarn-handling)
+- Study the {ref}`Wove v1c mechanical crochet system design's yarn handling section <yarn-handling>`
   to see how sensor calibration and yarn tension data carry over to the robotic
   crochet platform.
 - Try the [Pattern translation CLI](pattern-cli.md) when you want to translate
