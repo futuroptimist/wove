@@ -59,9 +59,11 @@ python scripts/serve_viewer.py
 
 Each contribution should leave the viewer a little better—add new assets,
 improve lighting, or enhance interactivity—so that future operators can preview
-the entire assembly from a browser. Hover the glowing emergency stop or axis
-end stops to see the safety interlocks called out in the v1c roadmap. The
-translucent polycarbonate shield now wraps the gantry to mirror the production
+the entire assembly from a browser. Hover the glowing emergency stop or the axis
+end stops with their pulsing halos to see the safety interlocks called out in
+the v1c roadmap. Each limit switch now emits a soft indicator light so the
+homing path is easy to trace from above. The translucent polycarbonate shield
+now wraps the gantry to mirror the production
 enclosure described in the mechanical roadmap—hover the door to read the
 maintenance callout. Snap-on belt guards now clip over the CoreXY loops so stray
 yarn or tools stay clear while operators inspect motion from above. Click a
