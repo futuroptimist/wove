@@ -79,3 +79,14 @@ For large projects measured in yards or meters, use
 ``stitches_for_yards``/``stitches_for_meters`` and
 ``rows_for_yards``/``rows_for_meters`` to scale your fabric without converting
 back to inches or centimeters first.
+
+## Where to go next
+
+- Review the [Learning resources](learning-resources.md) guide for material
+  science primers, fiber selection tips, and additional stitch tutorials.
+- Read the {ref}`Wove v1c mechanical crochet system design's yarn handling section <yarn-handling>`
+  for sensor calibration context and yarn tension workflow notes that bridge
+  into automation experiments.
+- Explore the [Pattern translation CLI](pattern-cli.md) once you are ready to
+  convert swatches into motion; it shows how hand-driven practice feeds the
+  browser planner and gantry tests.
