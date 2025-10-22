@@ -44,6 +44,10 @@ Key modules include:
 - **Guide Path**: PTFE tube segments route yarn from spool to hook while allowing low-friction
   motion. Optional filament sensor monitors breaks for advanced builds.
 
+The Three.js viewer mirrors this assembly with glowing felt pads and a translucent PTFE tube so
+builders can visualize how yarn leaves the spool, touches the hall sensor, and reaches the hook
+before printing hardware.
+
 #### Tension Profiles and Bench Tests
 
 Phase 3 of the documentation roadmap now ships an initial catalog of yarn tension profiles. The
