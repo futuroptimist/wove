@@ -68,6 +68,10 @@ yarn or tools stay clear while operators inspect motion from above. Click a
 product pedestal to spotlight its roadmap milestone and watch the glowing ring
 track which cluster is selected. The plaza highlights these milestones today:
 
+Pulsing magnetic anchor pucks now mark the removable workpiece bed so crews can
+practice swapping swatch plates into position before the gantry starts tracing
+calibration paths.
+
 Peek through the tinted electronics bay under the work bed to see the SKR Mini
 controller stack, cooling fan, and glowing status LED that route motion power up
 to the gantry.

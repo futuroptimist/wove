@@ -65,3 +65,12 @@ def test_viewer_mentions_safe_access_path() -> None:
 
     assert "Mint-lit safe access path" in viewer_html
     assert "alternating" in viewer_html.lower()
+
+
+def test_viewer_spotlights_magnetic_anchors() -> None:
+    """Ensure the magnetic anchor studs are documented in the viewer."""
+
+    viewer_html = _load_viewer_html()
+
+    assert "Magnetic anchor puck — secures swap-in plates with embedded magnets." in viewer_html
+    assert "Magnetic Anchors" in viewer_html

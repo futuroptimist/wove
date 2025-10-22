@@ -20,7 +20,8 @@ Key modules include:
 - **Yarn Feed and Tensioner** – Spring-loaded tension post and guide ring combination that maintains
   constant feed resistance without damaging yarn.
 - **Workpiece Support Bed** – Removable plate with magnetic anchors to hold fabric while enabling
-  easy removal between runs.
+  easy removal between runs. The Three.js viewer now pulses those anchor pucks so technicians can
+  rehearse plate swaps before loading yarn.
 - **Electronics Bay** – Enclosed mount for controller, stepper drivers, wiring harness, and cooling.
 - **Safety Interlocks** – Mechanical end stops, emergency stop button, and firmware-based motion
   limits.
