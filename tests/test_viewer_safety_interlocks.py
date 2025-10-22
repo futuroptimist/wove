@@ -19,4 +19,9 @@ def test_viewer_mentions_emergency_stop_and_end_stops():
 
 def test_overlay_guides_users_to_safety_interlocks():
     html = VIEWER_HTML.read_text(encoding="utf-8")
-    assert "The glowing safety interlocks mark physical end stops" in html
+    assert "The glowing, pulsing safety interlocks mark physical end stops" in html
+
+
+def test_axis_interlock_labels_present():
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+    assert "Axis Interlock" in html

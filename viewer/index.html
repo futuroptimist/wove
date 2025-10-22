@@ -117,8 +117,8 @@
           for calibration runs.
         </li>
         <li>
-          The glowing safety interlocks mark physical end stops and the
-          emergency stop switch described in the v1c roadmap.
+          The glowing, pulsing safety interlocks mark physical end stops and
+          the emergency stop switch described in the v1c roadmap.
         </li>
         <li>Click a pedestal to spotlight its roadmap milestone.</li>
       </ul>
@@ -151,7 +151,7 @@
       const raycaster = new THREE.Raycaster();
       const interactiveMeshes = [];
       const productClusters = [];
-      const safeAccessHighlights = [];
+      const pulsingHighlights = [];
       let activeCluster = null;
       const selectionRingHeight = 0.06;
       const patternPlannerEvents = [
@@ -602,7 +602,7 @@
           path,
           'Mint-lit safe access path — follow the alternating, pulsing footprints to service the crochet cell without clipping hardware.',
         );
-        safeAccessHighlights.push({
+        pulsingHighlights.push({
           material: pathMaterial,
           baseIntensity: 0.5,
           amplitude: 0.25,
@@ -637,7 +637,7 @@
         arrow.position.set(3.55, 0.38, 0.35);
         arrow.castShadow = true;
         group.add(arrow);
-        safeAccessHighlights.push({
+        pulsingHighlights.push({
           material: arrowMaterial,
           baseIntensity: 0.6,
           amplitude: 0.25,
@@ -666,7 +666,7 @@
           footprint.scale.set(1.45, 1.0, 1.15);
           footprint.renderOrder = 3;
           group.add(footprint);
-          safeAccessHighlights.push({
+          pulsingHighlights.push({
             material: footprintMaterial,
             baseIntensity: 0.48,
             amplitude: 0.32,
@@ -697,7 +697,7 @@
           toe.scale.set(1.25, 1.0, 1.2);
           toe.renderOrder = 4;
           group.add(toe);
-          safeAccessHighlights.push({
+          pulsingHighlights.push({
             material: toeMaterial,
             baseIntensity: 0.55,
             amplitude: 0.25,
@@ -1464,24 +1464,99 @@
         }
 
         function createEndStop(position, axisLabel) {
-          const endStop = new THREE.Mesh(
+          const group = new THREE.Group();
+          group.position.copy(position);
+          group.name = `end-stop-${axisLabel.toLowerCase()}`;
+
+          const housingMaterial = new THREE.MeshStandardMaterial({
+            color: 0xffc285,
+            metalness: 0.42,
+            roughness: 0.24,
+            emissive: 0x462501,
+            emissiveIntensity: 0.45,
+          });
+          const housing = new THREE.Mesh(
             new THREE.BoxGeometry(0.35, 0.5, 0.35),
-            new THREE.MeshStandardMaterial({
-              color: 0xffc285,
-              metalness: 0.4,
-              roughness: 0.25,
-              emissive: 0x462501,
-              emissiveIntensity: 0.4,
-            }),
+            housingMaterial,
           );
-          endStop.position.copy(position);
-          endStop.castShadow = true;
-          endStop.name = `end-stop-${axisLabel.toLowerCase()}`;
+          housing.castShadow = true;
+          group.add(housing);
+
           addHoverInfo(
-            endStop,
+            housing,
             `${axisLabel}-axis end stop — trips firmware limits before overtravel can occur.`,
           );
-          return endStop;
+
+          const indicatorMaterial = new THREE.MeshStandardMaterial({
+            color: 0xfff4e3,
+            emissive: 0xff9148,
+            emissiveIntensity: 0.9,
+            metalness: 0.3,
+            roughness: 0.3,
+            transparent: true,
+            opacity: 0.92,
+          });
+          const indicator = new THREE.Mesh(
+            new THREE.SphereGeometry(0.14, 24, 24),
+            indicatorMaterial,
+          );
+          indicator.position.y = 0.34;
+          indicator.castShadow = true;
+          group.add(indicator);
+
+          const haloMaterial = new THREE.MeshBasicMaterial({
+            color: 0xffb97a,
+            transparent: true,
+            opacity: 0.5,
+            side: THREE.DoubleSide,
+            depthWrite: false,
+          });
+          const halo = new THREE.Mesh(
+            new THREE.RingGeometry(0.26, 0.38, 40),
+            haloMaterial,
+          );
+          halo.rotation.x = -Math.PI / 2;
+          halo.position.y = 0.02;
+          halo.renderOrder = 3;
+          group.add(halo);
+
+          const beacon = new THREE.PointLight(0xffa562, 1.3, 3.2);
+          beacon.position.y = 0.5;
+          group.add(beacon);
+
+          const axisPhaseLookup = { X: 0.0, Y: 1.4, Z: 2.8 };
+          const phase = axisPhaseLookup[axisLabel] ?? 0.0;
+
+          pulsingHighlights.push({
+            material: housingMaterial,
+            baseIntensity: housingMaterial.emissiveIntensity,
+            amplitude: 0.35,
+            speed: 1.6,
+            phaseOffset: phase,
+          });
+          pulsingHighlights.push({
+            material: indicatorMaterial,
+            baseIntensity: indicatorMaterial.emissiveIntensity,
+            amplitude: 0.55,
+            speed: 2.4,
+            phaseOffset: phase + 0.6,
+            baseOpacity: indicatorMaterial.opacity,
+            opacityAmplitude: 0.1,
+          });
+          pulsingHighlights.push({
+            material: haloMaterial,
+            baseOpacity: haloMaterial.opacity,
+            opacityAmplitude: 0.35,
+            speed: 1.8,
+            phaseOffset: phase + Math.PI / 2,
+          });
+
+          const label = buildLabel(`${axisLabel}-Axis Interlock`, '#ffe3c4');
+          label.position.set(0, 0.92, 0);
+          label.scale.multiplyScalar(0.3);
+          group.add(label);
+
+          return group;
         }
 
         const emergencyStop = createEmergencyStop();
@@ -2337,7 +2412,7 @@
             object.rotation.y = Math.sin(elapsed * 0.15) * 0.15;
           }
         });
-        safeAccessHighlights.forEach((highlight) => {
+        pulsingHighlights.forEach((highlight) => {
           const {
             material,
             baseIntensity = 0,

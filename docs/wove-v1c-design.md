@@ -164,7 +164,7 @@ target pull force before commanding the actuator.
   hardware.
 - Firmware-configurable soft limits and homing sequences prevent overtravel.
 - The Three.js assembly viewer in `viewer/index.html` spotlights the emergency
-  stop and glowing axis end stops so builders can rehearse the safety flow
+  stop and pulsing axis end-stop beacons so builders can rehearse the safety flow
   before powering the hardware. Pedestals in the same scene outline adjacent
   roadmap work cells (calibration lab, material prep pod, and the v1k research
   rig) so contributors understand how the crochet platform integrates with the
