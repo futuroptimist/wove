@@ -1464,24 +1464,97 @@
         }
 
         function createEndStop(position, axisLabel) {
-          const endStop = new THREE.Mesh(
+          const group = new THREE.Group();
+          group.position.copy(position);
+          group.name = `end-stop-${axisLabel.toLowerCase()}`;
+
+          const housing = new THREE.Mesh(
             new THREE.BoxGeometry(0.35, 0.5, 0.35),
             new THREE.MeshStandardMaterial({
               color: 0xffc285,
               metalness: 0.4,
               roughness: 0.25,
               emissive: 0x462501,
-              emissiveIntensity: 0.4,
+              emissiveIntensity: 0.55,
             }),
           );
-          endStop.position.copy(position);
-          endStop.castShadow = true;
-          endStop.name = `end-stop-${axisLabel.toLowerCase()}`;
+          housing.castShadow = true;
+          group.add(housing);
           addHoverInfo(
-            endStop,
+            housing,
             `${axisLabel}-axis end stop — trips firmware limits before overtravel can occur.`,
           );
-          return endStop;
+
+          const indicatorMaterial = new THREE.MeshStandardMaterial({
+            color: 0xfff1c6,
+            emissive: 0xffb347,
+            emissiveIntensity: 0.85,
+            metalness: 0.25,
+            roughness: 0.3,
+            transparent: true,
+            opacity: 0.92,
+          });
+          const indicator = new THREE.Mesh(
+            new THREE.SphereGeometry(0.18, 24, 24),
+            indicatorMaterial,
+          );
+          indicator.position.set(0, 0.44, 0);
+          indicator.castShadow = true;
+          group.add(indicator);
+
+          const axisPhaseOffset =
+            axisLabel === 'X' ? 0 : axisLabel === 'Y' ? Math.PI * 0.4 : Math.PI * 0.8;
+          safeAccessHighlights.push({
+            tag: `end-stop-${axisLabel.toLowerCase()}-indicator`,
+            material: indicatorMaterial,
+            baseIntensity: 0.85,
+            amplitude: 0.55,
+            speed: 3.1,
+            phaseOffset: axisPhaseOffset,
+            baseOpacity: 0.92,
+            opacityAmplitude: 0.06,
+          });
+
+          const haloMaterial = new THREE.MeshBasicMaterial({
+            color: 0xffe6aa,
+            transparent: true,
+            opacity: 0.52,
+            side: THREE.DoubleSide,
+            depthWrite: false,
+          });
+          const halo = new THREE.Mesh(new THREE.RingGeometry(0.26, 0.36, 40), haloMaterial);
+          halo.rotation.x = Math.PI / 2;
+          halo.position.set(0, 0.14, 0);
+          halo.renderOrder = 6;
+          group.add(halo);
+          safeAccessHighlights.push({
+            tag: `end-stop-${axisLabel.toLowerCase()}-halo`,
+            material: haloMaterial,
+            baseOpacity: 0.52,
+            opacityAmplitude: 0.28,
+            speed: 2.6,
+            phaseOffset: axisPhaseOffset + 0.9,
+          });
+
+          const glowLight = new THREE.PointLight(0xffdd9c, 1.6, 3.4);
+          glowLight.position.set(0, 0.6, 0);
+          group.add(glowLight);
+
+          const glowStem = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.06, 0.06, 0.3, 16),
+            new THREE.MeshStandardMaterial({
+              color: 0xffd492,
+              emissive: 0x7a3f02,
+              emissiveIntensity: 0.55,
+              metalness: 0.3,
+              roughness: 0.35,
+            }),
+          );
+          glowStem.position.set(0, 0.28, 0);
+          glowStem.castShadow = true;
+          group.add(glowStem);
+
+          return group;
         }
 
         const emergencyStop = createEmergencyStop();
