@@ -35,3 +35,14 @@ This guide introduces hand crochet for absolute beginners and outlines a path to
 - Lacy shawls or intricate motifs as your skills grow.
 
 Crochet rewards patience—practice each step slowly and enjoy the process of creating fabric by hand.
+
+## Where to go next
+
+- Browse the [Learning resources](learning-resources.md) collection for fiber
+  primers, material science refreshers, and additional technique references.
+- Study the [Wove v1c mechanical crochet system design](wove-v1c-design.md#yarn-handling)
+  to see how sensor calibration and yarn tension data carry over to the robotic
+  crochet platform.
+- Try the [Pattern translation CLI](pattern-cli.md) when you want to translate
+  swatch notes into motion plans for the browser-based planner or gantry dry
+  runs.
