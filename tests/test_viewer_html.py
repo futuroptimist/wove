@@ -86,7 +86,7 @@ def test_viewer_exposes_planner_controls() -> None:
 
     for snippet in [
         'id="planner-panel"',
-        'Planner Hologram Controls',
+        "Planner Hologram Controls",
         'id="planner-toggle"',
         'id="planner-progress"',
         'id="planner-current-comment"',
