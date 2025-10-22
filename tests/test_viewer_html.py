@@ -72,5 +72,8 @@ def test_viewer_spotlights_magnetic_anchors() -> None:
 
     viewer_html = _load_viewer_html()
 
-    assert "Magnetic anchor puck — secures swap-in plates with embedded magnets." in viewer_html
+    assert (
+        "Magnetic anchor puck — secures swap-in plates with embedded magnets."
+        in viewer_html
+    )
     assert "Magnetic Anchors" in viewer_html
