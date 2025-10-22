@@ -1148,7 +1148,8 @@
           opacity: 0.9,
           emissive: 0x1b3a4f,
         });
-        const bed = new THREE.Mesh(new THREE.BoxGeometry(4.8, 0.25, 3.2), bedMaterial);
+        const bedThickness = 0.25;
+        const bed = new THREE.Mesh(new THREE.BoxGeometry(4.8, bedThickness, 3.2), bedMaterial);
         bed.position.set(0, 0.9, 0.2);
         bed.castShadow = true;
         bed.receiveShadow = true;
@@ -1162,26 +1163,107 @@
         electronicsBay.position.set(-2.1, 0.4, -1.4);
         group.add(electronicsBay);
 
-        const anchorGeometry = new THREE.CylinderGeometry(0.16, 0.16, 0.12, 20);
-        const anchorMaterial = new THREE.MeshStandardMaterial({
-          color: 0xffd27f,
-          metalness: 0.6,
-          roughness: 0.4,
-          emissive: 0x332100,
+        const bedTopY = bed.position.y + bedThickness / 2;
+        const anchorsGroup = new THREE.Group();
+        anchorsGroup.name = 'magnetic-anchors';
+        const anchorBaseMaterial = new THREE.MeshStandardMaterial({
+          color: 0x3f4657,
+          metalness: 0.55,
+          roughness: 0.32,
         });
-        const anchorPositions = [
-          new THREE.Vector3(-1.8, 1.03, -1.0),
-          new THREE.Vector3(1.8, 1.03, -1.0),
-          new THREE.Vector3(-1.8, 1.03, 1.2),
-          new THREE.Vector3(1.8, 1.03, 1.2),
+        const anchorCapTemplate = new THREE.MeshStandardMaterial({
+          color: 0xffe3a4,
+          metalness: 0.82,
+          roughness: 0.22,
+          emissive: 0x8a5a1a,
+          emissiveIntensity: 0.45,
+        });
+        const anchorOffsets = [
+          [-1.8, -1.0],
+          [1.8, -1.0],
+          [-1.8, 1.2],
+          [1.8, 1.2],
         ];
-        anchorPositions.forEach((position) => {
-          const anchor = new THREE.Mesh(anchorGeometry, anchorMaterial);
-          anchor.position.copy(position);
-          anchor.rotation.x = Math.PI / 2;
-          anchor.castShadow = true;
-          group.add(anchor);
+        anchorOffsets.forEach(([x, z], index) => {
+          const anchorGroup = new THREE.Group();
+          anchorGroup.position.set(x, bedTopY + 0.05, z);
+
+          const base = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.22, 0.24, 0.08, 32),
+            anchorBaseMaterial,
+          );
+          base.castShadow = true;
+          base.receiveShadow = true;
+          anchorGroup.add(base);
+
+          const core = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.08, 0.08, 0.06, 24),
+            new THREE.MeshStandardMaterial({
+              color: 0x1b2233,
+              metalness: 0.35,
+              roughness: 0.45,
+            }),
+          );
+          core.position.y = 0.03;
+          core.castShadow = true;
+          anchorGroup.add(core);
+
+          const capMaterial = anchorCapTemplate.clone();
+          const cap = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.14, 0.14, 0.045, 32),
+            capMaterial,
+          );
+          cap.position.y = 0.065;
+          cap.castShadow = true;
+          anchorGroup.add(cap);
+          addHoverInfo(
+            cap,
+            'Magnetic anchor puck — secures swap-in plates with embedded magnets.',
+          );
+
+          const haloMaterial = new THREE.MeshStandardMaterial({
+            color: 0xffd27f,
+            emissive: 0xffb347,
+            emissiveIntensity: 0.5,
+            metalness: 0.65,
+            roughness: 0.28,
+            transparent: true,
+            opacity: 0.8,
+          });
+          const halo = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.012, 16, 48), haloMaterial);
+          halo.rotation.x = Math.PI / 2;
+          halo.position.y = 0.028;
+          anchorGroup.add(halo);
+
+          const anchorGlow = new THREE.PointLight(0xffdeaa, 0.55, 1.4);
+          anchorGlow.position.set(0, 0.2, 0);
+          anchorGroup.add(anchorGlow);
+
+          safeAccessHighlights.push({
+            material: haloMaterial,
+            baseIntensity: 0.5,
+            amplitude: 0.28,
+            speed: 1.8,
+            phaseOffset: index * 0.7,
+            baseOpacity: 0.8,
+            opacityAmplitude: 0.12,
+          });
+          safeAccessHighlights.push({
+            material: capMaterial,
+            baseIntensity: 0.45,
+            amplitude: 0.22,
+            speed: 1.8,
+            phaseOffset: index * 0.7 + 0.9,
+          });
+
+          anchorsGroup.add(anchorGroup);
         });
+
+        const anchorsLabel = buildLabel('Magnetic Anchors', '#ffe8bf');
+        anchorsLabel.position.set(0, bedTopY + 0.62, 1.5);
+        anchorsLabel.scale.multiplyScalar(0.42);
+        anchorsGroup.add(anchorsLabel);
+        group.add(anchorsGroup);
 
         const gantryMaterial = new THREE.MeshStandardMaterial({
           color: 0xffc857,
