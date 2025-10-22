@@ -78,6 +78,11 @@ Peek through the tinted electronics bay under the work bed to see the SKR Mini
 controller stack, cooling fan, and glowing status LED that route motion power up
 to the gantry.
 
+The overlay now includes a Pattern Studio preview panel that cycles through the
+current `wove.pattern_cli --format planner` comment while a progress bar tracks
+the hologram run. Operators can cross-reference the displayed step with the
+planner animation without leaving the scene.
+
 - **v1c Crochet Robot** – anchors the mechanical platform showcased at the
   center of the plaza.
 - **Tension Lab** – stages the hall-effect calibration rig that feeds future
