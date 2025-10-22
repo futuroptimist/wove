@@ -78,6 +78,10 @@ Peek through the tinted electronics bay under the work bed to see the SKR Mini
 controller stack, cooling fan, and glowing status LED that route motion power up
 to the gantry.
 
+Follow the spring-loaded tension post beside the spool—its dual uprights, felt
+pads, and translucent PTFE guide tube now light the yarn path as it threads past
+the hall sensor toward the hook.
+
 - **v1c Crochet Robot** – anchors the mechanical platform showcased at the
   center of the plaza.
 - **Tension Lab** – stages the hall-effect calibration rig that feeds future
