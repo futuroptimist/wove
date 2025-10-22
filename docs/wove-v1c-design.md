@@ -36,6 +36,7 @@ Key modules include:
 - **Z Motion**: Leadscrew-driven lift (T8x2) moved by a compact stepper to set hook penetration
   depth. Anti-backlash nut and printed flexures reduce play.
 
+(yarn-handling)=
 ### Yarn Handling
 - **Tension Post**: Dual-post design with printed spring clip for quick yarn swaps. Replaceable
   felt pads prevent abrasion.
