@@ -28,6 +28,16 @@ def test_pattern_planner_preview_is_documented() -> None:
     assert "pattern_cli --format planner" in html
 
 
+def test_pattern_preview_overlay_panel_present() -> None:
+    """The overlay should expose the Pattern Studio preview panel."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "Pattern Studio Preview" in html
+    assert "pattern-step-index" in html
+    assert "Planner preview warming up." in html
+
+
 def test_viewer_mentions_cooling_fan_mount() -> None:
     """The hook carriage cooling fan mount should be called out."""
 

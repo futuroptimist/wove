@@ -78,9 +78,10 @@ Peek through the tinted electronics bay under the work bed to see the SKR Mini
 controller stack, cooling fan, and glowing status LED that route motion power up
 to the gantry.
 
-Follow the spring-loaded tension post beside the spool—its dual uprights, felt
-pads, and translucent PTFE guide tube now light the yarn path as it threads past
-the hall sensor toward the hook.
+The overlay now includes a Pattern Studio preview panel that cycles through the
+current `wove.pattern_cli --format planner` comment while a progress bar tracks
+the hologram run. Operators can cross-reference the displayed step with the
+planner animation without leaving the scene.
 
 - **v1c Crochet Robot** – anchors the mechanical platform showcased at the
   center of the plaza.
