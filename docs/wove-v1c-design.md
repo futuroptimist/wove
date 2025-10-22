@@ -37,7 +37,7 @@ Key modules include:
   depth. Anti-backlash nut and printed flexures reduce play.
 
 (yarn-handling)=
-### Yarn Handling
+### Yarn Handling {#yarn-handling}
 - **Tension Post**: Dual-post design with printed spring clip for quick yarn swaps. Replaceable
   felt pads prevent abrasion.
 - **Guide Path**: PTFE tube segments route yarn from spool to hook while allowing low-friction
