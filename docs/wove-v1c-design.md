@@ -46,7 +46,8 @@ Key modules include:
 
 The Three.js viewer mirrors this assembly with glowing felt pads and a translucent PTFE tube so
 builders can visualize how yarn leaves the spool, touches the hall sensor, and reaches the hook
-before printing hardware.
+before printing hardware. Animated amber pulses now chase through the tube to illustrate feed
+direction while the planner preview runs.
 
 #### Tension Profiles and Bench Tests
 
@@ -154,6 +155,11 @@ additional debugging, or to raise errors when routing data through
 ``estimate_profile_for_sensor_reading``. When driving the optional servo-based tension adjuster,
 use ``estimate_sensor_reading_for_tension`` to determine the sensor reading that corresponds to a
 target pull force before commanding the actuator.
+
+The calibration bench inside the Tension Lab renders that automation path. The Three.js viewer now
+parks a micro-servo tension adjuster beside the load-cell carriage with a glowing status light so
+contributors can see how programmable feed loops interface with the spool rig before printing
+hardware.
 
 ### Frame and Build Volume
 - **Frame**: 20x20 mm aluminum extrusion perimeter with printed corner cubes and feet. Designed for

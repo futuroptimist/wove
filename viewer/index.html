@@ -229,6 +229,8 @@
         { comment: 'single stitch 1 of 1: advance', x: 4.5, y: 12.0, z: 4.0, extrusion: 2.1 },
       ];
       Object.freeze(fallbackPatternPlannerEvents);
+      const yarnFlowControllers = [];
+      let yarnExtrusionActive = false;
       let patternPlannerEvents = [];
       let patternPreviewGroup = null;
       let patternPreviewContainer = null;
@@ -554,6 +556,94 @@
         return group;
       }
 
+      function disposePreviewGroup(group) {
+        group.traverse((child) => {
+          if (child.geometry) {
+            child.geometry.dispose();
+          }
+          if (child.material) {
+            const materials = Array.isArray(child.material)
+              ? child.material
+              : [child.material];
+            materials.forEach((material) => {
+              if (material.map && typeof material.map.dispose === 'function') {
+                material.map.dispose();
+              }
+              if (typeof material.dispose === 'function') {
+                material.dispose();
+              }
+            });
+          }
+        });
+      }
+
+      function rebuildPatternPreview() {
+        if (!patternPreviewAnchor) {
+          return;
+        }
+
+        if (patternPreviewGroup) {
+          patternPreviewAnchor.remove(patternPreviewGroup);
+          disposePreviewGroup(patternPreviewGroup);
+          patternPreviewGroup = null;
+        }
+
+        patternPreviewGroup = buildPlannerPreview(patternPlannerEvents);
+        patternPreviewGroup.position.set(0, 0, 0.01);
+        patternPreviewAnchor.add(patternPreviewGroup);
+        lastPatternStepIndex = -1;
+        lastPatternProgress = -1;
+
+        if (patternPlannerEvents.length === 0) {
+          yarnExtrusionActive = false;
+          if (patternProgressBarElement) {
+            patternProgressBarElement.style.width = '0%';
+          }
+        } else {
+          updatePatternOverlay(0, 0);
+        }
+      }
+
+      async function loadPatternPreviewData() {
+        try {
+          const response = await fetch('data/pattern_preview.json');
+          if (!response.ok) {
+            throw new Error(`Unexpected status ${response.status}`);
+          }
+          const raw = await response.json();
+          if (!Array.isArray(raw)) {
+            throw new Error('Planner preview data must be an array.');
+          }
+          patternPlannerEvents = raw
+            .map((entry) => ({
+              comment:
+                typeof entry.comment === 'string' && entry.comment.length > 0
+                  ? entry.comment
+                  : null,
+              command: typeof entry.command === 'string' ? entry.command : '',
+              x: Number(entry.x) || 0,
+              y: Number(entry.y) || 0,
+              z: Number(entry.z) || 0,
+              extrusion: Number(entry.extrusion) || 0,
+            }))
+            .filter((entry) => Number.isFinite(entry.x) && Number.isFinite(entry.y));
+          Object.freeze(patternPlannerEvents);
+          rebuildPatternPreview();
+        } catch (error) {
+          console.error('Failed to load planner preview data.', error);
+          yarnExtrusionActive = false;
+          if (patternStepElement) {
+            patternStepElement.textContent = 'Planner preview unavailable.';
+          }
+          if (patternStepIndexElement) {
+            patternStepIndexElement.textContent = 'No planner steps loaded';
+          }
+          if (patternProgressBarElement) {
+            patternProgressBarElement.style.width = '0%';
+          }
+        }
+      }
+
       function updatePatternOverlay(stepIndex, progressRatio) {
         if (!patternStepElement) {
           return;
@@ -561,16 +651,11 @@
 
         const totalSteps = patternPlannerEvents.length;
         if (totalSteps === 0) {
-          if (lastPatternStepIndex !== -1) {
-            patternStepElement.textContent = 'Planner preview idle.';
-            if (patternStepIndexElement) {
-              patternStepIndexElement.textContent = 'No planner steps loaded';
-            }
-            if (patternProgressBarElement) {
-              patternProgressBarElement.style.width = '0%';
-            }
-            lastPatternStepIndex = -1;
-            lastPatternProgress = -1;
+          yarnExtrusionActive = false;
+          lastPatternStepIndex = -1;
+          lastPatternProgress = -1;
+          if (patternProgressBarElement) {
+            patternProgressBarElement.style.width = '0%';
           }
           return;
         }
@@ -588,6 +673,8 @@
           if (patternStepIndexElement) {
             patternStepIndexElement.textContent = `Step ${clampedIndex + 1} of ${totalSteps}`;
           }
+          yarnExtrusionActive =
+            typeof comment === 'string' && comment.toLowerCase().includes('feed yarn');
           lastPatternStepIndex = clampedIndex;
         }
 
@@ -598,9 +685,6 @@
           lastPatternProgress = clampedProgress;
         }
       }
-
-      updatePatternOverlay(0, 0);
-
       function updatePatternPreview(elapsedSeconds) {
         if (!patternPreviewGroup) {
           return;
@@ -1892,6 +1976,64 @@
           phaseOffset: 1.1,
         });
 
+        const yarnTextureCanvas = document.createElement('canvas');
+        yarnTextureCanvas.width = 256;
+        yarnTextureCanvas.height = 16;
+        const yarnContext = yarnTextureCanvas.getContext('2d');
+        if (yarnContext) {
+          yarnContext.fillStyle = '#55261a';
+          yarnContext.fillRect(0, 0, yarnTextureCanvas.width, yarnTextureCanvas.height);
+          const stripeWidth = yarnTextureCanvas.width / 16;
+          for (let index = 0; index < 16; index += 1) {
+            const offset = index * stripeWidth;
+            const gradient = yarnContext.createLinearGradient(offset, 0, offset + stripeWidth, 0);
+            gradient.addColorStop(0.0, '#ffcf94');
+            gradient.addColorStop(0.5, '#ff9f4a');
+            gradient.addColorStop(1.0, '#ffcf94');
+            yarnContext.fillStyle = gradient;
+            yarnContext.fillRect(offset, 0, stripeWidth, yarnTextureCanvas.height);
+          }
+        }
+        const yarnTexture = new THREE.CanvasTexture(yarnTextureCanvas);
+        yarnTexture.wrapS = THREE.RepeatWrapping;
+        yarnTexture.wrapT = THREE.ClampToEdgeWrapping;
+        yarnTexture.repeat.set(8, 1);
+        yarnTexture.anisotropy = 4;
+        yarnTexture.needsUpdate = true;
+        const yarnMaterial = new THREE.MeshPhysicalMaterial({
+          color: 0xffffff,
+          emissive: 0xffb173,
+          emissiveIntensity: 0.45,
+          metalness: 0.12,
+          roughness: 0.3,
+          transparent: true,
+          opacity: 0.85,
+          transmission: 0.3,
+          thickness: 0.18,
+          map: yarnTexture,
+          side: THREE.DoubleSide,
+        });
+        const yarnTube = new THREE.Mesh(
+          new THREE.TubeGeometry(ptfeCurve, 200, 0.02, 24, false),
+          yarnMaterial,
+        );
+        yarnTube.castShadow = false;
+        yarnTube.receiveShadow = false;
+        group.add(yarnTube);
+        addHoverInfo(
+          yarnTube,
+          'Animated yarn flow — watch feed pulses as the crochet cell draws fiber.',
+          { passthrough: true },
+        );
+        yarnFlowControllers.push({
+          texture: yarnTexture,
+          speed: 0.35,
+          material: yarnMaterial,
+          restIntensity: 0.45,
+          activeIntensity: 0.9,
+          currentIntensity: 0.45,
+        });
+
         const displayLabel = buildLabel('v1c – Crochet Robot', '#8ab4ff');
         displayLabel.position.set(0, 4.3, 0);
         group.add(displayLabel);
@@ -2289,6 +2431,111 @@
         indicator.position.set(-0.62, 1.18, 0.52);
         group.add(indicator);
 
+        const servoBracket = new THREE.Mesh(
+          new THREE.BoxGeometry(0.22, 0.18, 0.46),
+          new THREE.MeshStandardMaterial({
+            color: 0x243640,
+            metalness: 0.42,
+            roughness: 0.32,
+            emissive: 0x0f1d24,
+            emissiveIntensity: 0.35,
+          }),
+        );
+        servoBracket.position.set(0.84, 0.32, -0.28);
+        servoBracket.castShadow = true;
+        group.add(servoBracket);
+
+        const servoBodyMaterial = new THREE.MeshStandardMaterial({
+          color: 0x1a2f3a,
+          metalness: 0.5,
+          roughness: 0.3,
+          emissive: 0x0b1a22,
+          emissiveIntensity: 0.45,
+        });
+        const servoBody = new THREE.Mesh(
+          new THREE.BoxGeometry(0.32, 0.26, 0.26),
+          servoBodyMaterial,
+        );
+        servoBody.position.set(0.92, 0.44, -0.28);
+        servoBody.castShadow = true;
+        group.add(servoBody);
+        addHoverInfo(
+          servoBody,
+          'Micro-servo tension adjuster — trims yarn feed with programmable pulls.',
+        );
+        safeAccessHighlights.push({
+          material: servoBodyMaterial,
+          baseIntensity: 0.45,
+          amplitude: 0.22,
+          speed: 2.1,
+          phaseOffset: 0.6,
+        });
+
+        const servoHorn = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.06, 0.06, 0.24, 24),
+          new THREE.MeshStandardMaterial({
+            color: 0xfff1c6,
+            metalness: 0.48,
+            roughness: 0.22,
+            emissive: 0x7a5b1f,
+            emissiveIntensity: 0.55,
+          }),
+        );
+        servoHorn.rotation.z = Math.PI / 2;
+        servoHorn.position.set(1.04, 0.5, -0.28);
+        servoHorn.castShadow = true;
+        group.add(servoHorn);
+
+        const linkage = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.018, 0.018, 0.62, 16),
+          new THREE.MeshStandardMaterial({
+            color: 0xc7d6ff,
+            metalness: 0.55,
+            roughness: 0.28,
+            emissive: 0x2c3d73,
+            emissiveIntensity: 0.45,
+          }),
+        );
+        linkage.rotation.z = -Math.PI / 5.5;
+        linkage.position.set(0.68, 0.5, -0.08);
+        linkage.castShadow = true;
+        group.add(linkage);
+
+        const servoIndicatorMaterial = new THREE.MeshStandardMaterial({
+          color: 0xfff4c9,
+          emissive: 0xffb347,
+          emissiveIntensity: 0.9,
+          metalness: 0.25,
+          roughness: 0.28,
+          transparent: true,
+          opacity: 0.85,
+        });
+        const servoIndicator = new THREE.Mesh(
+          new THREE.SphereGeometry(0.06, 18, 18),
+          servoIndicatorMaterial,
+        );
+        servoIndicator.position.set(0.86, 0.6, -0.42);
+        servoIndicator.castShadow = true;
+        group.add(servoIndicator);
+        safeAccessHighlights.push({
+          material: servoIndicatorMaterial,
+          baseIntensity: 0.9,
+          amplitude: 0.4,
+          speed: 2.8,
+          phaseOffset: 0.9,
+          baseOpacity: 0.85,
+          opacityAmplitude: 0.08,
+        });
+
+        const servoLight = new THREE.PointLight(0xffd89c, 0.9, 3.2);
+        servoLight.position.set(0.82, 0.92, -0.28);
+        group.add(servoLight);
+
+        const servoLabel = buildLabel('Servo Tensioner Prototype', '#ccfff0');
+        servoLabel.position.set(0.92, 0.96, -0.32);
+        servoLabel.scale.multiplyScalar(0.34);
+        group.add(servoLabel);
+
         return group;
       }
 
@@ -2568,7 +2815,14 @@
         planGrid.rotation.y = Math.PI / 6;
         group.add(planGrid);
         patternPreviewContainer = planGrid;
+
+        const patternPreviewAnchor = new THREE.Group();
+        patternPreviewAnchor.position.set(0, 0, 0.01);
+        planGrid.add(patternPreviewAnchor);
+
         applyPatternPlannerEvents(patternPlannerEvents, { resetOverlay: false });
+        rebuildPatternPreview();
+
         addHoverInfo(
           planGrid,
           'Planner hologram — loops a base chain row captured from pattern_cli --format planner.',
@@ -2854,6 +3108,7 @@
 
       populateProductLines();
       loadPlannerPreviewFromSource();
+      loadPatternPreviewData();
 
       function updateRoadmapPanel(title, description) {
         roadmapTitleElement.textContent = title;
@@ -2908,7 +3163,8 @@
       const clock = new THREE.Clock();
 
       function animate() {
-        const elapsed = clock.getElapsedTime();
+        const delta = clock.getDelta();
+        const elapsed = clock.elapsedTime;
         scene.traverse((object) => {
           if (object.name === 'v1c-assembly') {
             object.rotation.y = Math.sin(elapsed * 0.15) * 0.15;
@@ -2938,6 +3194,22 @@
               baseOpacity + Math.sin(elapsed * speed + phaseOffset) * opacityAmplitude;
             material.opacity = THREE.MathUtils.clamp(opacityPulse, 0, 1);
           }
+        });
+        yarnFlowControllers.forEach((controller) => {
+          if (!controller.texture || !controller.material) {
+            return;
+          }
+          controller.texture.offset.x = (controller.texture.offset.x + delta * controller.speed) % 1;
+          const target = yarnExtrusionActive
+            ? controller.activeIntensity
+            : controller.restIntensity;
+          controller.currentIntensity = THREE.MathUtils.damp(
+            controller.currentIntensity,
+            target,
+            4.0,
+            delta,
+          );
+          controller.material.emissiveIntensity = controller.currentIntensity;
         });
         updatePatternPreview(elapsed);
 
