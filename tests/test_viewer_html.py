@@ -77,3 +77,12 @@ def test_viewer_spotlights_magnetic_anchors() -> None:
         in viewer_html
     )
     assert "Magnetic Anchors" in viewer_html
+
+
+def test_viewer_mentions_servo_tension_adjuster() -> None:
+    """Ensure the servo-driven tension adjuster lands in the viewer copy."""
+
+    viewer_html = _load_viewer_html()
+
+    assert "Micro-servo tension adjuster" in viewer_html
+    assert "Servo Tensioner Prototype" in viewer_html

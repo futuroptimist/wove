@@ -86,7 +86,8 @@ planner animation without leaving the scene.
 - **v1c Crochet Robot** – anchors the mechanical platform showcased at the
   center of the plaza.
 - **Tension Lab** – stages the hall-effect calibration rig that feeds future
-  servo-driven yarn tensioners.
+  servo-driven yarn tensioners, complete with a prototype micro-servo adjuster
+  pulsing on the bench.
 - **Material Prep Pod** – organizes yarn cones, prep bins, and inspection
   checklists so dye lots and weights are verified before automation runs.
 - **Pattern Studio** – previews the planner workspace that visualizes
