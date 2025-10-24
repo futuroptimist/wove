@@ -52,3 +52,11 @@ def test_viewer_highlights_tension_post_and_ptfe_path() -> None:
     html = VIEWER_HTML.read_text(encoding="utf-8")
     assert "Tension Post & PTFE Guide" in html
     assert "PTFE guide tube" in html
+
+
+def test_tension_lab_mentions_servo_adjuster() -> None:
+    """The Tension Lab display should mention the servo tension adjuster."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+    assert "Micro-servo tension adjuster" in html
+    assert "Servo Tensioner Prototype" in html

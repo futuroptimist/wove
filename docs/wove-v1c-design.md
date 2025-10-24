@@ -155,6 +155,11 @@ additional debugging, or to raise errors when routing data through
 use ``estimate_sensor_reading_for_tension`` to determine the sensor reading that corresponds to a
 target pull force before commanding the actuator.
 
+The calibration bench inside the Tension Lab renders that automation path. The Three.js viewer now
+parks a micro-servo tension adjuster beside the load-cell carriage with a glowing status light so
+contributors can see how programmable feed loops interface with the spool rig before printing
+hardware.
+
 ### Frame and Build Volume
 - **Frame**: 20x20 mm aluminum extrusion perimeter with printed corner cubes and feet. Designed for
   250 mm × 250 mm working area; printable parts cap at 220 mm to fit standard beds. The

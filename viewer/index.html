@@ -2208,6 +2208,111 @@
         indicator.position.set(-0.62, 1.18, 0.52);
         group.add(indicator);
 
+        const servoBracket = new THREE.Mesh(
+          new THREE.BoxGeometry(0.22, 0.18, 0.46),
+          new THREE.MeshStandardMaterial({
+            color: 0x243640,
+            metalness: 0.42,
+            roughness: 0.32,
+            emissive: 0x0f1d24,
+            emissiveIntensity: 0.35,
+          }),
+        );
+        servoBracket.position.set(0.84, 0.32, -0.28);
+        servoBracket.castShadow = true;
+        group.add(servoBracket);
+
+        const servoBodyMaterial = new THREE.MeshStandardMaterial({
+          color: 0x1a2f3a,
+          metalness: 0.5,
+          roughness: 0.3,
+          emissive: 0x0b1a22,
+          emissiveIntensity: 0.45,
+        });
+        const servoBody = new THREE.Mesh(
+          new THREE.BoxGeometry(0.32, 0.26, 0.26),
+          servoBodyMaterial,
+        );
+        servoBody.position.set(0.92, 0.44, -0.28);
+        servoBody.castShadow = true;
+        group.add(servoBody);
+        addHoverInfo(
+          servoBody,
+          'Micro-servo tension adjuster — trims yarn feed with programmable pulls.',
+        );
+        safeAccessHighlights.push({
+          material: servoBodyMaterial,
+          baseIntensity: 0.45,
+          amplitude: 0.22,
+          speed: 2.1,
+          phaseOffset: 0.6,
+        });
+
+        const servoHorn = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.06, 0.06, 0.24, 24),
+          new THREE.MeshStandardMaterial({
+            color: 0xfff1c6,
+            metalness: 0.48,
+            roughness: 0.22,
+            emissive: 0x7a5b1f,
+            emissiveIntensity: 0.55,
+          }),
+        );
+        servoHorn.rotation.z = Math.PI / 2;
+        servoHorn.position.set(1.04, 0.5, -0.28);
+        servoHorn.castShadow = true;
+        group.add(servoHorn);
+
+        const linkage = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.018, 0.018, 0.62, 16),
+          new THREE.MeshStandardMaterial({
+            color: 0xc7d6ff,
+            metalness: 0.55,
+            roughness: 0.28,
+            emissive: 0x2c3d73,
+            emissiveIntensity: 0.45,
+          }),
+        );
+        linkage.rotation.z = -Math.PI / 5.5;
+        linkage.position.set(0.68, 0.5, -0.08);
+        linkage.castShadow = true;
+        group.add(linkage);
+
+        const servoIndicatorMaterial = new THREE.MeshStandardMaterial({
+          color: 0xfff4c9,
+          emissive: 0xffb347,
+          emissiveIntensity: 0.9,
+          metalness: 0.25,
+          roughness: 0.28,
+          transparent: true,
+          opacity: 0.85,
+        });
+        const servoIndicator = new THREE.Mesh(
+          new THREE.SphereGeometry(0.06, 18, 18),
+          servoIndicatorMaterial,
+        );
+        servoIndicator.position.set(0.86, 0.6, -0.42);
+        servoIndicator.castShadow = true;
+        group.add(servoIndicator);
+        safeAccessHighlights.push({
+          material: servoIndicatorMaterial,
+          baseIntensity: 0.9,
+          amplitude: 0.4,
+          speed: 2.8,
+          phaseOffset: 0.9,
+          baseOpacity: 0.85,
+          opacityAmplitude: 0.08,
+        });
+
+        const servoLight = new THREE.PointLight(0xffd89c, 0.9, 3.2);
+        servoLight.position.set(0.82, 0.92, -0.28);
+        group.add(servoLight);
+
+        const servoLabel = buildLabel('Servo Tensioner Prototype', '#ccfff0');
+        servoLabel.position.set(0.92, 0.96, -0.32);
+        servoLabel.scale.multiplyScalar(0.34);
+        group.add(servoLabel);
+
         return group;
       }
 
