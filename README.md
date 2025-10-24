@@ -81,7 +81,10 @@ to the gantry.
 The overlay now includes a Pattern Studio preview panel that cycles through the
 current `wove.pattern_cli --format planner` comment while a progress bar tracks
 the hologram run. Operators can cross-reference the displayed step with the
-planner animation without leaving the scene.
+planner animation without leaving the scene. The viewer pulls its sample from
+`viewer/assets/base_chain_row.planner.json`, the same planner export produced by
+the CLI fixtures, so the hologram stays aligned with the documented base chain
+row recipe.
 
 - **v1c Crochet Robot** – anchors the mechanical platform showcased at the
   center of the plaza.
