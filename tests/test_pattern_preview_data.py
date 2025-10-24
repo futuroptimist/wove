@@ -37,14 +37,26 @@ def test_viewer_planner_preview_matches_translator() -> None:
 
     translator = PatternTranslator()
     translator.translate(PATTERN_TEXT)
-    translated_events = [normalize_event(event) for event in translator.planner_events]
+    translated_events = [
+        normalize_event(event) for event in translator.planner_events
+    ]
 
     assert len(viewer_events) == len(translated_events)
 
-    for viewer_entry, translated_entry in zip(viewer_events, translated_events, strict=True):
+    for viewer_entry, translated_entry in zip(
+        viewer_events, translated_events, strict=True
+    ):
         assert viewer_entry["comment"] == translated_entry["comment"]
         assert viewer_entry["command"] == translated_entry["command"]
-        assert viewer_entry["x"] == pytest.approx(translated_entry["x"], abs=1e-6)
-        assert viewer_entry["y"] == pytest.approx(translated_entry["y"], abs=1e-6)
-        assert viewer_entry["z"] == pytest.approx(translated_entry["z"], abs=1e-6)
-        assert viewer_entry["extrusion"] == pytest.approx(translated_entry["extrusion"], abs=1e-6)
+        assert viewer_entry["x"] == pytest.approx(
+            translated_entry["x"], abs=1e-6
+        )
+        assert viewer_entry["y"] == pytest.approx(
+            translated_entry["y"], abs=1e-6
+        )
+        assert viewer_entry["z"] == pytest.approx(
+            translated_entry["z"], abs=1e-6
+        )
+        assert viewer_entry["extrusion"] == pytest.approx(
+            translated_entry["extrusion"], abs=1e-6
+        )
