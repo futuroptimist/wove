@@ -90,6 +90,11 @@ planner animation without leaving the scene. The viewer pulls its sample from
 the CLI fixtures, so the hologram stays aligned with the documented base chain
 row recipe.
 
+The overlay also surfaces a **Machine Profile** panel that lists axis
+microstepping, steps-per-millimeter, and travel ranges whenever planner exports
+embed machine metadata via `--machine-profile`. Verify the browser preview is
+aligned with the configured gantry before rehearsing motion sequences.
+
 - **v1c Crochet Robot** – anchors the mechanical platform showcased at the
   center of the plaza.
 - **Tension Lab** – stages the hall-effect calibration rig that feeds future
