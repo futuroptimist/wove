@@ -78,6 +78,10 @@ Peek through the tinted electronics bay under the work bed to see the SKR Mini
 controller stack, cooling fan, and glowing status LED that route motion power up
 to the gantry.
 
+Amber pulses now race through the translucent PTFE tube so you can watch yarn
+flow from the spool, past the hall-effect sensor, and into the crochet hook as
+the planner preview runs.
+
 The overlay now includes a Pattern Studio preview panel that cycles through the
 current `wove.pattern_cli --format planner` comment while a progress bar tracks
 the hologram run. Operators can cross-reference the displayed step with the
