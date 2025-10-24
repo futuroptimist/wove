@@ -86,3 +86,13 @@ def test_viewer_mentions_servo_tension_adjuster() -> None:
 
     assert "Micro-servo tension adjuster" in viewer_html
     assert "Servo Tensioner Prototype" in viewer_html
+
+
+def test_viewer_highlights_machine_profile_overlay() -> None:
+    """Ensure the viewer advertises the machine profile metadata panel."""
+
+    viewer_html = _load_viewer_html()
+
+    assert "Machine Profile" in viewer_html
+    assert "Machine profile metadata unavailable" in viewer_html
+    assert "Planner-aligned axis settings" in viewer_html

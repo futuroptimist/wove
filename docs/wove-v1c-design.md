@@ -238,7 +238,10 @@ hardware.
   motion without parsing raw G-code while leaving room for deeper
   interactivity. The overlay's Pattern Studio panel now streams the active
   planner comment and timeline progress so operators can read the motion step as
-  the hologram animates.
+  the hologram animates. A companion Machine Profile panel lists the
+  microstepping, steps-per-millimeter, and travel bounds from planner exports so
+  technicians can confirm the browser preview mirrors the configured gantry
+  before committing motion to hardware.
 
 ## Bill of Materials (Initial Release)
 | Subsystem | Component | Qty | Notes |

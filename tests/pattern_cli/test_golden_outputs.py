@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from wove.machine_profile import AxisProfile, MachineProfile
 from wove.pattern_cli import PatternTranslator, _planner_payload
 
 FIXTURE_DIR = Path(__file__).parent.parent / "fixtures" / "patterns"
@@ -18,12 +19,26 @@ def _load_pattern(name: str) -> str:
     return _fixture_text(name, ".txt")
 
 
+def _golden_machine_profile() -> MachineProfile:
+    return MachineProfile(
+        axes={
+            "X": AxisProfile("X", 16, 80.0, 0.0, 120.0),
+            "Y": AxisProfile("Y", 16, 80.0, 0.0, 120.0),
+            "Z": AxisProfile("Z", 16, 400.0, -10.0, 15.0),
+        }
+    )
+
+
 def _generate_outputs(pattern_text: str):
-    translator = PatternTranslator()
+    profile = _golden_machine_profile()
+    translator = PatternTranslator(machine_profile=profile)
     lines = translator.translate(pattern_text)
     gcode = "\n".join(line.as_text() for line in lines) + "\n"
     json_payload = [line.as_dict() for line in lines]
-    planner_payload = _planner_payload(translator.planner_events)
+    planner_payload = _planner_payload(
+        translator.planner_events,
+        machine_profile=profile,
+    )
     return gcode, json_payload, planner_payload
 
 

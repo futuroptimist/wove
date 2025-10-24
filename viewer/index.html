@@ -113,6 +113,40 @@
         transition: width 0.18s ease-out;
       }
 
+      #machine-panel {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(245, 245, 245, 0.15);
+      }
+
+      #machine-panel h2 {
+        margin: 0 0 0.35rem;
+        font-size: 0.95rem;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        color: #9fffd7;
+      }
+
+      #machine-panel p {
+        margin: 0;
+        font-size: 0.86rem;
+        line-height: 1.35;
+        color: #e5fff1;
+      }
+
+      #machine-profile-axes {
+        margin: 0.55rem 0 0;
+        padding-left: 1.1rem;
+        list-style: disc;
+        font-size: 0.84rem;
+        line-height: 1.35;
+        color: #cffff1;
+      }
+
+      #machine-profile-axes li {
+        margin-bottom: 0.3rem;
+      }
+
       #status {
         position: fixed;
         bottom: 1.2rem;
@@ -174,6 +208,11 @@
           <div id="pattern-progress-bar"></div>
         </div>
       </div>
+      <div id="machine-panel">
+        <h2>Machine Profile</h2>
+        <p id="machine-profile-status">Loading machine profile metadata…</p>
+        <ul id="machine-profile-axes"></ul>
+      </div>
     </div>
     <div id="status">Initializing viewer…</div>
     <script type="module">
@@ -195,6 +234,8 @@
       const patternStepElement = document.getElementById('pattern-step');
       const patternStepIndexElement = document.getElementById('pattern-step-index');
       const patternProgressBarElement = document.getElementById('pattern-progress-bar');
+      const machineProfileStatusElement = document.getElementById('machine-profile-status');
+      const machineProfileAxesElement = document.getElementById('machine-profile-axes');
 
       const pointer = new THREE.Vector2();
       const raycaster = new THREE.Raycaster();
@@ -237,6 +278,8 @@
       const patternPreviewDurationSeconds = 14;
       let lastPatternStepIndex = -1;
       let lastPatternProgress = -1;
+      const machineProfileFallbackMessage =
+        'Machine profile metadata unavailable. Export with --machine-profile to surface axis settings.';
 
       const FRAME_HALF_WIDTH = 3.6;
       const FRAME_HALF_DEPTH = 2.6;
@@ -391,6 +434,64 @@
         }
       }
 
+      function updateMachineProfilePanel(machineProfile) {
+        if (!machineProfileStatusElement || !machineProfileAxesElement) {
+          return;
+        }
+
+        while (machineProfileAxesElement.firstChild) {
+          machineProfileAxesElement.removeChild(machineProfileAxesElement.firstChild);
+        }
+
+        const axes =
+          machineProfile && typeof machineProfile === 'object'
+            ? machineProfile.axes || null
+            : null;
+        const entries =
+          axes && typeof axes === 'object' ? Object.entries(axes).filter(Boolean) : [];
+
+        if (!entries || entries.length === 0) {
+          machineProfileStatusElement.textContent = machineProfileFallbackMessage;
+          return;
+        }
+
+        machineProfileStatusElement.textContent = 'Planner-aligned axis settings:';
+
+        entries
+          .sort((a, b) => a[0].localeCompare(b[0]))
+          .forEach(([name, axis]) => {
+            if (!axis || typeof axis !== 'object') {
+              return;
+            }
+
+            const listItem = document.createElement('li');
+            const segments = [];
+
+            const stepsPerMm = Number(axis.steps_per_mm);
+            if (Number.isFinite(stepsPerMm)) {
+              segments.push(`${stepsPerMm.toFixed(1)} steps/mm`);
+            }
+
+            const microstepping = Number(axis.microstepping);
+            if (Number.isFinite(microstepping)) {
+              segments.push(`×${microstepping} microstepping`);
+            }
+
+            const travelMin = Number(axis.travel_min_mm);
+            const travelMax = Number(axis.travel_max_mm);
+            if (Number.isFinite(travelMin) && Number.isFinite(travelMax)) {
+              segments.push(`travel ${travelMin.toFixed(1)}–${travelMax.toFixed(1)} mm`);
+            }
+
+            if (segments.length === 0) {
+              segments.push('metadata unavailable');
+            }
+
+            listItem.textContent = `${name} axis — ${segments.join(' · ')}`;
+            machineProfileAxesElement.appendChild(listItem);
+          });
+      }
+
       async function loadPlannerPreviewFromSource() {
         if (patternStepElement) {
           patternStepElement.textContent = 'Loading base chain row planner preview…';
@@ -416,12 +517,14 @@
             throw new Error('Planner file contained no commands');
           }
           applyPatternPlannerEvents(events);
+          updateMachineProfilePanel(payload?.machine_profile ?? null);
           if (statusElement) {
             updateStatus('Pattern Studio preview synced with base chain row.');
           }
         } catch (error) {
           console.warn('Unable to load planner preview', error);
           applyPatternPlannerEvents(fallbackPatternPlannerEvents);
+          updateMachineProfilePanel(null);
           if (statusElement) {
             updateStatus('Using fallback planner preview.');
           }

@@ -316,5 +316,27 @@
       },
       "comment": "single stitch 2 of 2: advance"
     }
-  ]
+  ],
+  "machine_profile": {
+    "axes": {
+      "X": {
+        "microstepping": 16,
+        "steps_per_mm": 80.0,
+        "travel_min_mm": 0.0,
+        "travel_max_mm": 120.0
+      },
+      "Y": {
+        "microstepping": 16,
+        "steps_per_mm": 80.0,
+        "travel_min_mm": 0.0,
+        "travel_max_mm": 120.0
+      },
+      "Z": {
+        "microstepping": 16,
+        "steps_per_mm": 400.0,
+        "travel_min_mm": -10.0,
+        "travel_max_mm": 15.0
+      }
+    }
+  }
 }
