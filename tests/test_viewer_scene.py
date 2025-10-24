@@ -23,7 +23,7 @@ def test_pattern_planner_preview_is_documented() -> None:
     """The Pattern Studio hologram should advertise the planner preview."""
 
     html = VIEWER_HTML.read_text(encoding="utf-8")
-    assert "patternPlannerEvents" in html
+    assert "assets/base_chain_row.planner.json" in html
     assert "base chain row" in html.lower()
     assert "pattern_cli --format planner" in html
 

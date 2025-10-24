@@ -1,0 +1,23 @@
+"""Ensure the Three.js viewer ships the base chain row planner preview."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PREVIEW_NAME = "base_chain_row.planner.json"
+VIEWER_PREVIEW_ROOT = PROJECT_ROOT / "viewer" / "assets"
+FIXTURE_PREVIEW_ROOT = PROJECT_ROOT / "tests" / "fixtures" / "patterns"
+VIEWER_PREVIEW = VIEWER_PREVIEW_ROOT / PREVIEW_NAME
+FIXTURE_PREVIEW = FIXTURE_PREVIEW_ROOT / PREVIEW_NAME
+
+
+def test_viewer_planner_preview_matches_fixture() -> None:
+    """The viewer asset should mirror the base chain row planner fixture."""
+
+    assert VIEWER_PREVIEW.exists()
+    assert FIXTURE_PREVIEW.exists()
+    viewer_preview = VIEWER_PREVIEW.read_text(encoding="utf-8")
+    fixture_preview = FIXTURE_PREVIEW.read_text(encoding="utf-8")
+
+    assert viewer_preview == fixture_preview

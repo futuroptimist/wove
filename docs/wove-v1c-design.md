@@ -186,7 +186,10 @@ hardware.
   cone tree, staging bins, inspection scale, and traceability cards that feed
   yarn into the crochet cell. The Pattern Studio hologram loops a base chain
   row exported from `wove.pattern_cli --format planner`, previewing how planner
-  payloads animate across the workspace before firmware executes them.
+  payloads animate across the workspace before firmware executes them. The
+  viewer streams that sample directly from
+  `viewer/assets/base_chain_row.planner.json` so the hologram stays aligned with
+  the repository's planner fixtures.
 - Optional polycarbonate shield with hinged access door for production environments;
   the Three.js viewer renders the translucent enclosure so teams can rehearse
   safe access paths before printing hardware. Mint-highlighted floor markings
