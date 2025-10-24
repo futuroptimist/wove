@@ -133,6 +133,10 @@ mapping mirrors the JSON/YAML schema
 loaded by `--machine-profile` so downstream planners can respect the same
 travel envelope without re-reading the original file.
 
+The Three.js viewer consumes a copy of this output stored at
+`viewer/assets/base_chain_row.planner.json`. Regenerate it with the CLI when the
+base chain row recipe changes so the browser hologram stays in sync.
+
 ## Embedding the parser in automation
 
 Automation helpers can reuse the CLI parser without shelling out. Import the

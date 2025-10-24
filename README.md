@@ -90,6 +90,14 @@ planner animation without leaving the scene. The viewer pulls its sample from
 the CLI fixtures, so the hologram stays aligned with the documented base chain
 row recipe.
 
+Refresh the hologram after updating the base chain row pattern by exporting a
+new planner file:
+
+```bash
+python -m wove.pattern_cli --text "CHAIN 3\nPAUSE 0.4\nMOVE 18 5\nTURN 7\nSINGLE 1" \
+  --format planner > viewer/assets/base_chain_row.planner.json
+```
+
 - **v1c Crochet Robot** – anchors the mechanical platform showcased at the
   center of the plaza.
 - **Tension Lab** – stages the hall-effect calibration rig that feeds future

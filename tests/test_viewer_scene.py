@@ -24,6 +24,7 @@ def test_pattern_planner_preview_is_documented() -> None:
 
     html = VIEWER_HTML.read_text(encoding="utf-8")
     assert "assets/base_chain_row.planner.json" in html
+    assert "data/pattern_preview.json" not in html
     assert "base chain row" in html.lower()
     assert "pattern_cli --format planner" in html
 

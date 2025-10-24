@@ -234,6 +234,7 @@
       let patternPlannerEvents = [];
       let patternPreviewGroup = null;
       let patternPreviewContainer = null;
+      let patternPreviewAnchor = null;
       const patternPreviewDurationSeconds = 14;
       let lastPatternStepIndex = -1;
       let lastPatternProgress = -1;
@@ -601,46 +602,6 @@
           }
         } else {
           updatePatternOverlay(0, 0);
-        }
-      }
-
-      async function loadPatternPreviewData() {
-        try {
-          const response = await fetch('data/pattern_preview.json');
-          if (!response.ok) {
-            throw new Error(`Unexpected status ${response.status}`);
-          }
-          const raw = await response.json();
-          if (!Array.isArray(raw)) {
-            throw new Error('Planner preview data must be an array.');
-          }
-          patternPlannerEvents = raw
-            .map((entry) => ({
-              comment:
-                typeof entry.comment === 'string' && entry.comment.length > 0
-                  ? entry.comment
-                  : null,
-              command: typeof entry.command === 'string' ? entry.command : '',
-              x: Number(entry.x) || 0,
-              y: Number(entry.y) || 0,
-              z: Number(entry.z) || 0,
-              extrusion: Number(entry.extrusion) || 0,
-            }))
-            .filter((entry) => Number.isFinite(entry.x) && Number.isFinite(entry.y));
-          Object.freeze(patternPlannerEvents);
-          rebuildPatternPreview();
-        } catch (error) {
-          console.error('Failed to load planner preview data.', error);
-          yarnExtrusionActive = false;
-          if (patternStepElement) {
-            patternStepElement.textContent = 'Planner preview unavailable.';
-          }
-          if (patternStepIndexElement) {
-            patternStepIndexElement.textContent = 'No planner steps loaded';
-          }
-          if (patternProgressBarElement) {
-            patternProgressBarElement.style.width = '0%';
-          }
         }
       }
 
@@ -2816,7 +2777,7 @@
         group.add(planGrid);
         patternPreviewContainer = planGrid;
 
-        const patternPreviewAnchor = new THREE.Group();
+        patternPreviewAnchor = new THREE.Group();
         patternPreviewAnchor.position.set(0, 0, 0.01);
         planGrid.add(patternPreviewAnchor);
 
@@ -3108,7 +3069,6 @@
 
       populateProductLines();
       loadPlannerPreviewFromSource();
-      loadPatternPreviewData();
 
       function updateRoadmapPanel(title, description) {
         roadmapTitleElement.textContent = title;
