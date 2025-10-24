@@ -203,42 +203,11 @@
       const safeAccessHighlights = [];
       let activeCluster = null;
       const selectionRingHeight = 0.06;
-      const patternPlannerEvents = [
-        { comment: 'use millimeters', x: 0.0, y: 0.0, z: 4.0, extrusion: 0.0 },
-        { comment: 'absolute positioning', x: 0.0, y: 0.0, z: 4.0, extrusion: 0.0 },
-        { comment: 'zero axes', x: 0.0, y: 0.0, z: 4.0, extrusion: 0.0 },
-        { comment: 'chain stitch 1 of 4: plunge', x: 0.0, y: 0.0, z: -1.5, extrusion: 0.0 },
-        { comment: 'chain stitch 1 of 4: feed yarn', x: 0.0, y: 0.0, z: -1.5, extrusion: 0.5 },
-        { comment: 'chain stitch 1 of 4: raise', x: 0.0, y: 0.0, z: 4.0, extrusion: 0.5 },
-        { comment: 'chain stitch 1 of 4: advance', x: 5.0, y: 0.0, z: 4.0, extrusion: 0.5 },
-        { comment: 'chain stitch 2 of 4: plunge', x: 5.0, y: 0.0, z: -1.5, extrusion: 0.5 },
-        { comment: 'chain stitch 2 of 4: feed yarn', x: 5.0, y: 0.0, z: -1.5, extrusion: 1.0 },
-        { comment: 'chain stitch 2 of 4: raise', x: 5.0, y: 0.0, z: 4.0, extrusion: 1.0 },
-        { comment: 'chain stitch 2 of 4: advance', x: 10.0, y: 0.0, z: 4.0, extrusion: 1.0 },
-        { comment: 'chain stitch 3 of 4: plunge', x: 10.0, y: 0.0, z: -1.5, extrusion: 1.0 },
-        { comment: 'chain stitch 3 of 4: feed yarn', x: 10.0, y: 0.0, z: -1.5, extrusion: 1.5 },
-        { comment: 'chain stitch 3 of 4: raise', x: 10.0, y: 0.0, z: 4.0, extrusion: 1.5 },
-        { comment: 'chain stitch 3 of 4: advance', x: 15.0, y: 0.0, z: 4.0, extrusion: 1.5 },
-        { comment: 'chain stitch 4 of 4: plunge', x: 15.0, y: 0.0, z: -1.5, extrusion: 1.5 },
-        { comment: 'chain stitch 4 of 4: feed yarn', x: 15.0, y: 0.0, z: -1.5, extrusion: 2.0 },
-        { comment: 'chain stitch 4 of 4: raise', x: 15.0, y: 0.0, z: 4.0, extrusion: 2.0 },
-        { comment: 'chain stitch 4 of 4: advance', x: 20.0, y: 0.0, z: 4.0, extrusion: 2.0 },
-        { comment: 'turn to next row', x: 0.0, y: 6.0, z: 4.0, extrusion: 2.0 },
-        { comment: 'single stitch 1 of 3: plunge', x: 0.0, y: 6.0, z: -2.0, extrusion: 2.0 },
-        { comment: 'single stitch 1 of 3: feed yarn', x: 0.0, y: 6.0, z: -2.0, extrusion: 2.6 },
-        { comment: 'single stitch 1 of 3: raise', x: 0.0, y: 6.0, z: 4.0, extrusion: 2.6 },
-        { comment: 'single stitch 1 of 3: advance', x: 4.5, y: 6.0, z: 4.0, extrusion: 2.6 },
-        { comment: 'single stitch 2 of 3: plunge', x: 4.5, y: 6.0, z: -2.0, extrusion: 2.6 },
-        { comment: 'single stitch 2 of 3: feed yarn', x: 4.5, y: 6.0, z: -2.0, extrusion: 3.2 },
-        { comment: 'single stitch 2 of 3: raise', x: 4.5, y: 6.0, z: 4.0, extrusion: 3.2 },
-        { comment: 'single stitch 2 of 3: advance', x: 9.0, y: 6.0, z: 4.0, extrusion: 3.2 },
-        { comment: 'single stitch 3 of 3: plunge', x: 9.0, y: 6.0, z: -2.0, extrusion: 3.2 },
-        { comment: 'single stitch 3 of 3: feed yarn', x: 9.0, y: 6.0, z: -2.0, extrusion: 3.8 },
-        { comment: 'single stitch 3 of 3: raise', x: 9.0, y: 6.0, z: 4.0, extrusion: 3.8 },
-        { comment: 'single stitch 3 of 3: advance', x: 13.5, y: 6.0, z: 4.0, extrusion: 3.8 },
-      ];
-      Object.freeze(patternPlannerEvents);
+      const yarnFlowControllers = [];
+      let yarnExtrusionActive = false;
+      let patternPlannerEvents = [];
       let patternPreviewGroup = null;
+      let patternPreviewAnchor = null;
       const patternPreviewDurationSeconds = 14;
       let lastPatternStepIndex = -1;
       let lastPatternProgress = -1;
@@ -473,6 +442,94 @@
         return group;
       }
 
+      function disposePreviewGroup(group) {
+        group.traverse((child) => {
+          if (child.geometry) {
+            child.geometry.dispose();
+          }
+          if (child.material) {
+            const materials = Array.isArray(child.material)
+              ? child.material
+              : [child.material];
+            materials.forEach((material) => {
+              if (material.map && typeof material.map.dispose === 'function') {
+                material.map.dispose();
+              }
+              if (typeof material.dispose === 'function') {
+                material.dispose();
+              }
+            });
+          }
+        });
+      }
+
+      function rebuildPatternPreview() {
+        if (!patternPreviewAnchor) {
+          return;
+        }
+
+        if (patternPreviewGroup) {
+          patternPreviewAnchor.remove(patternPreviewGroup);
+          disposePreviewGroup(patternPreviewGroup);
+          patternPreviewGroup = null;
+        }
+
+        patternPreviewGroup = buildPlannerPreview(patternPlannerEvents);
+        patternPreviewGroup.position.set(0, 0, 0.01);
+        patternPreviewAnchor.add(patternPreviewGroup);
+        lastPatternStepIndex = -1;
+        lastPatternProgress = -1;
+
+        if (patternPlannerEvents.length === 0) {
+          yarnExtrusionActive = false;
+          if (patternProgressBarElement) {
+            patternProgressBarElement.style.width = '0%';
+          }
+        } else {
+          updatePatternOverlay(0, 0);
+        }
+      }
+
+      async function loadPatternPreviewData() {
+        try {
+          const response = await fetch('data/pattern_preview.json');
+          if (!response.ok) {
+            throw new Error(`Unexpected status ${response.status}`);
+          }
+          const raw = await response.json();
+          if (!Array.isArray(raw)) {
+            throw new Error('Planner preview data must be an array.');
+          }
+          patternPlannerEvents = raw
+            .map((entry) => ({
+              comment:
+                typeof entry.comment === 'string' && entry.comment.length > 0
+                  ? entry.comment
+                  : null,
+              command: typeof entry.command === 'string' ? entry.command : '',
+              x: Number(entry.x) || 0,
+              y: Number(entry.y) || 0,
+              z: Number(entry.z) || 0,
+              extrusion: Number(entry.extrusion) || 0,
+            }))
+            .filter((entry) => Number.isFinite(entry.x) && Number.isFinite(entry.y));
+          Object.freeze(patternPlannerEvents);
+          rebuildPatternPreview();
+        } catch (error) {
+          console.error('Failed to load planner preview data.', error);
+          yarnExtrusionActive = false;
+          if (patternStepElement) {
+            patternStepElement.textContent = 'Planner preview unavailable.';
+          }
+          if (patternStepIndexElement) {
+            patternStepIndexElement.textContent = 'No planner steps loaded';
+          }
+          if (patternProgressBarElement) {
+            patternProgressBarElement.style.width = '0%';
+          }
+        }
+      }
+
       function updatePatternOverlay(stepIndex, progressRatio) {
         if (!patternStepElement) {
           return;
@@ -480,16 +537,11 @@
 
         const totalSteps = patternPlannerEvents.length;
         if (totalSteps === 0) {
-          if (lastPatternStepIndex !== -1) {
-            patternStepElement.textContent = 'Planner preview idle.';
-            if (patternStepIndexElement) {
-              patternStepIndexElement.textContent = 'No planner steps loaded';
-            }
-            if (patternProgressBarElement) {
-              patternProgressBarElement.style.width = '0%';
-            }
-            lastPatternStepIndex = -1;
-            lastPatternProgress = -1;
+          yarnExtrusionActive = false;
+          lastPatternStepIndex = -1;
+          lastPatternProgress = -1;
+          if (patternProgressBarElement) {
+            patternProgressBarElement.style.width = '0%';
           }
           return;
         }
@@ -507,6 +559,8 @@
           if (patternStepIndexElement) {
             patternStepIndexElement.textContent = `Step ${clampedIndex + 1} of ${totalSteps}`;
           }
+          yarnExtrusionActive =
+            typeof comment === 'string' && comment.toLowerCase().includes('feed yarn');
           lastPatternStepIndex = clampedIndex;
         }
 
@@ -517,9 +571,6 @@
           lastPatternProgress = clampedProgress;
         }
       }
-
-      updatePatternOverlay(0, 0);
-
       function updatePatternPreview(elapsedSeconds) {
         if (!patternPreviewGroup) {
           return;
@@ -1811,6 +1862,64 @@
           phaseOffset: 1.1,
         });
 
+        const yarnTextureCanvas = document.createElement('canvas');
+        yarnTextureCanvas.width = 256;
+        yarnTextureCanvas.height = 16;
+        const yarnContext = yarnTextureCanvas.getContext('2d');
+        if (yarnContext) {
+          yarnContext.fillStyle = '#55261a';
+          yarnContext.fillRect(0, 0, yarnTextureCanvas.width, yarnTextureCanvas.height);
+          const stripeWidth = yarnTextureCanvas.width / 16;
+          for (let index = 0; index < 16; index += 1) {
+            const offset = index * stripeWidth;
+            const gradient = yarnContext.createLinearGradient(offset, 0, offset + stripeWidth, 0);
+            gradient.addColorStop(0.0, '#ffcf94');
+            gradient.addColorStop(0.5, '#ff9f4a');
+            gradient.addColorStop(1.0, '#ffcf94');
+            yarnContext.fillStyle = gradient;
+            yarnContext.fillRect(offset, 0, stripeWidth, yarnTextureCanvas.height);
+          }
+        }
+        const yarnTexture = new THREE.CanvasTexture(yarnTextureCanvas);
+        yarnTexture.wrapS = THREE.RepeatWrapping;
+        yarnTexture.wrapT = THREE.ClampToEdgeWrapping;
+        yarnTexture.repeat.set(8, 1);
+        yarnTexture.anisotropy = 4;
+        yarnTexture.needsUpdate = true;
+        const yarnMaterial = new THREE.MeshPhysicalMaterial({
+          color: 0xffffff,
+          emissive: 0xffb173,
+          emissiveIntensity: 0.45,
+          metalness: 0.12,
+          roughness: 0.3,
+          transparent: true,
+          opacity: 0.85,
+          transmission: 0.3,
+          thickness: 0.18,
+          map: yarnTexture,
+          side: THREE.DoubleSide,
+        });
+        const yarnTube = new THREE.Mesh(
+          new THREE.TubeGeometry(ptfeCurve, 200, 0.02, 24, false),
+          yarnMaterial,
+        );
+        yarnTube.castShadow = false;
+        yarnTube.receiveShadow = false;
+        group.add(yarnTube);
+        addHoverInfo(
+          yarnTube,
+          'Animated yarn flow — watch feed pulses as the crochet cell draws fiber.',
+          { passthrough: true },
+        );
+        yarnFlowControllers.push({
+          texture: yarnTexture,
+          speed: 0.35,
+          material: yarnMaterial,
+          restIntensity: 0.45,
+          activeIntensity: 0.9,
+          currentIntensity: 0.45,
+        });
+
         const displayLabel = buildLabel('v1c – Crochet Robot', '#8ab4ff');
         displayLabel.position.set(0, 4.3, 0);
         group.add(displayLabel);
@@ -2591,9 +2700,10 @@
         planGrid.position.set(0.58, 0.78, 0.3);
         planGrid.rotation.y = Math.PI / 6;
         group.add(planGrid);
-        patternPreviewGroup = buildPlannerPreview(patternPlannerEvents);
-        patternPreviewGroup.position.set(0, 0, 0.01);
-        planGrid.add(patternPreviewGroup);
+        patternPreviewAnchor = new THREE.Group();
+        patternPreviewAnchor.position.set(0, 0, 0.01);
+        planGrid.add(patternPreviewAnchor);
+        rebuildPatternPreview();
         addHoverInfo(
           planGrid,
           'Planner hologram — loops a base chain row captured from pattern_cli --format planner.',
@@ -2878,6 +2988,7 @@
       }
 
       populateProductLines();
+      loadPatternPreviewData();
 
       function updateRoadmapPanel(title, description) {
         roadmapTitleElement.textContent = title;
@@ -2932,7 +3043,8 @@
       const clock = new THREE.Clock();
 
       function animate() {
-        const elapsed = clock.getElapsedTime();
+        const delta = clock.getDelta();
+        const elapsed = clock.elapsedTime;
         scene.traverse((object) => {
           if (object.name === 'v1c-assembly') {
             object.rotation.y = Math.sin(elapsed * 0.15) * 0.15;
@@ -2962,6 +3074,22 @@
               baseOpacity + Math.sin(elapsed * speed + phaseOffset) * opacityAmplitude;
             material.opacity = THREE.MathUtils.clamp(opacityPulse, 0, 1);
           }
+        });
+        yarnFlowControllers.forEach((controller) => {
+          if (!controller.texture || !controller.material) {
+            return;
+          }
+          controller.texture.offset.x = (controller.texture.offset.x + delta * controller.speed) % 1;
+          const target = yarnExtrusionActive
+            ? controller.activeIntensity
+            : controller.restIntensity;
+          controller.currentIntensity = THREE.MathUtils.damp(
+            controller.currentIntensity,
+            target,
+            4.0,
+            delta,
+          );
+          controller.material.emissiveIntensity = controller.currentIntensity;
         });
         updatePatternPreview(elapsed);
 

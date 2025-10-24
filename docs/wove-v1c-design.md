@@ -46,7 +46,8 @@ Key modules include:
 
 The Three.js viewer mirrors this assembly with glowing felt pads and a translucent PTFE tube so
 builders can visualize how yarn leaves the spool, touches the hall sensor, and reaches the hook
-before printing hardware.
+before printing hardware. Animated amber pulses now chase through the tube to illustrate feed
+direction while the planner preview runs.
 
 #### Tension Profiles and Bench Tests
 

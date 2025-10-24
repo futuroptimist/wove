@@ -1,0 +1,64 @@
+"""Tests for the Three.js pattern preview data used by the viewer."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import pytest
+
+from wove.pattern_cli import PatternTranslator
+
+PATTERN_TEXT = "CHAIN 4\nTURN 6\nSINGLE 3\n"
+
+
+def load_viewer_events() -> list[dict[str, object]]:
+    root = Path(__file__).resolve().parents[1]
+    data_path = root / "viewer" / "data" / "pattern_preview.json"
+    with data_path.open("r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def normalize_event(event) -> dict[str, object]:
+    """Return a simplified snapshot used for viewer assertions."""
+
+    return {
+        "comment": event.comment,
+        "command": event.command,
+        "x": event.x_mm,
+        "y": event.y_mm,
+        "z": event.z_mm,
+        "extrusion": event.extrusion_mm,
+    }
+
+
+def test_viewer_planner_preview_matches_translator() -> None:
+    viewer_events = load_viewer_events()
+
+    translator = PatternTranslator()
+    translator.translate(PATTERN_TEXT)
+    translated_events = list(map(normalize_event, translator.planner_events))
+
+    assert len(viewer_events) == len(translated_events)
+
+    for viewer_entry, translated_entry in zip(
+        viewer_events, translated_events, strict=True
+    ):
+        assert viewer_entry["comment"] == translated_entry["comment"]
+        assert viewer_entry["command"] == translated_entry["command"]
+        assert viewer_entry["x"] == pytest.approx(
+            translated_entry["x"],
+            abs=1e-6,
+        )
+        assert viewer_entry["y"] == pytest.approx(
+            translated_entry["y"],
+            abs=1e-6,
+        )
+        assert viewer_entry["z"] == pytest.approx(
+            translated_entry["z"],
+            abs=1e-6,
+        )
+        assert viewer_entry["extrusion"] == pytest.approx(
+            translated_entry["extrusion"],
+            abs=1e-6,
+        )
