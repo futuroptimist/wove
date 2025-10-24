@@ -9,14 +9,30 @@ import pytest
 
 from wove.pattern_cli import PatternTranslator
 
-PATTERN_TEXT = "CHAIN 4\nTURN 6\nSINGLE 3\n"
+PATTERN_TEXT = "CHAIN 3\nPAUSE 0.4\nMOVE 18 5\nTURN 7\nSINGLE 1\n"
 
 
 def load_viewer_events() -> list[dict[str, object]]:
     root = Path(__file__).resolve().parents[1]
-    data_path = root / "viewer" / "data" / "pattern_preview.json"
+    data_path = root / "viewer" / "assets" / "base_chain_row.planner.json"
     with data_path.open("r", encoding="utf-8") as handle:
-        return json.load(handle)
+        payload = json.load(handle)
+
+    commands = payload.get("commands", [])
+    events: list[dict[str, object]] = []
+    for entry in commands:
+        state = entry.get("state") or {}
+        events.append(
+            {
+                "comment": entry.get("comment"),
+                "command": entry.get("command", ""),
+                "x": float(state.get("x_mm", 0.0) or 0.0),
+                "y": float(state.get("y_mm", 0.0) or 0.0),
+                "z": float(state.get("z_mm", 0.0) or 0.0),
+                "extrusion": float(state.get("extrusion_mm", 0.0) or 0.0),
+            }
+        )
+    return events
 
 
 def normalize_event(event) -> dict[str, object]:
