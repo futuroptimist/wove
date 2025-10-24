@@ -5,8 +5,9 @@ from __future__ import annotations
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-VIEWER_PREVIEW = PROJECT_ROOT / "viewer" / "assets" / "base_chain_row.planner.json"
-FIXTURE_PREVIEW = PROJECT_ROOT / "tests" / "fixtures" / "patterns" / "base_chain_row.planner.json"
+PREVIEW_NAME = "base_chain_row.planner.json"
+VIEWER_PREVIEW = PROJECT_ROOT / "viewer" / "assets" / PREVIEW_NAME
+FIXTURE_PREVIEW = PROJECT_ROOT / "tests" / "fixtures" / "patterns" / PREVIEW_NAME
 
 
 def test_viewer_planner_preview_matches_fixture() -> None:
