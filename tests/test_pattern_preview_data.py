@@ -90,28 +90,25 @@ def test_load_viewer_events_skips_non_dict_entries(monkeypatch) -> None:
     """Ensure non-dictionary command entries are ignored when loading events."""
 
     asset_path = ROOT / "viewer" / "assets" / "base_chain_row.planner.json"
-    original_read_text = Path.read_text
-
     def patched_read_text(self, *args, **kwargs):  # type: ignore[no-untyped-def]
-        if self == asset_path:
-            return json.dumps(
-                {
-                    "commands": [
-                        9,
-                        {
-                            "comment": "valid entry",
-                            "command": "G1",
-                            "state": {
-                                "x_mm": 1.0,
-                                "y_mm": 2.0,
-                                "z_mm": 3.0,
-                                "extrusion_mm": 4.0,
-                            },
+        assert self == asset_path
+        return json.dumps(
+            {
+                "commands": [
+                    9,
+                    {
+                        "comment": "valid entry",
+                        "command": "G1",
+                        "state": {
+                            "x_mm": 1.0,
+                            "y_mm": 2.0,
+                            "z_mm": 3.0,
+                            "extrusion_mm": 4.0,
                         },
-                    ]
-                }
-            )
-        return original_read_text(self, *args, **kwargs)
+                    },
+                ]
+            }
+        )
 
     monkeypatch.setattr(Path, "read_text", patched_read_text)
 
@@ -133,12 +130,9 @@ def test_load_viewer_events_ignores_non_dict_payload(monkeypatch) -> None:
     """A planner asset that is not a dictionary should return no events."""
 
     asset_path = ROOT / "viewer" / "assets" / "base_chain_row.planner.json"
-    original_read_text = Path.read_text
-
     def patched_read_text(self, *args, **kwargs):  # type: ignore[no-untyped-def]
-        if self == asset_path:
-            return json.dumps(["unexpected", "payload"])
-        return original_read_text(self, *args, **kwargs)
+        assert self == asset_path
+        return json.dumps(["unexpected", "payload"])
 
     monkeypatch.setattr(Path, "read_text", patched_read_text)
 
