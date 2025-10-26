@@ -96,3 +96,12 @@ def test_viewer_highlights_machine_profile_overlay() -> None:
     assert "Machine Profile" in viewer_html
     assert "Machine profile metadata unavailable" in viewer_html
     assert "Planner-aligned axis settings" in viewer_html
+
+
+def test_viewer_surfaces_homing_guard_panel() -> None:
+    """Ensure the viewer surfaces the homing guard metadata panel."""
+
+    viewer_html = _load_viewer_html()
+
+    assert "Homing Guard" in viewer_html
+    assert "Requires a homed machine before executing this planner preview." in viewer_html

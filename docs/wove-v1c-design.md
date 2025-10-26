@@ -241,7 +241,10 @@ hardware.
   the hologram animates. A companion Machine Profile panel lists the
   microstepping, steps-per-millimeter, and travel bounds from planner exports so
   technicians can confirm the browser preview mirrors the configured gantry
-  before committing motion to hardware.
+  before committing motion to hardware. The Homing Guard overlay highlights the
+  `require_home` setting and recorded `home_state`, switching to green when the
+  export captured a verified homing cycle and calling attention to plans that
+  need a fresh homing run.
 
 ## Bill of Materials (Initial Release)
 | Subsystem | Component | Qty | Notes |
