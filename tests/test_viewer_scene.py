@@ -60,3 +60,11 @@ def test_tension_lab_mentions_servo_adjuster() -> None:
     html = VIEWER_HTML.read_text(encoding="utf-8")
     assert "Micro-servo tension adjuster" in html
     assert "Servo Tensioner Prototype" in html
+
+
+def test_viewer_includes_yarn_pulse_group() -> None:
+    """Ensure the yarn flow pulses are represented in the scene."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+    assert "yarn-flow-pulses" in html
+    assert "Glowing yarn pulses" in html

@@ -271,6 +271,7 @@
       ];
       Object.freeze(fallbackPatternPlannerEvents);
       const yarnFlowControllers = [];
+      const yarnPulseControllers = [];
       let yarnExtrusionActive = false;
       let patternPlannerEvents = [];
       let patternPreviewGroup = null;
@@ -2137,6 +2138,47 @@
           currentIntensity: 0.45,
         });
 
+        const yarnPulseGroup = new THREE.Group();
+        yarnPulseGroup.name = 'yarn-flow-pulses';
+        group.add(yarnPulseGroup);
+        addHoverInfo(
+          yarnPulseGroup,
+          'Glowing yarn pulses — trace fiber flow along the PTFE guide during planner playback.',
+          { passthrough: true },
+        );
+
+        const pulseGeometry = new THREE.SphereGeometry(0.06, 16, 16);
+        const pulseCount = 4;
+        for (let index = 0; index < pulseCount; index += 1) {
+          const pulseMaterial = new THREE.MeshStandardMaterial({
+            color: 0xffd6a3,
+            emissive: 0xff8c2f,
+            emissiveIntensity: 0.18,
+            metalness: 0.18,
+            roughness: 0.32,
+            transparent: true,
+            opacity: 0.35,
+          });
+          const pulse = new THREE.Mesh(pulseGeometry, pulseMaterial);
+          pulse.castShadow = false;
+          pulse.receiveShadow = false;
+          yarnPulseGroup.add(pulse);
+          yarnPulseControllers.push({
+            mesh: pulse,
+            material: pulseMaterial,
+            curve: ptfeCurve,
+            offset: index / pulseCount,
+            activeSpeed: 0.18 + index * 0.015,
+            idleSpeed: 0.045 + index * 0.01,
+            restIntensity: 0.18,
+            activeIntensity: 0.85,
+            restOpacity: 0.25,
+            activeOpacity: 0.9,
+            currentIntensity: 0.18,
+            point: new THREE.Vector3(),
+          });
+        }
+
         const displayLabel = buildLabel('v1c – Crochet Robot', '#8ab4ff');
         displayLabel.position.set(0, 4.3, 0);
         group.add(displayLabel);
@@ -3313,6 +3355,51 @@
             delta,
           );
           controller.material.emissiveIntensity = controller.currentIntensity;
+        });
+        yarnPulseControllers.forEach((controller) => {
+          const {
+            mesh,
+            material,
+            curve,
+            activeSpeed = 0.18,
+            idleSpeed = 0.05,
+            offset = 0,
+            restIntensity = 0.2,
+            activeIntensity = 0.8,
+            restOpacity = 0.3,
+            activeOpacity = 0.9,
+            point,
+          } = controller;
+          if (!mesh || !material || !curve) {
+            return;
+          }
+
+          const speed = yarnExtrusionActive ? activeSpeed : idleSpeed;
+          const travel = (offset + elapsed * speed) % 1;
+          if (point) {
+            curve.getPointAt(travel, point);
+            mesh.position.copy(point);
+          } else {
+            const position = curve.getPointAt(travel);
+            mesh.position.copy(position);
+          }
+
+          const target = yarnExtrusionActive ? activeIntensity : restIntensity;
+          controller.currentIntensity = THREE.MathUtils.damp(
+            controller.currentIntensity ?? restIntensity,
+            target,
+            4.5,
+            delta,
+          );
+          material.emissiveIntensity = controller.currentIntensity;
+
+          const intensitySpan = Math.max(activeIntensity - restIntensity, 1e-5);
+          const normalized = THREE.MathUtils.clamp(
+            (controller.currentIntensity - restIntensity) / intensitySpan,
+            0,
+            1,
+          );
+          material.opacity = THREE.MathUtils.lerp(restOpacity, activeOpacity, normalized);
         });
         updatePatternPreview(elapsed);
 
