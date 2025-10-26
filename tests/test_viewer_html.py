@@ -96,3 +96,12 @@ def test_viewer_highlights_machine_profile_overlay() -> None:
     assert "Machine Profile" in viewer_html
     assert "Machine profile metadata unavailable" in viewer_html
     assert "Planner-aligned axis settings" in viewer_html
+
+
+def test_viewer_mentions_yarn_flow_pulses() -> None:
+    """Ensure the viewer documents the animated yarn pulse markers."""
+
+    viewer_html = _load_viewer_html()
+
+    assert "Glowing yarn pulses" in viewer_html
+    assert "const yarnPulseControllers" in viewer_html
