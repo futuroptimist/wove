@@ -81,7 +81,9 @@ to the gantry.
 
 Amber pulses now race through the translucent PTFE tube so you can watch yarn
 flow from the spool, past the hall-effect sensor, and into the crochet hook as
-the planner preview runs.
+the planner preview runs. A string of glowing beads now chases along the same
+guide whenever the preview feeds yarn so the flow direction stays obvious at a
+glance.
 
 The overlay now includes a Pattern Studio preview panel that cycles through the
 current `wove.pattern_cli --format planner` comment while a progress bar tracks
