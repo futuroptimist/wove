@@ -98,6 +98,11 @@ microstepping, steps-per-millimeter, and travel ranges whenever planner exports
 embed machine metadata via `--machine-profile`. Verify the browser preview is
 aligned with the configured gantry before rehearsing motion sequences.
 
+The new **Homing Guard** panel highlights whether the planner required a homed
+machine and echoes the captured `home_state`. Green and amber tones flag when a
+preview came from a verified homing cycle or needs attention so operators can
+double-check the gantry status before executing the motion sequence.
+
 - **v1c Crochet Robot** – anchors the mechanical platform showcased at the
   center of the plaza.
 - **Tension Lab** – stages the hall-effect calibration rig that feeds future

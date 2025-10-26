@@ -147,6 +147,43 @@
         margin-bottom: 0.3rem;
       }
 
+      #homing-panel {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(245, 245, 245, 0.15);
+      }
+
+      #homing-panel h2 {
+        margin: 0 0 0.35rem;
+        font-size: 0.95rem;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        color: #ffbfa6;
+      }
+
+      #homing-panel p {
+        margin: 0 0 0.45rem;
+        font-size: 0.86rem;
+        line-height: 1.4;
+        color: #ffe1d2;
+      }
+
+      #overlay [data-tone='warning'] {
+        color: #ffb4a2;
+      }
+
+      #overlay [data-tone='info'] {
+        color: #cdd6ff;
+      }
+
+      #overlay [data-tone='ready'] {
+        color: #9fffd7;
+      }
+
+      #overlay [data-tone='neutral'] {
+        color: #e5e7ff;
+      }
+
       #status {
         position: fixed;
         bottom: 1.2rem;
@@ -213,6 +250,15 @@
         <p id="machine-profile-status">Loading machine profile metadata…</p>
         <ul id="machine-profile-axes"></ul>
       </div>
+      <div id="homing-panel">
+        <h2>Homing Guard</h2>
+        <p id="homing-guard-status" data-tone="info">
+          Loading homing guard metadata…
+        </p>
+        <p id="homing-guard-home-state" data-tone="info">
+          Waiting for planner defaults…
+        </p>
+      </div>
     </div>
     <div id="status">Initializing viewer…</div>
     <script type="module">
@@ -236,6 +282,10 @@
       const patternProgressBarElement = document.getElementById('pattern-progress-bar');
       const machineProfileStatusElement = document.getElementById('machine-profile-status');
       const machineProfileAxesElement = document.getElementById('machine-profile-axes');
+      const homingGuardStatusElement = document.getElementById('homing-guard-status');
+      const homingGuardHomeStateElement = document.getElementById(
+        'homing-guard-home-state',
+      );
 
       const pointer = new THREE.Vector2();
       const raycaster = new THREE.Raycaster();
@@ -281,6 +331,9 @@
       let lastPatternProgress = -1;
       const machineProfileFallbackMessage =
         'Machine profile metadata unavailable. Export with --machine-profile to surface axis settings.';
+      const homingGuardFallbackMessage =
+        'Homing guard metadata unavailable. Export planner defaults.require_home and defaults.home_state.';
+      let plannerDefaults = null;
 
       const FRAME_HALF_WIDTH = 3.6;
       const FRAME_HALF_DEPTH = 2.6;
@@ -409,6 +462,76 @@
         return Number.isFinite(numeric) ? numeric : fallback;
       }
 
+      function setTone(element, tone) {
+        if (!element) {
+          return;
+        }
+
+        if (tone) {
+          element.dataset.tone = tone;
+        } else if (element.dataset && element.dataset.tone) {
+          delete element.dataset.tone;
+        }
+      }
+
+      function normalizeHomeState(value) {
+        if (typeof value !== 'string') {
+          return null;
+        }
+
+        const trimmed = value.trim();
+        return trimmed.length > 0 ? trimmed : null;
+      }
+
+      function updateHomingGuardPanel(defaults) {
+        if (!homingGuardStatusElement || !homingGuardHomeStateElement) {
+          return;
+        }
+
+        const guard = defaults && typeof defaults === 'object' ? defaults : null;
+        const requireHome =
+          typeof guard?.require_home === 'boolean' ? guard.require_home : null;
+        const homeState = normalizeHomeState(guard?.home_state);
+
+        if (requireHome === null && !homeState) {
+          homingGuardStatusElement.textContent = homingGuardFallbackMessage;
+          setTone(homingGuardStatusElement, 'neutral');
+          homingGuardHomeStateElement.textContent = '';
+          homingGuardHomeStateElement.style.display = 'none';
+          return;
+        }
+
+        homingGuardHomeStateElement.style.display = '';
+
+        if (requireHome === true) {
+          homingGuardStatusElement.textContent =
+            'Requires a homed machine before executing this planner preview.';
+          setTone(homingGuardStatusElement, 'warning');
+        } else if (requireHome === false) {
+          homingGuardStatusElement.textContent =
+            'Homing optional for this planner preview.';
+          setTone(homingGuardStatusElement, 'info');
+        } else {
+          homingGuardStatusElement.textContent = homingGuardFallbackMessage;
+          setTone(homingGuardStatusElement, 'neutral');
+        }
+
+        if (homeState) {
+          const normalized = homeState.toLowerCase();
+          let stateTone = 'info';
+          if (normalized === 'homed') {
+            stateTone = 'ready';
+          } else if (requireHome) {
+            stateTone = 'warning';
+          }
+          homingGuardHomeStateElement.textContent = `Recorded home state: ${homeState}`;
+          setTone(homingGuardHomeStateElement, stateTone);
+        } else {
+          homingGuardHomeStateElement.textContent = 'Recorded home state unavailable.';
+          setTone(homingGuardHomeStateElement, 'warning');
+        }
+      }
+
       function eventsFromPlannerPayload(payload) {
         if (!payload || typeof payload !== 'object') {
           return [];
@@ -427,6 +550,14 @@
       }
 
       function applyPatternPlannerEvents(events, options = {}) {
+        if (Object.prototype.hasOwnProperty.call(options, 'defaults')) {
+          plannerDefaults =
+            options.defaults && typeof options.defaults === 'object'
+              ? options.defaults
+              : null;
+        }
+        updateHomingGuardPanel(plannerDefaults);
+
         patternPlannerEvents = Array.isArray(events) ? [...events] : [];
 
         if (patternPreviewContainer) {
@@ -539,14 +670,17 @@
           if (!events.length) {
             throw new Error('Planner file contained no commands');
           }
-          applyPatternPlannerEvents(events);
+          const defaults = payload?.defaults ?? null;
+          applyPatternPlannerEvents(events, { defaults });
           updateMachineProfilePanel(payload?.machine_profile ?? null);
           if (statusElement) {
             updateStatus('Pattern Studio preview synced with base chain row.');
           }
         } catch (error) {
           console.warn('Unable to load planner preview', error);
-          applyPatternPlannerEvents(fallbackPatternPlannerEvents);
+          applyPatternPlannerEvents(fallbackPatternPlannerEvents, {
+            defaults: { require_home: false, home_state: 'unknown' },
+          });
           updateMachineProfilePanel(null);
           if (statusElement) {
             updateStatus('Using fallback planner preview.');

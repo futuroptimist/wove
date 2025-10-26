@@ -194,7 +194,9 @@ aborts with an explanatory error instead of generating G-code.
 Planner exports include the guard status: `defaults.require_home` indicates
 whether the translation required a homed machine, and `defaults.home_state`
 records the reported state so browser tooling can highlight when the plan was
-captured with a verified homing cycle.
+captured with a verified homing cycle. The Three.js viewer consumes these
+fields in its Homing Guard panel, coloring the overlay when a planner export
+originated from a verified homing cycle or when a fresh homing run is needed.
 
 ## Machine profiles and travel limits
 

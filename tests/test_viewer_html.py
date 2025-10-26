@@ -98,10 +98,13 @@ def test_viewer_highlights_machine_profile_overlay() -> None:
     assert "Planner-aligned axis settings" in viewer_html
 
 
-def test_viewer_mentions_yarn_flow_pulses() -> None:
-    """Ensure the viewer documents the animated yarn pulse markers."""
+def test_viewer_surfaces_homing_guard_panel() -> None:
+    """Ensure the viewer surfaces the homing guard metadata panel."""
 
     viewer_html = _load_viewer_html()
 
-    assert "Glowing yarn pulses" in viewer_html
-    assert "const yarnPulseControllers" in viewer_html
+    assert "Homing Guard" in viewer_html
+    homing_guard_copy = (
+        "Requires a homed machine before executing this planner preview."
+    )
+    assert homing_guard_copy in viewer_html
