@@ -21,7 +21,9 @@ def load_viewer_events() -> list[dict[str, object]]:
 
     asset_path = ROOT / "viewer" / "assets" / "base_chain_row.planner.json"
     payload = json.loads(asset_path.read_text(encoding="utf-8"))
-    commands = payload.get("commands", []) if isinstance(payload, dict) else []
+    commands: list[dict[str, object]] = []
+    if isinstance(payload, dict):
+        commands = payload.get("commands", [])
 
     events: list[dict[str, object]] = []
     for entry in commands:
