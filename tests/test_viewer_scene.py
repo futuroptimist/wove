@@ -62,9 +62,14 @@ def test_tension_lab_mentions_servo_adjuster() -> None:
     assert "Servo Tensioner Prototype" in html
 
 
-def test_viewer_includes_yarn_pulse_group() -> None:
-    """Ensure the yarn flow pulses are represented in the scene."""
+def test_viewer_mentions_selection_ring_glow() -> None:
+    """The viewer should document the pulsing roadmap selection ring."""
 
     html = VIEWER_HTML.read_text(encoding="utf-8")
-    assert "yarn-flow-pulses" in html
-    assert "Glowing yarn pulses" in html
+    selection_ring_copy = " ".join(
+        [
+            "Roadmap selection ring — pulses to mark the active product",
+            "cluster.",
+        ]
+    )
+    assert selection_ring_copy in html

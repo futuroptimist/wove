@@ -330,19 +330,41 @@
       const gridHelper = new THREE.GridHelper(32, 32, 0x2e3a68, 0x1d233c);
       scene.add(gridHelper);
 
-      const selectionRingGeometry = new THREE.RingGeometry(1.0, 1.3, 64);
-      const selectionRingMaterial = new THREE.MeshBasicMaterial({
-        color: 0x8ab4ff,
+      const selectionRingGeometry = new THREE.RingGeometry(1.0, 1.3, 96, 1);
+      const selectionRingMaterial = new THREE.MeshStandardMaterial({
+        color: 0x76faff,
+        emissive: 0x2ba7bf,
+        emissiveIntensity: 0.7,
+        metalness: 0.25,
+        roughness: 0.4,
         transparent: true,
-        opacity: 0.45,
+        opacity: 0.55,
         side: THREE.DoubleSide,
+        depthWrite: false,
       });
       const selectionRing = new THREE.Mesh(selectionRingGeometry, selectionRingMaterial);
       selectionRing.rotation.x = -Math.PI / 2;
       selectionRing.position.y = selectionRingHeight;
       selectionRing.visible = false;
       selectionRing.scale.setScalar(1.0);
+      selectionRing.renderOrder = 5;
       scene.add(selectionRing);
+      addHoverInfo(
+        selectionRing,
+        'Roadmap selection ring — pulses to mark the active product cluster.',
+        { passthrough: true },
+      );
+      safeAccessHighlights.push({
+        material: selectionRingMaterial,
+        baseIntensity: 0.7,
+        amplitude: 0.4,
+        speed: 2.1,
+        phaseOffset: 0.6,
+        baseOpacity: 0.55,
+        opacityAmplitude: 0.25,
+        visibleOnly: true,
+        object: selectionRing,
+      });
 
       function buildLabel(text, color = '#f5f5f5') {
         const canvas = document.createElement('canvas');
@@ -3324,10 +3346,18 @@
             phaseOffset = 0,
             baseOpacity,
             opacityAmplitude = 0,
+            visibleOnly = false,
+            object = null,
           } = highlight;
-          if (material && typeof material.emissiveIntensity === 'number') {
+          if (!material) {
+            return;
+          }
+          const isActive = !visibleOnly || (object ? object.visible : true);
+          const intensityBase = isActive ? baseIntensity : 0;
+          const intensityAmplitude = isActive ? amplitude : 0;
+          if (typeof material.emissiveIntensity === 'number') {
             const emissivePulse =
-              baseIntensity + Math.sin(elapsed * speed + phaseOffset) * amplitude;
+              intensityBase + Math.sin(elapsed * speed + phaseOffset) * intensityAmplitude;
             material.emissiveIntensity = Math.max(0, emissivePulse);
           }
           if (
@@ -3335,8 +3365,10 @@
             typeof material.opacity === 'number' &&
             material.transparent
           ) {
+            const opacityBase = isActive ? baseOpacity : 0;
+            const opacityAmp = isActive ? opacityAmplitude : 0;
             const opacityPulse =
-              baseOpacity + Math.sin(elapsed * speed + phaseOffset) * opacityAmplitude;
+              opacityBase + Math.sin(elapsed * speed + phaseOffset) * opacityAmp;
             material.opacity = THREE.MathUtils.clamp(opacityPulse, 0, 1);
           }
         });
@@ -3438,7 +3470,12 @@
           return;
         }
 
-        const cluster = findClusterFromObject(intersects[0].object);
+        const targetHit = intersects.find((entry) => findClusterFromObject(entry.object));
+        if (!targetHit) {
+          return;
+        }
+
+        const cluster = findClusterFromObject(targetHit.object);
         if (cluster) {
           selectCluster(cluster);
         }
