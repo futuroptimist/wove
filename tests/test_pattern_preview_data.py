@@ -84,3 +84,46 @@ def test_viewer_planner_preview_matches_translator() -> None:
             translated_entry["extrusion"],
             abs=1e-6,
         )
+
+
+def test_load_viewer_events_skips_non_dict_entries(monkeypatch) -> None:
+    """Ensure non-dictionary command entries are ignored when loading events."""
+
+    asset_path = ROOT / "viewer" / "assets" / "base_chain_row.planner.json"
+    original_read_text = Path.read_text
+
+    def patched_read_text(self, *args, **kwargs):  # type: ignore[no-untyped-def]
+        if self == asset_path:
+            return json.dumps(
+                {
+                    "commands": [
+                        9,
+                        {
+                            "comment": "valid entry",
+                            "command": "G1",
+                            "state": {
+                                "x_mm": 1.0,
+                                "y_mm": 2.0,
+                                "z_mm": 3.0,
+                                "extrusion_mm": 4.0,
+                            },
+                        },
+                    ]
+                }
+            )
+        return original_read_text(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", patched_read_text)
+
+    events = load_viewer_events()
+
+    assert events == [
+        {
+            "comment": "valid entry",
+            "command": "G1",
+            "x": 1.0,
+            "y": 2.0,
+            "z": 3.0,
+            "extrusion": 4.0,
+        }
+    ]
