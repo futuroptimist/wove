@@ -104,4 +104,7 @@ def test_viewer_surfaces_homing_guard_panel() -> None:
     viewer_html = _load_viewer_html()
 
     assert "Homing Guard" in viewer_html
-    assert "Requires a homed machine before executing this planner preview." in viewer_html
+    homing_guard_copy = (
+        "Requires a homed machine before executing this planner preview."
+    )
+    assert homing_guard_copy in viewer_html
