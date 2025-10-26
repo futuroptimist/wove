@@ -127,3 +127,19 @@ def test_load_viewer_events_skips_non_dict_entries(monkeypatch) -> None:
             "extrusion": 4.0,
         }
     ]
+
+
+def test_load_viewer_events_ignores_non_dict_payload(monkeypatch) -> None:
+    """A planner asset that is not a dictionary should return no events."""
+
+    asset_path = ROOT / "viewer" / "assets" / "base_chain_row.planner.json"
+    original_read_text = Path.read_text
+
+    def patched_read_text(self, *args, **kwargs):  # type: ignore[no-untyped-def]
+        if self == asset_path:
+            return json.dumps(["unexpected", "payload"])
+        return original_read_text(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", patched_read_text)
+
+    assert load_viewer_events() == []
