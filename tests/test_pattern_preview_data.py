@@ -10,7 +10,9 @@ import pytest
 from wove.pattern_cli import PatternTranslator
 
 ROOT = Path(__file__).resolve().parents[1]
-PATTERN_FIXTURE = ROOT / "tests" / "fixtures" / "patterns" / "base_chain_row.txt"
+PATTERN_FIXTURE = ROOT / Path(
+    "tests/fixtures/patterns/base_chain_row.txt"
+)
 PATTERN_TEXT = PATTERN_FIXTURE.read_text(encoding="utf-8")
 
 
