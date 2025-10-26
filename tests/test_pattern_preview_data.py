@@ -9,14 +9,34 @@ import pytest
 
 from wove.pattern_cli import PatternTranslator
 
-PATTERN_TEXT = "CHAIN 4\nTURN 6\nSINGLE 3\n"
+ROOT = Path(__file__).resolve().parents[1]
+PATTERN_FIXTURE = ROOT / "tests" / "fixtures" / "patterns" / "base_chain_row.txt"
+PATTERN_TEXT = PATTERN_FIXTURE.read_text(encoding="utf-8")
 
 
 def load_viewer_events() -> list[dict[str, object]]:
-    root = Path(__file__).resolve().parents[1]
-    data_path = root / "viewer" / "data" / "pattern_preview.json"
-    with data_path.open("r", encoding="utf-8") as handle:
-        return json.load(handle)
+    """Load the planner commands consumed by the Three.js viewer."""
+
+    asset_path = ROOT / "viewer" / "assets" / "base_chain_row.planner.json"
+    payload = json.loads(asset_path.read_text(encoding="utf-8"))
+    commands = payload.get("commands", []) if isinstance(payload, dict) else []
+
+    events: list[dict[str, object]] = []
+    for entry in commands:
+        if not isinstance(entry, dict):
+            continue
+        state = entry.get("state") or {}
+        events.append(
+            {
+                "comment": entry.get("comment"),
+                "command": entry.get("command"),
+                "x": state.get("x_mm"),
+                "y": state.get("y_mm"),
+                "z": state.get("z_mm"),
+                "extrusion": state.get("extrusion_mm"),
+            }
+        )
+    return events
 
 
 def normalize_event(event) -> dict[str, object]:
