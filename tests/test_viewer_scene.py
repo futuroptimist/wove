@@ -60,3 +60,10 @@ def test_tension_lab_mentions_servo_adjuster() -> None:
     html = VIEWER_HTML.read_text(encoding="utf-8")
     assert "Micro-servo tension adjuster" in html
     assert "Servo Tensioner Prototype" in html
+
+
+def test_viewer_mentions_selection_ring_glow() -> None:
+    """The viewer should document the pulsing roadmap selection ring."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+    assert "Roadmap selection ring — pulses to mark the active product cluster." in html

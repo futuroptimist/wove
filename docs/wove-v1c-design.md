@@ -182,7 +182,9 @@ hardware.
   path. Pedestals in the same scene outline adjacent
   roadmap work cells (calibration lab, material prep pod, and the v1k research
   rig) so contributors understand how the crochet platform integrates with the
-  broader automation journey. The material prep pod pedestal now highlights the
+  broader automation journey. A pulsing selection ring sweeps around the active
+  cluster so teams can track the focus from above. The material prep pod
+  pedestal now highlights the
   cone tree, staging bins, inspection scale, and traceability cards that feed
   yarn into the crochet cell. The Pattern Studio hologram loops a base chain
   row exported from `wove.pattern_cli --format planner`, previewing how planner
