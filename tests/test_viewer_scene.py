@@ -76,7 +76,7 @@ def test_viewer_mentions_selection_ring_glow() -> None:
 
 
 def test_viewer_mentions_selection_sweep() -> None:
-    """The viewer should mention the rotating sweep that tracks the active cluster."""
+    """Ensure the viewer copy mentions the rotating cluster sweep."""
 
     html = VIEWER_HTML.read_text(encoding="utf-8")
     selection_sweep_copy = " ".join(
