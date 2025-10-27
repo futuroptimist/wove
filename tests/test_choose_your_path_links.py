@@ -10,6 +10,7 @@ def _link(label: str, target: str) -> str:
 
     return f"[{label}]({target})"
 
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 README = PROJECT_ROOT / "README.md"
 DOCS_INDEX = PROJECT_ROOT / "docs" / "index.md"
@@ -22,7 +23,10 @@ def test_readme_tracks_link_to_supporting_material() -> None:
     expected_links = [
         _link("Learning resources", "docs/learning-resources.md"),
         _link("crochet tools guide", "docs/crochet-tools.md"),
-        _link("Yarn Handling benchmarks", "docs/wove-v1c-design.md#yarn-handling"),
+        _link(
+            "Yarn Handling benchmarks",
+            "docs/wove-v1c-design.md#yarn-handling",
+        ),
         _link(
             "base chain row recipe",
             "docs/learn/pattern-recipes/base-chain-row.md",
@@ -41,7 +45,10 @@ def test_docs_index_tracks_link_to_supporting_material() -> None:
     expected_links = [
         "[Learning resources](learning-resources.md)",
         "[Crochet tools](crochet-tools.md)",
-        "{ref}`Yarn Handling benchmarks <yarn-handling>`",
+        (
+            "{ref}`Yarn Handling benchmarks "
+            "<yarn-handling>`"
+        ),
         "[base chain row recipe](learn/pattern-recipes/base-chain-row.md)",
     ]
 
