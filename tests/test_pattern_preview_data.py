@@ -90,6 +90,7 @@ def test_load_viewer_events_skips_non_dict_entries(monkeypatch) -> None:
     """Ensure non-dictionary command entries are ignored when loading events."""
 
     asset_path = ROOT / "viewer" / "assets" / "base_chain_row.planner.json"
+
     def patched_read_text(self, *args, **kwargs):  # type: ignore[no-untyped-def]
         assert self == asset_path
         return json.dumps(
@@ -130,6 +131,7 @@ def test_load_viewer_events_ignores_non_dict_payload(monkeypatch) -> None:
     """A planner asset that is not a dictionary should return no events."""
 
     asset_path = ROOT / "viewer" / "assets" / "base_chain_row.planner.json"
+
     def patched_read_text(self, *args, **kwargs):  # type: ignore[no-untyped-def]
         assert self == asset_path
         return json.dumps(["unexpected", "payload"])
