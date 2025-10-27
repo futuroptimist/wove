@@ -45,10 +45,7 @@ def test_docs_index_tracks_link_to_supporting_material() -> None:
     expected_links = [
         "[Learning resources](learning-resources.md)",
         "[Crochet tools](crochet-tools.md)",
-        (
-            "{ref}`Yarn Handling benchmarks "
-            "<yarn-handling>`"
-        ),
+        ("{ref}`Yarn Handling benchmarks " "<yarn-handling>`"),
         "[base chain row recipe](learn/pattern-recipes/base-chain-row.md)",
     ]
 
