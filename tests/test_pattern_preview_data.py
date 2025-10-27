@@ -91,9 +91,7 @@ def test_load_viewer_events_skips_non_dict_entries(monkeypatch) -> None:
 
     asset_path = ROOT / "viewer" / "assets" / "base_chain_row.planner.json"
 
-    def patched_read_text(
-        self: Path, *args: object, **kwargs: object
-    ) -> str:
+    def patched_read_text(self: Path, *args: object, **kwargs: object) -> str:
         assert self == asset_path
         return json.dumps(
             {
@@ -134,9 +132,7 @@ def test_load_viewer_events_ignores_non_dict_payload(monkeypatch) -> None:
 
     asset_path = ROOT / "viewer" / "assets" / "base_chain_row.planner.json"
 
-    def patched_read_text(
-        self: Path, *args: object, **kwargs: object
-    ) -> str:
+    def patched_read_text(self: Path, *args: object, **kwargs: object) -> str:
         assert self == asset_path
         return json.dumps(["unexpected", "payload"])
 
