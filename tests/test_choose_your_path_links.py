@@ -4,6 +4,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
+
+def _link(label: str, target: str) -> str:
+    """Render a Markdown link for regression comparisons."""
+
+    return f"[{label}]({target})"
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 README = PROJECT_ROOT / "README.md"
 DOCS_INDEX = PROJECT_ROOT / "docs" / "index.md"
@@ -14,10 +20,13 @@ def test_readme_tracks_link_to_supporting_material() -> None:
 
     content = README.read_text(encoding="utf-8")
     expected_links = [
-        "[Learning resources](docs/learning-resources.md)",
-        "[crochet tools guide](docs/crochet-tools.md)",
-        ("[Yarn Handling benchmarks]" "(docs/wove-v1c-design.md#yarn-handling)"),
-        ("[base chain row recipe]" "(docs/learn/pattern-recipes/base-chain-row.md)"),
+        _link("Learning resources", "docs/learning-resources.md"),
+        _link("crochet tools guide", "docs/crochet-tools.md"),
+        _link("Yarn Handling benchmarks", "docs/wove-v1c-design.md#yarn-handling"),
+        _link(
+            "base chain row recipe",
+            "docs/learn/pattern-recipes/base-chain-row.md",
+        ),
     ]
 
     for link in expected_links:
