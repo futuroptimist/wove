@@ -16,8 +16,8 @@ advance.
   [mechanical crochet roadmap](wove-v1c-design.md), and reference the [robotic knitting machine
   specification](robotic-knitting-machine.md). Combine these resources with the Hand-Craft Track to
   validate yarn handling and safety limits on real hardware.
-  - Review the [Yarn Handling benchmarks](wove-v1c-design.md#yarn-handling) for sensor calibration
-    steps and tension profiles before touching hardware.
+  - Review the {ref}`Yarn Handling benchmarks <yarn-handling>` for sensor calibration steps and
+    tension profiles before touching hardware.
   - Practice with the [base chain row recipe](learn/pattern-recipes/base-chain-row.md) to connect CLI
     exports, viewer previews, and automation labs.
 
