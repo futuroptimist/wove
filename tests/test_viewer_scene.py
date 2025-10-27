@@ -73,3 +73,16 @@ def test_viewer_mentions_selection_ring_glow() -> None:
         ]
     )
     assert selection_ring_copy in html
+
+
+def test_viewer_mentions_selection_sweep() -> None:
+    """The viewer should mention the rotating sweep that tracks the active cluster."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+    selection_sweep_copy = " ".join(
+        [
+            "Roadmap sweep — rotates around the selected cluster",
+            "for quick focus.",
+        ]
+    )
+    assert selection_sweep_copy in html

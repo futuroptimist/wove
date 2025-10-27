@@ -184,7 +184,8 @@ hardware.
   roadmap work cells (calibration lab, material prep pod, and the v1k research
   rig) so contributors understand how the crochet platform integrates with the
   broader automation journey. A pulsing selection ring sweeps around the active
-  cluster so teams can track the focus from above. The material prep pod
+  cluster so teams can track the focus from above, while a rotating teal arc
+  orbits the ring to reinforce which milestone is active. The material prep pod
   pedestal now highlights the
   cone tree, staging bins, inspection scale, and traceability cards that feed
   yarn into the crochet cell. The Pattern Studio hologram loops a base chain
