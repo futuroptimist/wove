@@ -68,8 +68,9 @@ enclosure described in the mechanical roadmap—hover the door to read the
 maintenance callout. Snap-on belt guards now clip over the CoreXY loops so stray
 yarn or tools stay clear while operators inspect motion from above. Click a
 product pedestal to spotlight its roadmap milestone and watch the glowing ring
-pulse as it tracks which cluster is selected. The plaza highlights these
-milestones today:
+pulse as it tracks which cluster is selected. A teal sweep now orbits the
+selected pedestal so the active milestone stays obvious from the plaza
+overview. The plaza highlights these milestones today:
 
 Pulsing magnetic anchor pucks now mark the removable workpiece bed so crews can
 practice swapping swatch plates into position before the gantry starts tracing
@@ -96,6 +97,10 @@ planner animation without leaving the scene. The viewer pulls its sample from
 the CLI fixtures, so the hologram stays aligned with the documented base chain
 row recipe. Automated tests compare that asset against `PatternTranslator`
 output to flag drift whenever the CLI evolves.
+
+Live coordinates now accompany each planner step so technicians can confirm the
+active `X`, `Y`, `Z`, and yarn-feed positions directly from the overlay while
+the hologram advances.
 
 The overlay also surfaces a **Machine Profile** panel that lists axis
 microstepping, steps-per-millimeter, and travel ranges whenever planner exports

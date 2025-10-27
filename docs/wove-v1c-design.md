@@ -186,7 +186,8 @@ hardware.
   roadmap work cells (calibration lab, material prep pod, and the v1k research
   rig) so contributors understand how the crochet platform integrates with the
   broader automation journey. A pulsing selection ring sweeps around the active
-  cluster so teams can track the focus from above. The material prep pod
+  cluster so teams can track the focus from above, while a rotating teal arc
+  orbits the ring to reinforce which milestone is active. The material prep pod
   pedestal now highlights the
   cone tree, staging bins, inspection scale, and traceability cards that feed
   yarn into the crochet cell. The Pattern Studio hologram loops a base chain
@@ -249,7 +250,9 @@ hardware.
   before committing motion to hardware. The Homing Guard overlay highlights the
   `require_home` setting and recorded `home_state`, switching to green when the
   export captured a verified homing cycle and calling attention to plans that
-  need a fresh homing run.
+  need a fresh homing run. The same panel now streams live `X`, `Y`, `Z`, and
+  yarn-feed coordinates so contributors can note the precise motion snapshot as
+  the hologram advances.
 
 ## Bill of Materials (Initial Release)
 | Subsystem | Component | Qty | Notes |
