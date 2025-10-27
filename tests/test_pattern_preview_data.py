@@ -9,14 +9,36 @@ import pytest
 
 from wove.pattern_cli import PatternTranslator
 
-PATTERN_TEXT = "CHAIN 4\nTURN 6\nSINGLE 3\n"
+ROOT = Path(__file__).resolve().parents[1]
+PATTERN_FIXTURE = ROOT / Path("tests/fixtures/patterns/base_chain_row.txt")
+PATTERN_TEXT = PATTERN_FIXTURE.read_text(encoding="utf-8")
 
 
 def load_viewer_events() -> list[dict[str, object]]:
-    root = Path(__file__).resolve().parents[1]
-    data_path = root / "viewer" / "data" / "pattern_preview.json"
-    with data_path.open("r", encoding="utf-8") as handle:
-        return json.load(handle)
+    """Load the planner commands consumed by the Three.js viewer."""
+
+    asset_path = ROOT / "viewer" / "assets" / "base_chain_row.planner.json"
+    payload = json.loads(asset_path.read_text(encoding="utf-8"))
+    commands: list[dict[str, object]] = []
+    if isinstance(payload, dict):
+        commands = payload.get("commands", [])
+
+    events: list[dict[str, object]] = []
+    for entry in commands:
+        if not isinstance(entry, dict):
+            continue
+        state = entry.get("state") or {}
+        events.append(
+            {
+                "comment": entry.get("comment"),
+                "command": entry.get("command"),
+                "x": state.get("x_mm"),
+                "y": state.get("y_mm"),
+                "z": state.get("z_mm"),
+                "extrusion": state.get("extrusion_mm"),
+            }
+        )
+    return events
 
 
 def normalize_event(event) -> dict[str, object]:
@@ -62,3 +84,58 @@ def test_viewer_planner_preview_matches_translator() -> None:
             translated_entry["extrusion"],
             abs=1e-6,
         )
+
+
+def test_load_viewer_events_skips_non_dict_entries(monkeypatch) -> None:
+    """Ignore non-dictionary command entries when loading events."""
+
+    asset_path = ROOT / "viewer" / "assets" / "base_chain_row.planner.json"
+
+    def patched_read_text(self: Path, *args: object, **kwargs: object) -> str:
+        assert self == asset_path
+        return json.dumps(
+            {
+                "commands": [
+                    9,
+                    {
+                        "comment": "valid entry",
+                        "command": "G1",
+                        "state": {
+                            "x_mm": 1.0,
+                            "y_mm": 2.0,
+                            "z_mm": 3.0,
+                            "extrusion_mm": 4.0,
+                        },
+                    },
+                ]
+            }
+        )
+
+    monkeypatch.setattr(Path, "read_text", patched_read_text)
+
+    events = load_viewer_events()
+
+    assert events == [
+        {
+            "comment": "valid entry",
+            "command": "G1",
+            "x": 1.0,
+            "y": 2.0,
+            "z": 3.0,
+            "extrusion": 4.0,
+        }
+    ]
+
+
+def test_load_viewer_events_ignores_non_dict_payload(monkeypatch) -> None:
+    """Return no events when the planner asset payload is not a dictionary."""
+
+    asset_path = ROOT / "viewer" / "assets" / "base_chain_row.planner.json"
+
+    def patched_read_text(self: Path, *args: object, **kwargs: object) -> str:
+        assert self == asset_path
+        return json.dumps(["unexpected", "payload"])
+
+    monkeypatch.setattr(Path, "read_text", patched_read_text)
+
+    assert load_viewer_events() == []

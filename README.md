@@ -91,7 +91,8 @@ the hologram run. Operators can cross-reference the displayed step with the
 planner animation without leaving the scene. The viewer pulls its sample from
 `viewer/assets/base_chain_row.planner.json`, the same planner export produced by
 the CLI fixtures, so the hologram stays aligned with the documented base chain
-row recipe.
+row recipe. Automated tests compare that asset against `PatternTranslator`
+output to flag drift whenever the CLI evolves.
 
 The overlay also surfaces a **Machine Profile** panel that lists axis
 microstepping, steps-per-millimeter, and travel ranges whenever planner exports
