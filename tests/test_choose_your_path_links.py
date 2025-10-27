@@ -16,14 +16,8 @@ def test_readme_tracks_link_to_supporting_material() -> None:
     expected_links = [
         "[Learning resources](docs/learning-resources.md)",
         "[crochet tools guide](docs/crochet-tools.md)",
-        (
-            "[Yarn Handling benchmarks]"
-            "(docs/wove-v1c-design.md#yarn-handling)"
-        ),
-        (
-            "[base chain row recipe]"
-            "(docs/learn/pattern-recipes/base-chain-row.md)"
-        ),
+        ("[Yarn Handling benchmarks]" "(docs/wove-v1c-design.md#yarn-handling)"),
+        ("[base chain row recipe]" "(docs/learn/pattern-recipes/base-chain-row.md)"),
     ]
 
     for link in expected_links:
