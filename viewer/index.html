@@ -322,6 +322,7 @@
       Object.freeze(fallbackPatternPlannerEvents);
       const yarnFlowControllers = [];
       const yarnPulseControllers = [];
+      const spoolControllers = [];
       let yarnExtrusionActive = false;
       let patternPlannerEvents = [];
       let patternPreviewGroup = null;
@@ -2046,6 +2047,13 @@
         spool.rotation.z = Math.PI / 2;
         spool.castShadow = true;
         group.add(spool);
+        spoolControllers.push({
+          mesh: spool,
+          axis: 'x',
+          idleSpeed: 0.22,
+          activeSpeed: 1.15,
+          linkedToExtrusion: true,
+        });
         const spoolGuide = new THREE.Object3D();
         spoolGuide.position.set(0, 0.6, 0);
         spool.add(spoolGuide);
@@ -2606,6 +2614,13 @@
         spool.rotation.z = Math.PI / 2;
         spool.castShadow = true;
         spoolRig.add(spool);
+        spoolControllers.push({
+          mesh: spool,
+          axis: 'x',
+          idleSpeed: 0.35,
+          activeSpeed: 0.65,
+          linkedToExtrusion: false,
+        });
         addHoverInfo(
           spool,
           'Tension spool rig — calibrates hall-effect sensors before they reach production cells.',
@@ -3212,6 +3227,13 @@
         spool.position.set(0.98, 0.62, 0.52);
         spool.castShadow = true;
         group.add(spool);
+        spoolControllers.push({
+          mesh: spool,
+          axis: 'x',
+          idleSpeed: 0.28,
+          activeSpeed: 0.45,
+          linkedToExtrusion: false,
+        });
         addHoverInfo(
           spool,
           'Yarn staging spindle — feeds prototype fibers into the knitting carriage.',
@@ -3493,6 +3515,32 @@
             1,
           );
           material.opacity = THREE.MathUtils.lerp(restOpacity, activeOpacity, normalized);
+        });
+        spoolControllers.forEach((controller) => {
+          const {
+            mesh,
+            axis = 'x',
+            idleSpeed = 0,
+            activeSpeed = idleSpeed,
+            linkedToExtrusion = false,
+            direction = 1,
+          } = controller;
+          if (!mesh) {
+            return;
+          }
+          const isActive = linkedToExtrusion ? yarnExtrusionActive : true;
+          const speed = isActive ? activeSpeed : idleSpeed;
+          if (speed === 0) {
+            return;
+          }
+          const rotationDelta = delta * speed * direction;
+          if (axis === 'y') {
+            mesh.rotation.y += rotationDelta;
+          } else if (axis === 'z') {
+            mesh.rotation.z += rotationDelta;
+          } else {
+            mesh.rotation.x += rotationDelta;
+          }
         });
         updatePatternPreview(elapsed);
 
