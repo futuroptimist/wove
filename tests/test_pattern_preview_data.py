@@ -87,11 +87,13 @@ def test_viewer_planner_preview_matches_translator() -> None:
 
 
 def test_load_viewer_events_skips_non_dict_entries(monkeypatch) -> None:
-    """Ensure non-dictionary command entries are ignored when loading events."""
+    """Ignore non-dictionary command entries when loading events."""
 
     asset_path = ROOT / "viewer" / "assets" / "base_chain_row.planner.json"
 
-    def patched_read_text(self, *args, **kwargs):  # type: ignore[no-untyped-def]
+    def patched_read_text(
+        self: Path, *args: object, **kwargs: object
+    ) -> str:
         assert self == asset_path
         return json.dumps(
             {
@@ -128,11 +130,13 @@ def test_load_viewer_events_skips_non_dict_entries(monkeypatch) -> None:
 
 
 def test_load_viewer_events_ignores_non_dict_payload(monkeypatch) -> None:
-    """A planner asset that is not a dictionary should return no events."""
+    """Return no events when the planner asset payload is not a dictionary."""
 
     asset_path = ROOT / "viewer" / "assets" / "base_chain_row.planner.json"
 
-    def patched_read_text(self, *args, **kwargs):  # type: ignore[no-untyped-def]
+    def patched_read_text(
+        self: Path, *args: object, **kwargs: object
+    ) -> str:
         assert self == asset_path
         return json.dumps(["unexpected", "payload"])
 
