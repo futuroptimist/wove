@@ -29,8 +29,9 @@ def test_readme_tracks_link_to_supporting_material() -> None:
         ),
     ]
 
-    for link in expected_links:
-        assert link in content
+    missing = [link for link in expected_links if link not in content]
+
+    assert not missing, f"README.md is missing links: {missing!r}"
 
 
 def test_docs_index_tracks_link_to_supporting_material() -> None:
@@ -44,5 +45,6 @@ def test_docs_index_tracks_link_to_supporting_material() -> None:
         "[base chain row recipe](learn/pattern-recipes/base-chain-row.md)",
     ]
 
-    for link in expected_links:
-        assert link in content
+    missing = [link for link in expected_links if link not in content]
+
+    assert not missing, f"docs/index.md is missing links: {missing!r}"
