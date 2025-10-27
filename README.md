@@ -128,12 +128,24 @@ then cross over as projects grow.
   [crochet primers](docs/crochet-basics.md), and
   [gauge calculators](docs/gauge.md). These guides build the vocabulary and
   measurement skills needed before automating motion.
+  - Explore the
+    [Learning resources](docs/learning-resources.md) primer for fiber science
+    refreshers and curated study material.
+  - Pair the stitch walkthroughs with the
+    [crochet tools guide](docs/crochet-tools.md) to connect hook, yarn, and
+    tension decisions with classroom labs.
 - **Automation Track** – Explore the mechanical and software stack with the
   [pattern translation CLI](docs/pattern-cli.md),
   [mechanical design roadmap](docs/wove-v1c-design.md), and
   [robotic knitting specification](docs/robotic-knitting-machine.md). Pair these
   resources with the Hand-Craft Track to validate yarn handling, gauge, and
   safety considerations as the gantry evolves.
+  - Review the
+    [Yarn Handling benchmarks](docs/wove-v1c-design.md#yarn-handling) for hall
+    sensor calibration guidance and tension profiles.
+  - Run the
+    [base chain row recipe](docs/learn/pattern-recipes/base-chain-row.md) to tie
+    planner exports, viewer previews, and automation labs together.
 
 ## Getting Started
 

@@ -50,7 +50,9 @@
   Hand-Craft and Automation tracks, referencing prerequisites housed in `docs/learn/` and
   `docs/robotics/`.
 - Add cross-links within each track pointing to material science primers, sensor calibration steps,
-  and recommended next modules to smooth transitions between manual and robotic studies.
+  and recommended next modules to smooth transitions between manual and robotic studies. The README
+  and docs index now highlight learning resources, crochet tooling, yarn-handling benchmarks, and
+  planner recipes—keep those links refreshed as new modules land.
 
 ## Testing Roadmap
 - Maintain golden-motion tests in `tests/pattern_cli/test_golden_outputs.py`

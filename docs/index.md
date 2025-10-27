@@ -8,10 +8,18 @@ advance.
 - **Hand-Craft Track** – Build confidence with [knitting fundamentals](knitting-basics.md),
   [crochet techniques](crochet-basics.md), and [gauge exploration](gauge.md). Use these guides to
   practice stitches, measure fabric, and prepare swatches before introducing automation.
+  - Visit the [Learning resources](learning-resources.md) primer for fiber science refreshers and
+    curated study material.
+  - Pair the tutorials with [Crochet tools](crochet-tools.md) to connect hook, yarn, and tension
+    choices with hands-on labs.
 - **Automation Track** – Dive into motion planning with the [pattern CLI](pattern-cli.md), study the
   [mechanical crochet roadmap](wove-v1c-design.md), and reference the [robotic knitting machine
   specification](robotic-knitting-machine.md). Combine these resources with the Hand-Craft Track to
   validate yarn handling and safety limits on real hardware.
+  - Review the [Yarn Handling benchmarks](wove-v1c-design.md#yarn-handling) for sensor calibration
+    steps and tension profiles before touching hardware.
+  - Practice with the [base chain row recipe](learn/pattern-recipes/base-chain-row.md) to connect CLI
+    exports, viewer previews, and automation labs.
 
 ```{toctree}
 :maxdepth: 2
