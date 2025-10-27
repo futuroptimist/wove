@@ -94,6 +94,10 @@ the CLI fixtures, so the hologram stays aligned with the documented base chain
 row recipe. Automated tests compare that asset against `PatternTranslator`
 output to flag drift whenever the CLI evolves.
 
+Live coordinates now accompany each planner step so technicians can confirm the
+active `X`, `Y`, `Z`, and yarn-feed positions directly from the overlay while
+the hologram advances.
+
 The overlay also surfaces a **Machine Profile** panel that lists axis
 microstepping, steps-per-millimeter, and travel ranges whenever planner exports
 embed machine metadata via `--machine-profile`. Verify the browser preview is

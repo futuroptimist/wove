@@ -108,3 +108,12 @@ def test_viewer_surfaces_homing_guard_panel() -> None:
         "Requires a homed machine before executing this planner preview."
     )
     assert homing_guard_copy in viewer_html
+
+
+def test_viewer_patterns_surface_position_overlay() -> None:
+    """Ensure the Pattern Studio panel advertises live coordinate updates."""
+
+    viewer_html = _load_viewer_html()
+
+    assert 'id="pattern-position"' in viewer_html
+    assert "Position: Loading planner coordinates" in viewer_html

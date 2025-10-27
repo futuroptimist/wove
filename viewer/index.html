@@ -96,6 +96,14 @@
         color: #ffe7c9;
       }
 
+      #pattern-position {
+        margin: 0.6rem 0 0;
+        font-size: 0.86rem;
+        line-height: 1.4;
+        color: #ffe7c9;
+        letter-spacing: 0.01em;
+      }
+
       #pattern-progress {
         position: relative;
         height: 0.45rem;
@@ -244,6 +252,9 @@
         <div id="pattern-progress">
           <div id="pattern-progress-bar"></div>
         </div>
+        <p id="pattern-position" data-tone="info">
+          Position: Loading planner coordinates…
+        </p>
       </div>
       <div id="machine-panel">
         <h2>Machine Profile</h2>
@@ -280,6 +291,7 @@
       const patternStepElement = document.getElementById('pattern-step');
       const patternStepIndexElement = document.getElementById('pattern-step-index');
       const patternProgressBarElement = document.getElementById('pattern-progress-bar');
+      const patternPositionElement = document.getElementById('pattern-position');
       const machineProfileStatusElement = document.getElementById('machine-profile-status');
       const machineProfileAxesElement = document.getElementById('machine-profile-axes');
       const homingGuardStatusElement = document.getElementById('homing-guard-status');
@@ -585,6 +597,10 @@
           if (patternProgressBarElement) {
             patternProgressBarElement.style.width = '0%';
           }
+          if (patternPositionElement) {
+            patternPositionElement.textContent = 'Position: Awaiting planner coordinates…';
+            setTone(patternPositionElement, 'neutral');
+          }
         }
       }
 
@@ -850,6 +866,11 @@
           if (patternProgressBarElement) {
             patternProgressBarElement.style.width = '0%';
           }
+          if (patternPositionElement) {
+            patternPositionElement.textContent =
+              'Position: Awaiting planner coordinates…';
+            setTone(patternPositionElement, 'neutral');
+          }
           return;
         }
 
@@ -868,6 +889,18 @@
           }
           yarnExtrusionActive =
             typeof comment === 'string' && comment.toLowerCase().includes('feed yarn');
+          if (patternPositionElement) {
+            const formatCoordinate = (value) =>
+              Number.isFinite(value) ? value.toFixed(1) : '—';
+            const positionSegments = [
+              `X ${formatCoordinate(event.x)} mm`,
+              `Y ${formatCoordinate(event.y)} mm`,
+              `Z ${formatCoordinate(event.z)} mm`,
+              `E ${formatCoordinate(event.extrusion)} mm`,
+            ];
+            patternPositionElement.textContent = `Position: ${positionSegments.join(' · ')}`;
+            setTone(patternPositionElement, yarnExtrusionActive ? 'ready' : 'info');
+          }
           lastPatternStepIndex = clampedIndex;
         }
 
