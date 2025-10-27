@@ -86,6 +86,9 @@ the planner preview runs. A string of glowing beads now chases along the same
 guide whenever the preview feeds yarn so the flow direction stays obvious at a
 glance.
 
+The source spool now spins in sync with yarn feed events so the hologram shows
+fiber unwinding from the supply while the PTFE tube glows.
+
 The overlay now includes a Pattern Studio preview panel that cycles through the
 current `wove.pattern_cli --format planner` comment while a progress bar tracks
 the hologram run. Operators can cross-reference the displayed step with the
