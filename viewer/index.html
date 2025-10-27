@@ -3539,7 +3539,7 @@
           } else if (axis === 'z') {
             mesh.rotation.z += rotationDelta;
           } else {
-            mesh.rotation.x += rotationDelta;
+            mesh.rotateX(rotationDelta);
           }
         });
         updatePatternPreview(elapsed);
