@@ -1,5 +1,6 @@
 """Tests for the Three.js assembly viewer scene."""
 
+import re
 from pathlib import Path
 
 VIEWER_HTML = Path(__file__).resolve().parents[1] / "viewer" / "index.html"
@@ -86,3 +87,19 @@ def test_viewer_mentions_selection_sweep() -> None:
         ]
     )
     assert selection_sweep_copy in html
+
+
+def test_source_spool_rest_state_when_idle() -> None:
+    """The main yarn supply spool should stop rotating when extrusion pauses."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+    position = html.find("linkedToExtrusion: true")
+    assert position != -1
+
+    block_start = html.rfind("spoolControllers.push({", 0, position)
+    assert block_start != -1
+    block_end = html.find("});", position)
+    assert block_end != -1
+
+    config_block = html[block_start:block_end]
+    assert re.search(r"idleSpeed:\s*0(?:\.0+)?", config_block)

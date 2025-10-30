@@ -2124,9 +2124,11 @@
         spoolControllers.push({
           mesh: spool,
           axis: 'x',
-          idleSpeed: 0.22,
+          idleSpeed: 0,
           activeSpeed: 1.15,
           linkedToExtrusion: true,
+          damping: 6.5,
+          currentSpeed: 0,
         });
         const spoolGuide = new THREE.Object3D();
         spoolGuide.position.set(0, 0.6, 0);
@@ -3605,16 +3607,24 @@
             activeSpeed = idleSpeed,
             linkedToExtrusion = false,
             direction = 1,
+            damping = 6.0,
           } = controller;
           if (!mesh) {
             return;
           }
           const isActive = linkedToExtrusion ? yarnExtrusionActive : true;
-          const speed = isActive ? activeSpeed : idleSpeed;
-          if (speed === 0) {
+          const targetSpeed = isActive ? activeSpeed : idleSpeed;
+          const currentSpeed = THREE.MathUtils.damp(
+            controller.currentSpeed ?? 0,
+            targetSpeed,
+            damping,
+            delta,
+          );
+          controller.currentSpeed = currentSpeed;
+          if (currentSpeed === 0) {
             return;
           }
-          const rotationDelta = delta * speed * direction;
+          const rotationDelta = delta * currentSpeed * direction;
           if (axis === 'y') {
             mesh.rotation.y += rotationDelta;
           } else if (axis === 'z') {

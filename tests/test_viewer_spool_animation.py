@@ -16,4 +16,4 @@ def test_viewer_animates_spools_during_yarn_feed() -> None:
     assert "const spoolControllers" in html
     assert "spoolControllers.push" in html
     assert "linkedToExtrusion" in html
-    assert "rotationDelta = delta * speed" in html
+    assert "rotationDelta = delta * currentSpeed" in html

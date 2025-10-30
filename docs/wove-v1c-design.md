@@ -50,7 +50,8 @@ before printing hardware. Animated amber pulses now chase through the tube to il
 direction while the planner preview runs, and a trio of glowing beads follows the same path during
 yarn feed events so the motion reads clearly from the plaza overview.
 The supply spool now spins in the hologram whenever yarn is extruding so teams can watch fiber
-unwind from the source while the tube pulses.
+unwind from the source while the tube pulses, then glides to a stop when feed events pause so idle
+segments stay calm.
 
 #### Tension Profiles and Bench Tests
 
