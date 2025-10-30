@@ -84,7 +84,8 @@ Amber pulses now race through the translucent PTFE tube so you can watch yarn
 flow from the spool, past the hall-effect sensor, and into the crochet hook as
 the planner preview runs. A string of glowing beads now chases along the same
 guide whenever the preview feeds yarn so the flow direction stays obvious at a
-glance.
+glance, then fades when the planner idles so the queue only lights up during
+active feed moves.
 
 The source spool now spins in sync with yarn feed events so the hologram shows
 fiber unwinding from the supply while the PTFE tube glows.

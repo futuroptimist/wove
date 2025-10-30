@@ -335,6 +335,7 @@
       Object.freeze(fallbackPatternPlannerEvents);
       const yarnFlowControllers = [];
       const yarnPulseControllers = [];
+      const yarnBeadControllers = [];
       const spoolControllers = [];
       let yarnExtrusionActive = false;
       let patternPlannerEvents = [];
@@ -2350,6 +2351,49 @@
           });
         }
 
+        const yarnBeadGroup = new THREE.Group();
+        yarnBeadGroup.name = 'yarn-flow-beads';
+        group.add(yarnBeadGroup);
+        addHoverInfo(
+          yarnBeadGroup,
+          'Glowing bead queue — ignites when yarn feed steps run to spotlight flow direction.',
+          { passthrough: true },
+        );
+
+        const beadGeometry = new THREE.SphereGeometry(0.045, 18, 18);
+        const beadCount = 6;
+        for (let index = 0; index < beadCount; index += 1) {
+          const beadMaterial = new THREE.MeshStandardMaterial({
+            color: 0xfff7d6,
+            emissive: 0xffc763,
+            emissiveIntensity: 0,
+            metalness: 0.22,
+            roughness: 0.28,
+            transparent: true,
+            opacity: 0,
+            depthWrite: false,
+          });
+          const bead = new THREE.Mesh(beadGeometry, beadMaterial);
+          bead.castShadow = false;
+          bead.receiveShadow = false;
+          yarnBeadGroup.add(bead);
+          yarnBeadControllers.push({
+            mesh: bead,
+            material: beadMaterial,
+            curve: ptfeCurve,
+            travel: index / beadCount,
+            activeSpeed: 0.38 + index * 0.022,
+            idleSpeed: 0.06,
+            restIntensity: 0,
+            activeIntensity: 1.4,
+            restOpacity: 0,
+            activeOpacity: 0.95,
+            currentIntensity: 0,
+            currentOpacity: 0,
+            point: new THREE.Vector3(),
+          });
+        }
+
         const displayLabel = buildLabel('v1c – Crochet Robot', '#8ab4ff');
         displayLabel.position.set(0, 4.3, 0);
         group.add(displayLabel);
@@ -3596,6 +3640,55 @@
             1,
           );
           material.opacity = THREE.MathUtils.lerp(restOpacity, activeOpacity, normalized);
+        });
+        yarnBeadControllers.forEach((controller) => {
+          const {
+            mesh,
+            material,
+            curve,
+            activeSpeed = 0.36,
+            idleSpeed = 0.05,
+            restIntensity = 0,
+            activeIntensity = 1.2,
+            restOpacity = 0,
+            activeOpacity = 0.9,
+            point,
+          } = controller;
+          if (!mesh || !material || !curve) {
+            return;
+          }
+
+          const speed = yarnExtrusionActive ? activeSpeed : idleSpeed;
+          const currentTravel = typeof controller.travel === 'number' ? controller.travel : 0;
+          const updatedTravel = (currentTravel + delta * speed) % 1;
+          controller.travel = updatedTravel;
+
+          if (point) {
+            curve.getPointAt(updatedTravel, point);
+            mesh.position.copy(point);
+          } else {
+            const position = curve.getPointAt(updatedTravel);
+            mesh.position.copy(position);
+          }
+
+          const targetIntensity = yarnExtrusionActive ? activeIntensity : restIntensity;
+          controller.currentIntensity = THREE.MathUtils.damp(
+            controller.currentIntensity ?? restIntensity,
+            targetIntensity,
+            6.0,
+            delta,
+          );
+          material.emissiveIntensity = controller.currentIntensity;
+
+          const targetOpacity = yarnExtrusionActive ? activeOpacity : restOpacity;
+          controller.currentOpacity = THREE.MathUtils.damp(
+            controller.currentOpacity ?? restOpacity,
+            targetOpacity,
+            6.0,
+            delta,
+          );
+          material.opacity = controller.currentOpacity;
+          mesh.visible = material.opacity > 0.02;
         });
         spoolControllers.forEach((controller) => {
           const {
