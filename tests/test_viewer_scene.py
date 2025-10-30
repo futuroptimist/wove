@@ -101,10 +101,12 @@ def test_safe_access_path_steps_documented() -> None:
     html = VIEWER_HTML.read_text(encoding="utf-8")
 
     footprint_copy = (
-        "Safe access step ${stepNumber} — position your ${footSide} foot on the mint marker."
+        "Safe access step ${stepNumber} — position your ${footSide} "
+        "foot on the mint marker."
     )
     signage_copy = (
-        "Safe access step ${stepNumber} signage — follow the numbered badges through the door."
+        "Safe access step ${stepNumber} signage — follow the numbered "
+        "badges through the door."
     )
 
     assert footprint_copy in html
