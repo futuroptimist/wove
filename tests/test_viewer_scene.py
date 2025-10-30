@@ -88,6 +88,17 @@ def test_viewer_mentions_selection_sweep() -> None:
     assert selection_sweep_copy in html
 
 
+def test_viewer_mentions_thermistor_channel() -> None:
+    """Ensure the overlay documents the heated-bed thermistor channel."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+    assert (
+        "Thermistor channel — reserved wiring path for the future heated bed "
+        "accessory." in html
+    )
+    assert "Thermistor Channel" in html
+
+
 def test_viewer_uses_trio_of_yarn_pulses() -> None:
     """The yarn pulse animation should emit three glowing beads."""
 

@@ -223,11 +223,12 @@ hardware.
 - Optional hall-effect sensor for yarn tension measurement via flexible arm deflection.
 - The Three.js assembly viewer now spotlights the hall-effect sensor beside the yarn path so
   builders can rehearse how feedback hardware integrates before printing the mount.
+- Thermistor channel reserved for future heated bed accessory; the Three.js viewer now illuminates
+  the conduit so wiring routes stay obvious before the heater upgrade ships.
 - A tinted electronics bay beneath the work bed now reveals the SKR Mini controller
   stack, cooling fan, and cable harness routing so operators can plan airflow and wiring
   alongside the rest of the assembly.
 - Emergency stop wired in series with board power.
-- Thermistor channel reserved for future heated bed accessory.
 
 ### Power and Wiring
 - 24 V, 10 A supply for steppers; onboard 5 V regulator powers sensors and servos.

@@ -90,6 +90,10 @@ The source spool now spins in sync with yarn feed events so the hologram shows
 fiber unwinding from the supply while the PTFE tube glows. When extrusion
 pauses, the reel now coasts to a stop so idle previews keep the spool parked.
 
+A glowing thermistor channel now traces the reserved wiring route for the
+future heated bed accessory so teams can plan sensor hookups before the upgrade
+lands.
+
 The overlay now includes a Pattern Studio preview panel that cycles through the
 current `wove.pattern_cli --format planner` comment while a progress bar tracks
 the hologram run. Operators can cross-reference the displayed step with the
