@@ -48,7 +48,8 @@ The Three.js viewer mirrors this assembly with glowing felt pads and a transluce
 builders can visualize how yarn leaves the spool, touches the hall sensor, and reaches the hook
 before printing hardware. Animated amber pulses now chase through the tube to illustrate feed
 direction while the planner preview runs, and a trio of glowing beads follows the same path during
-yarn feed events so the motion reads clearly from the plaza overview.
+yarn feed events so the motion reads clearly from the plaza overview before fading once the feed
+cycle pauses.
 The supply spool now spins in the hologram whenever yarn is extruding so teams can watch fiber
 unwind from the source while the tube pulses.
 
