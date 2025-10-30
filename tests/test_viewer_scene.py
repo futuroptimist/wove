@@ -88,14 +88,8 @@ def test_viewer_mentions_selection_sweep() -> None:
     assert selection_sweep_copy in html
 
 
-def test_viewer_mentions_yarn_bead_queue() -> None:
-    """Ensure the viewer documents the yarn bead chase animation."""
+def test_viewer_uses_trio_of_yarn_pulses() -> None:
+    """The yarn pulse animation should emit three glowing beads."""
 
     html = VIEWER_HTML.read_text(encoding="utf-8")
-    bead_copy = " ".join(
-        [
-            "Glowing bead queue — ignites when yarn feed steps run",
-            "to spotlight flow direction.",
-        ]
-    )
-    assert bead_copy in html
+    assert "const pulseCount = 3" in html
