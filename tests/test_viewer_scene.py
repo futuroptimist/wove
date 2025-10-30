@@ -110,7 +110,14 @@ def test_viewer_mentions_thermistor_channel() -> None:
 
 
 def test_viewer_uses_trio_of_yarn_pulses() -> None:
-    """The yarn pulse animation should emit three glowing beads."""
+    """The yarn pulse animation should emit three glowing trails."""
 
     html = VIEWER_HTML.read_text(encoding="utf-8")
     assert "const pulseCount = 3" in html
+
+
+def test_viewer_limits_yarn_beads_to_trio() -> None:
+    """Ensure the yarn bead queue renders exactly three glowing orbs."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+    assert "const beadCount = 3" in html

@@ -2706,7 +2706,9 @@
         );
 
         const beadGeometry = new THREE.SphereGeometry(0.045, 18, 18);
-        const beadCount = 6;
+        const beadCount = 3;
+        const baseSpeed = 0.36;
+        const speedStep = 0.045;
         for (let index = 0; index < beadCount; index += 1) {
           const beadMaterial = new THREE.MeshStandardMaterial({
             color: 0xfff7d6,
@@ -2727,7 +2729,7 @@
             material: beadMaterial,
             curve: ptfeCurve,
             travel: index / beadCount,
-            activeSpeed: 0.38 + index * 0.022,
+            activeSpeed: baseSpeed + index * speedStep,
             idleSpeed: 0.06,
             restIntensity: 0,
             activeIntensity: 1.4,
