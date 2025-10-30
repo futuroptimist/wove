@@ -93,5 +93,8 @@ def test_yarn_pulses_only_active_during_feed() -> None:
 
     html = VIEWER_HTML.read_text(encoding="utf-8")
 
-    assert "Glowing yarn pulses — trace fiber flow during active yarn feed events." in html
+    assert (
+        "Glowing yarn pulses — trace fiber flow during active yarn feed "
+        "events." in html
+    )
     assert "currentOpacity" in html
