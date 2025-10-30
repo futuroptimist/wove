@@ -255,6 +255,9 @@
         <p id="pattern-position" data-tone="info">
           Position: Loading planner coordinates…
         </p>
+        <p id="pattern-bounds" data-tone="neutral">
+          Planner bounds warming up…
+        </p>
       </div>
       <div id="machine-panel">
         <h2>Machine Profile</h2>
@@ -292,6 +295,7 @@
       const patternStepIndexElement = document.getElementById('pattern-step-index');
       const patternProgressBarElement = document.getElementById('pattern-progress-bar');
       const patternPositionElement = document.getElementById('pattern-position');
+      const patternBoundsElement = document.getElementById('pattern-bounds');
       const machineProfileStatusElement = document.getElementById('machine-profile-status');
       const machineProfileAxesElement = document.getElementById('machine-profile-axes');
       const homingGuardStatusElement = document.getElementById('homing-guard-status');
@@ -341,6 +345,7 @@
       let patternPlannerEvents = [];
       let patternPreviewGroup = null;
       let patternPreviewContainer = null;
+      let plannerBounds = null;
       const patternPreviewDurationSeconds = 14;
       let lastPatternStepIndex = -1;
       let lastPatternProgress = -1;
@@ -348,6 +353,8 @@
         'Machine profile metadata unavailable. Export with --machine-profile to surface axis settings.';
       const homingGuardFallbackMessage =
         'Homing guard metadata unavailable. Export planner defaults.require_home and defaults.home_state.';
+      const patternBoundsFallbackMessage =
+        'Planner bounds unavailable. Export --format planner payloads with bounds to preview the motion envelope.';
       let plannerDefaults = null;
 
       const FRAME_HALF_WIDTH = 3.6;
@@ -517,6 +524,169 @@
         return Number.isFinite(numeric) ? numeric : fallback;
       }
 
+      function coerceFiniteNumber(value) {
+        const numeric = Number(value);
+        return Number.isFinite(numeric) ? numeric : null;
+      }
+
+      function normalizeBounds(bounds) {
+        if (!bounds || typeof bounds !== 'object') {
+          return null;
+        }
+
+        const normalized = {};
+        const axisDefinitions = [
+          ['x', ['x_mm', 'x']],
+          ['y', ['y_mm', 'y']],
+          ['z', ['z_mm', 'z']],
+          ['extrusion', ['extrusion_mm', 'extrusion', 'e_mm', 'e']],
+        ];
+
+        axisDefinitions.forEach(([key, aliases]) => {
+          for (const alias of aliases) {
+            const raw = bounds[alias];
+            if (!raw || typeof raw !== 'object') {
+              continue;
+            }
+            const min =
+              coerceFiniteNumber(raw.min ?? raw.min_mm ?? raw.minimum ?? raw.low);
+            const max =
+              coerceFiniteNumber(raw.max ?? raw.max_mm ?? raw.maximum ?? raw.high);
+            if (min === null || max === null || max < min) {
+              continue;
+            }
+            normalized[key] = { min, max };
+            return;
+          }
+        });
+
+        return Object.keys(normalized).length > 0 ? normalized : null;
+      }
+
+      function computeBoundsFromEvents(events) {
+        if (!Array.isArray(events) || events.length === 0) {
+          return null;
+        }
+
+        const summary = {
+          x: { min: Infinity, max: -Infinity, has: false },
+          y: { min: Infinity, max: -Infinity, has: false },
+          z: { min: Infinity, max: -Infinity, has: false },
+          extrusion: { min: Infinity, max: -Infinity, has: false },
+        };
+
+        events.forEach((event) => {
+          if (!event || typeof event !== 'object') {
+            return;
+          }
+          const xValue = coerceFiniteNumber(event.x);
+          if (xValue !== null) {
+            summary.x.min = Math.min(summary.x.min, xValue);
+            summary.x.max = Math.max(summary.x.max, xValue);
+            summary.x.has = true;
+          }
+          const yValue = coerceFiniteNumber(event.y);
+          if (yValue !== null) {
+            summary.y.min = Math.min(summary.y.min, yValue);
+            summary.y.max = Math.max(summary.y.max, yValue);
+            summary.y.has = true;
+          }
+          const zValue = coerceFiniteNumber(event.z);
+          if (zValue !== null) {
+            summary.z.min = Math.min(summary.z.min, zValue);
+            summary.z.max = Math.max(summary.z.max, zValue);
+            summary.z.has = true;
+          }
+          const extrusionValue = coerceFiniteNumber(event.extrusion);
+          if (extrusionValue !== null) {
+            summary.extrusion.min = Math.min(summary.extrusion.min, extrusionValue);
+            summary.extrusion.max = Math.max(summary.extrusion.max, extrusionValue);
+            summary.extrusion.has = true;
+          }
+        });
+
+        const bounds = {};
+        if (summary.x.has) {
+          bounds.x = { min: summary.x.min, max: summary.x.max };
+        }
+        if (summary.y.has) {
+          bounds.y = { min: summary.y.min, max: summary.y.max };
+        }
+        if (summary.z.has) {
+          bounds.z = { min: summary.z.min, max: summary.z.max };
+        }
+        if (summary.extrusion.has) {
+          bounds.extrusion = {
+            min: summary.extrusion.min,
+            max: summary.extrusion.max,
+          };
+        }
+
+        return Object.keys(bounds).length > 0 ? bounds : null;
+      }
+
+      function buildBoundsHoverText(bounds) {
+        if (!bounds) {
+          return 'Planner bounds overlay — load a planner export with bounds metadata to preview the motion envelope.';
+        }
+        const segments = [];
+        if (bounds.x) {
+          segments.push(`X ${bounds.x.min.toFixed(1)}–${bounds.x.max.toFixed(1)} mm`);
+        }
+        if (bounds.y) {
+          segments.push(`Y ${bounds.y.min.toFixed(1)}–${bounds.y.max.toFixed(1)} mm`);
+        }
+        if (bounds.z) {
+          segments.push(`Z ${bounds.z.min.toFixed(1)}–${bounds.z.max.toFixed(1)} mm`);
+        }
+        if (bounds.extrusion) {
+          segments.push(
+            `E ${bounds.extrusion.min.toFixed(1)}–${bounds.extrusion.max.toFixed(1)} mm`,
+          );
+        }
+        if (segments.length === 0) {
+          return 'Planner bounds overlay — load a planner export with bounds metadata to preview the motion envelope.';
+        }
+        return `Planner bounds — ${segments.join(' · ')}`;
+      }
+
+      function updatePatternBoundsOverlay(bounds) {
+        if (!patternBoundsElement) {
+          return;
+        }
+
+        if (!bounds) {
+          patternBoundsElement.textContent = patternBoundsFallbackMessage;
+          setTone(patternBoundsElement, 'warning');
+          return;
+        }
+
+        const segments = [];
+        if (bounds.x) {
+          segments.push(`X ${bounds.x.min.toFixed(1)}–${bounds.x.max.toFixed(1)} mm`);
+        }
+        if (bounds.y) {
+          segments.push(`Y ${bounds.y.min.toFixed(1)}–${bounds.y.max.toFixed(1)} mm`);
+        }
+        if (bounds.z) {
+          segments.push(`Z ${bounds.z.min.toFixed(1)}–${bounds.z.max.toFixed(1)} mm`);
+        }
+        if (bounds.extrusion) {
+          segments.push(
+            `E ${bounds.extrusion.min.toFixed(1)}–${bounds.extrusion.max.toFixed(1)} mm`,
+          );
+        }
+
+        if (segments.length === 0) {
+          patternBoundsElement.textContent = patternBoundsFallbackMessage;
+          setTone(patternBoundsElement, 'warning');
+          return;
+        }
+
+        patternBoundsElement.textContent = `Bounds: ${segments.join(' · ')}`;
+        setTone(patternBoundsElement, 'info');
+      }
+
       function setTone(element, tone) {
         if (!element) {
           return;
@@ -614,12 +784,19 @@
         updateHomingGuardPanel(plannerDefaults);
 
         patternPlannerEvents = Array.isArray(events) ? [...events] : [];
+        const providedBounds = Object.prototype.hasOwnProperty.call(options, 'bounds')
+          ? normalizeBounds(options.bounds)
+          : null;
+        plannerBounds = providedBounds ?? computeBoundsFromEvents(patternPlannerEvents);
+        updatePatternBoundsOverlay(plannerBounds);
 
         if (patternPreviewContainer) {
           if (patternPreviewGroup) {
             patternPreviewContainer.remove(patternPreviewGroup);
           }
-          patternPreviewGroup = buildPlannerPreview(patternPlannerEvents);
+          patternPreviewGroup = buildPlannerPreview(patternPlannerEvents, {
+            bounds: plannerBounds,
+          });
           patternPreviewGroup.position.set(0, 0, 0.01);
           patternPreviewContainer.add(patternPreviewGroup);
         }
@@ -730,7 +907,8 @@
             throw new Error('Planner file contained no commands');
           }
           const defaults = payload?.defaults ?? null;
-          applyPatternPlannerEvents(events, { defaults });
+          const bounds = payload?.bounds ?? null;
+          applyPatternPlannerEvents(events, { defaults, bounds });
           updateMachineProfilePanel(payload?.machine_profile ?? null);
           if (statusElement) {
             updateStatus('Pattern Studio preview synced with base chain row.');
@@ -747,49 +925,130 @@
         }
       }
 
-      function buildPlannerPreview(events) {
+      function buildPlannerPreview(events, options = {}) {
         const group = new THREE.Group();
         group.name = 'pattern-planner-preview';
 
+        const sanitizedBounds = normalizeBounds(options.bounds);
+
         if (!Array.isArray(events) || events.length === 0) {
+          group.userData.preview = {
+            points: [],
+            cumulativeDistances: [],
+            totalDistance: 0,
+            marker: null,
+            halo: null,
+            haloMaterial: null,
+            bounds: sanitizedBounds ?? null,
+          };
           return group;
         }
 
-        let minX = events[0].x;
-        let maxX = events[0].x;
-        let minY = events[0].y;
-        let maxY = events[0].y;
-        let maxExtrusion = events[0].extrusion;
+        const initialX = coerceFiniteNumber(events[0]?.x) ?? 0;
+        const initialY = coerceFiniteNumber(events[0]?.y) ?? 0;
+        const initialExtrusion = coerceFiniteNumber(events[0]?.extrusion) ?? 0;
+
+        let minX = initialX;
+        let maxX = initialX;
+        let minY = initialY;
+        let maxY = initialY;
+        let maxExtrusion = initialExtrusion;
 
         events.forEach((event) => {
-          minX = Math.min(minX, event.x);
-          maxX = Math.max(maxX, event.x);
-          minY = Math.min(minY, event.y);
-          maxY = Math.max(maxY, event.y);
-          maxExtrusion = Math.max(maxExtrusion, event.extrusion);
+          const xValue = coerceFiniteNumber(event.x);
+          if (xValue !== null) {
+            minX = Math.min(minX, xValue);
+            maxX = Math.max(maxX, xValue);
+          }
+          const yValue = coerceFiniteNumber(event.y);
+          if (yValue !== null) {
+            minY = Math.min(minY, yValue);
+            maxY = Math.max(maxY, yValue);
+          }
+          const extrusionValue = coerceFiniteNumber(event.extrusion);
+          if (extrusionValue !== null) {
+            maxExtrusion = Math.max(maxExtrusion, extrusionValue);
+          }
         });
+
+        const fallbackBounds = {};
+        if (Number.isFinite(minX) && Number.isFinite(maxX) && maxX >= minX) {
+          fallbackBounds.x = { min: minX, max: maxX };
+        }
+        if (Number.isFinite(minY) && Number.isFinite(maxY) && maxY >= minY) {
+          fallbackBounds.y = { min: minY, max: maxY };
+        }
+        if (Number.isFinite(maxExtrusion)) {
+          fallbackBounds.extrusion = { min: 0, max: maxExtrusion };
+        }
+
+        const computedBounds = sanitizedBounds
+          ?? (Object.keys(fallbackBounds).length > 0 ? fallbackBounds : null);
+        const hoverBounds = computedBounds
+          ?? (Object.keys(fallbackBounds).length > 0 ? fallbackBounds : null);
+
+        const displayXMin = Number.isFinite(computedBounds?.x?.min)
+          ? computedBounds.x.min
+          : Number.isFinite(minX)
+            ? minX
+            : 0;
+        const displayXMax = Number.isFinite(computedBounds?.x?.max)
+          ? computedBounds.x.max
+          : Number.isFinite(maxX)
+            ? maxX
+            : displayXMin + 1;
+        const displayYMin = Number.isFinite(computedBounds?.y?.min)
+          ? computedBounds.y.min
+          : Number.isFinite(minY)
+            ? minY
+            : 0;
+        const displayYMax = Number.isFinite(computedBounds?.y?.max)
+          ? computedBounds.y.max
+          : Number.isFinite(maxY)
+            ? maxY
+            : displayYMin + 1;
+        const displayExtrusionMin = Number.isFinite(computedBounds?.extrusion?.min)
+          ? computedBounds.extrusion.min
+          : 0;
+        const displayExtrusionMax = Number.isFinite(computedBounds?.extrusion?.max)
+          ? computedBounds.extrusion.max
+          : Number.isFinite(maxExtrusion)
+            ? maxExtrusion
+            : displayExtrusionMin + 0.01;
 
         const planeWidth = 0.72;
         const planeHeight = 0.52;
         const usableWidth = planeWidth * 0.88;
         const usableHeight = planeHeight * 0.82;
 
-        const xSpan = Math.max(maxX - minX, 1);
-        const ySpan = Math.max(maxY - minY, 1);
-        const extrusionSpan = Math.max(maxExtrusion, 0.01);
+        const xSpan = Math.max(displayXMax - displayXMin, 1);
+        const ySpan = Math.max(displayYMax - displayYMin, 1);
+        const extrusionSpan = Math.max(
+          displayExtrusionMax - displayExtrusionMin,
+          0.01,
+        );
 
         const positions = new Float32Array(events.length * 3);
         const colors = new Float32Array(events.length * 3);
         const points = [];
 
         events.forEach((event, index) => {
-          const normalizedX = (event.x - minX) / xSpan;
-          const normalizedY = (event.y - minY) / ySpan;
+          const xValue = coerceFiniteNumber(event.x);
+          const yValue = coerceFiniteNumber(event.y);
+          const extrusionValue = coerceFiniteNumber(event.extrusion);
+
+          const safeX = xValue === null ? displayXMin : xValue;
+          const safeY = yValue === null ? displayYMin : yValue;
+          const safeExtrusion =
+            extrusionValue === null ? displayExtrusionMin : extrusionValue;
+
+          const normalizedX = (safeX - displayXMin) / xSpan;
+          const normalizedY = (safeY - displayYMin) / ySpan;
           const centeredX = normalizedX - 0.5;
           const centeredY = normalizedY - 0.5;
           const xPos = centeredX * usableWidth;
           const yPos = centeredY * usableHeight;
-          const extrusionRatio = Math.max(event.extrusion, 0) / extrusionSpan;
+          const extrusionRatio = Math.max(safeExtrusion - displayExtrusionMin, 0) / extrusionSpan;
           const zPos = 0.02 + extrusionRatio * 0.06;
           const point = new THREE.Vector3(xPos, yPos, zPos);
           points.push(point);
@@ -798,13 +1057,49 @@
           positions[index * 3 + 1] = point.y;
           positions[index * 3 + 2] = point.z;
 
-          const isExtruding =
-            typeof event.comment === 'string' && event.comment.includes('feed yarn');
+          const comment = typeof event.comment === 'string' ? event.comment : '';
+          const isExtruding = comment.includes('feed yarn');
           const color = new THREE.Color(isExtruding ? 0xffb46b : 0x7fb3ff);
           colors[index * 3] = color.r;
           colors[index * 3 + 1] = color.g;
           colors[index * 3 + 2] = color.b;
         });
+
+        const boundsGroup = new THREE.Group();
+        boundsGroup.name = 'planner-bounds-overlay';
+        boundsGroup.position.set(0, 0, 0);
+        group.add(boundsGroup);
+
+        const halfWidth = usableWidth / 2;
+        const halfHeight = usableHeight / 2;
+        const outlineGeometry = new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(-halfWidth, -halfHeight, 0),
+          new THREE.Vector3(halfWidth, -halfHeight, 0),
+          new THREE.Vector3(halfWidth, halfHeight, 0),
+          new THREE.Vector3(-halfWidth, halfHeight, 0),
+        ]);
+        const outlineMaterial = new THREE.LineBasicMaterial({
+          color: 0xdbe4ff,
+          transparent: true,
+          opacity: 0.85,
+          depthTest: false,
+        });
+        const outline = new THREE.LineLoop(outlineGeometry, outlineMaterial);
+        outline.renderOrder = 2;
+        boundsGroup.add(outline);
+
+        const fillMaterial = new THREE.MeshBasicMaterial({
+          color: 0x6f83ff,
+          transparent: true,
+          opacity: 0.16,
+          depthWrite: false,
+          depthTest: false,
+        });
+        const fill = new THREE.Mesh(new THREE.PlaneGeometry(usableWidth, usableHeight), fillMaterial);
+        fill.position.z = -0.0005;
+        fill.renderOrder = 1;
+        boundsGroup.add(fill);
+        addHoverInfo(fill, buildBoundsHoverText(hoverBounds), { passthrough: true });
 
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
@@ -817,7 +1112,7 @@
         });
 
         const line = new THREE.Line(geometry, lineMaterial);
-        line.renderOrder = 2;
+        line.renderOrder = 3;
         group.add(line);
 
         const cumulativeDistances = [0];
@@ -870,6 +1165,7 @@
           marker,
           halo,
           haloMaterial,
+          bounds: hoverBounds,
         };
 
         return group;

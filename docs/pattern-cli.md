@@ -128,7 +128,9 @@ The resulting JSON object lists each command with its comment and the updated
 constraints such as the safe Z height and row spacing. The planner defaults
 also record the `require_home` guard and the `home_state` reported during
 translation so browser tooling can surface homing expectations alongside the
-motion bounds. When a machine profile was provided, the `machine_profile.axes`
+motion bounds. The browser assembly viewer uses those bounds to render a
+translucent frame and overlay summary so builders can verify the envelope before
+running hardware. When a machine profile was provided, the `machine_profile.axes`
 mapping mirrors the JSON/YAML schema
 loaded by `--machine-profile` so downstream planners can respect the same
 travel envelope without re-reading the original file.
