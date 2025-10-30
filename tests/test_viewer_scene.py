@@ -1,6 +1,5 @@
 """Tests for the Three.js assembly viewer scene."""
 
-import re
 from pathlib import Path
 
 VIEWER_HTML = Path(__file__).resolve().parents[1] / "viewer" / "index.html"
