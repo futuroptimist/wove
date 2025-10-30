@@ -93,3 +93,19 @@ def test_viewer_uses_trio_of_yarn_pulses() -> None:
 
     html = VIEWER_HTML.read_text(encoding="utf-8")
     assert "const pulseCount = 3" in html
+
+
+def test_safe_access_path_steps_documented() -> None:
+    """The safe access walkway should advertise numbered step guidance."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    footprint_copy = (
+        "Safe access step ${stepNumber} — position your ${footSide} foot on the mint marker."
+    )
+    signage_copy = (
+        "Safe access step ${stepNumber} signage — follow the numbered badges through the door."
+    )
+
+    assert footprint_copy in html
+    assert signage_copy in html
