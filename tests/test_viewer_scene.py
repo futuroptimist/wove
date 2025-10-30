@@ -86,3 +86,10 @@ def test_viewer_mentions_selection_sweep() -> None:
         ]
     )
     assert selection_sweep_copy in html
+
+
+def test_viewer_uses_trio_of_yarn_pulses() -> None:
+    """The yarn pulse animation should emit three glowing beads."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+    assert "const pulseCount = 3" in html
