@@ -197,7 +197,9 @@ hardware.
   payloads animate across the workspace before firmware executes them. The
   viewer streams that sample directly from
   `viewer/assets/base_chain_row.planner.json` so the hologram stays aligned with
-  the repository's planner fixtures.
+  the repository's planner fixtures. A translucent bounds frame now wraps the
+  hologram while the overlay lists the exported X/Y/Z/E ranges so operators can
+  verify the motion envelope matches the CLI payload.
 - Optional polycarbonate shield with hinged access door for production environments;
   the Three.js viewer renders the translucent enclosure so teams can rehearse
   safe access paths before printing hardware. Mint-highlighted floor markings

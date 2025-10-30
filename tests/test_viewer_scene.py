@@ -38,6 +38,16 @@ def test_pattern_preview_overlay_panel_present() -> None:
     assert "Planner preview warming up." in html
 
 
+def test_viewer_documents_planner_bounds_overlay() -> None:
+    """The overlay should advertise the planner bounds helper."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "pattern-bounds" in html
+    assert "Planner bounds warming up…" in html
+    assert "Planner bounds overlay" in html
+
+
 def test_viewer_mentions_cooling_fan_mount() -> None:
     """The hook carriage cooling fan mount should be called out."""
 
