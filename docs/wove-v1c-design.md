@@ -51,7 +51,8 @@ direction while the planner preview runs, and a trio of glowing beads follows th
 yarn feed events so the motion reads clearly from the plaza overview before fading once the feed
 cycle pauses.
 The supply spool now spins in the hologram whenever yarn is extruding so teams can watch fiber
-unwind from the source while the tube pulses.
+unwind from the source while the tube pulses, then glides to a stop when feed events pause so idle
+segments stay calm.
 
 #### Tension Profiles and Bench Tests
 

@@ -87,7 +87,8 @@ whenever the preview feeds yarn so the flow direction stays obvious at a
 glance.
 
 The source spool now spins in sync with yarn feed events so the hologram shows
-fiber unwinding from the supply while the PTFE tube glows.
+fiber unwinding from the supply while the PTFE tube glows. When extrusion
+pauses, the reel now coasts to a stop so idle previews keep the spool parked.
 
 The overlay now includes a Pattern Studio preview panel that cycles through the
 current `wove.pattern_cli --format planner` comment while a progress bar tracks
