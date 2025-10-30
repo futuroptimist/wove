@@ -86,3 +86,12 @@ def test_viewer_mentions_selection_sweep() -> None:
         ]
     )
     assert selection_sweep_copy in html
+
+
+def test_yarn_pulses_only_active_during_feed() -> None:
+    """Yarn pulses should advertise their feed-triggered animation."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "Glowing yarn pulses — trace fiber flow during active yarn feed events." in html
+    assert "currentOpacity" in html
