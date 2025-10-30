@@ -1479,7 +1479,64 @@
 
         const footstepGeometry = new THREE.CircleGeometry(0.26, 40);
 
-        function addFootstep(x, z, rotationDegrees, phaseOffset) {
+        function createStepBadge(stepNumber, footSide) {
+          const canvas = document.createElement('canvas');
+          canvas.width = 256;
+          canvas.height = 256;
+          const context = canvas.getContext('2d');
+
+          if (context) {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+
+            context.save();
+            context.translate(canvas.width / 2, canvas.height / 2);
+            context.beginPath();
+            context.arc(0, 0, canvas.width * 0.42, 0, Math.PI * 2);
+            context.fillStyle = 'rgba(12, 37, 32, 0.84)';
+            context.fill();
+            context.lineWidth = canvas.width * 0.05;
+            context.strokeStyle = 'rgba(214, 255, 245, 0.82)';
+            context.stroke();
+            context.restore();
+
+            context.fillStyle = '#d6fff5';
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+
+            context.font = `${canvas.height * 0.18}px "Segoe UI", sans-serif`;
+            context.fillText('STEP', canvas.width / 2, canvas.height * 0.28);
+
+            context.font = `700 ${canvas.height * 0.36}px "Segoe UI", sans-serif`;
+            context.fillText(String(stepNumber), canvas.width / 2, canvas.height * 0.55);
+
+            context.font = `${canvas.height * 0.17}px "Segoe UI", sans-serif`;
+            context.fillText(footSide.toUpperCase(), canvas.width / 2, canvas.height * 0.78);
+          }
+
+          const texture = new THREE.CanvasTexture(canvas);
+          texture.colorSpace = THREE.SRGBColorSpace;
+
+          const material = new THREE.MeshStandardMaterial({
+            map: texture,
+            transparent: true,
+            opacity: 0.95,
+            metalness: 0.12,
+            roughness: 0.45,
+            emissive: 0x1e4d3f,
+            emissiveIntensity: 0.65,
+            side: THREE.DoubleSide,
+            depthWrite: false,
+          });
+
+          const geometry = new THREE.PlaneGeometry(0.52, 0.52);
+          const badge = new THREE.Mesh(geometry, material);
+          badge.renderOrder = 5;
+
+          return { badge, material };
+        }
+
+        function addFootstep(x, z, rotationDegrees, phaseOffset, stepNumber) {
+          const footSide = stepNumber % 2 === 1 ? 'left' : 'right';
           const footprintMaterial = new THREE.MeshStandardMaterial({
             color: 0xdbfff4,
             emissive: 0x2f9270,
@@ -1498,6 +1555,10 @@
           footprint.scale.set(1.45, 1.0, 1.15);
           footprint.renderOrder = 3;
           group.add(footprint);
+          addHoverInfo(
+            footprint,
+            `Safe access step ${stepNumber} — position your ${footSide} foot on the mint marker.`,
+          );
           safeAccessHighlights.push({
             material: footprintMaterial,
             baseIntensity: 0.48,
@@ -1529,6 +1590,10 @@
           toe.scale.set(1.25, 1.0, 1.2);
           toe.renderOrder = 4;
           group.add(toe);
+          addHoverInfo(
+            toe,
+            `Safe access step ${stepNumber} — position your ${footSide} foot on the mint marker.`,
+          );
           safeAccessHighlights.push({
             material: toeMaterial,
             baseIntensity: 0.55,
@@ -1538,17 +1603,44 @@
             baseOpacity: 0.78,
             opacityAmplitude: 0.15,
           });
+
+          const { badge, material } = createStepBadge(stepNumber, footSide);
+          badge.rotation.x = -Math.PI / 2;
+          const forwardOffset = 0.32;
+          const radians = THREE.MathUtils.degToRad(rotationDegrees);
+          badge.position.set(
+            x + Math.cos(radians) * forwardOffset,
+            0.055,
+            z - Math.sin(radians) * forwardOffset,
+          );
+          group.add(badge);
+          addHoverInfo(
+            badge,
+            `Safe access step ${stepNumber} signage — follow the numbered badges through the door.`,
+          );
+          safeAccessHighlights.push({
+            material,
+            baseIntensity: 0.65,
+            amplitude: 0.22,
+            speed: 2.2,
+            phaseOffset: phaseOffset + 0.35,
+            baseOpacity: 0.95,
+            opacityAmplitude: 0.05,
+            object: badge,
+          });
         }
 
         const stepSequence = [
-          { x: 3.85, z: 0.12, rotation: 8, phase: 0.0 },
-          { x: 4.15, z: 0.58, rotation: 12, phase: 0.45 },
-          { x: 4.45, z: 0.12, rotation: 8, phase: 0.9 },
-          { x: 4.75, z: 0.58, rotation: 12, phase: 1.35 },
-          { x: 5.05, z: 0.12, rotation: 8, phase: 1.8 },
-          { x: 5.35, z: 0.58, rotation: 12, phase: 2.25 },
+          { x: 3.85, z: 0.12, rotation: 8, phase: 0.0, step: 1 },
+          { x: 4.15, z: 0.58, rotation: 12, phase: 0.45, step: 2 },
+          { x: 4.45, z: 0.12, rotation: 8, phase: 0.9, step: 3 },
+          { x: 4.75, z: 0.58, rotation: 12, phase: 1.35, step: 4 },
+          { x: 5.05, z: 0.12, rotation: 8, phase: 1.8, step: 5 },
+          { x: 5.35, z: 0.58, rotation: 12, phase: 2.25, step: 6 },
         ];
-        stepSequence.forEach((step) => addFootstep(step.x, step.z, step.rotation, step.phase));
+        stepSequence.forEach((step) =>
+          addFootstep(step.x, step.z, step.rotation, step.phase, step.step),
+        );
 
         const label = buildLabel('Safe Access Path', '#baffec');
         label.position.set(4.6, 0.92, -0.45);
