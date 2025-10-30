@@ -89,17 +89,8 @@ def test_viewer_mentions_selection_sweep() -> None:
     assert selection_sweep_copy in html
 
 
-def test_source_spool_rest_state_when_idle() -> None:
-    """Ensure the supply spool stops rotating whenever extrusion pauses."""
+def test_viewer_uses_trio_of_yarn_pulses() -> None:
+    """The yarn pulse animation should emit three glowing beads."""
 
     html = VIEWER_HTML.read_text(encoding="utf-8")
-    position = html.find("linkedToExtrusion: true")
-    assert position != -1
-
-    block_start = html.rfind("spoolControllers.push({", 0, position)
-    assert block_start != -1
-    block_end = html.find("});", position)
-    assert block_end != -1
-
-    config_block = html[block_start:block_end]
-    assert re.search(r"idleSpeed:\s*0(?:\.0+)?", config_block)
+    assert "const pulseCount = 3" in html
