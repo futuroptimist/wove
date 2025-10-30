@@ -80,11 +80,11 @@ Peek through the tinted electronics bay under the work bed to see the SKR Mini
 controller stack, cooling fan, and glowing status LED that route motion power up
 to the gantry.
 
-Amber pulses now race through the translucent PTFE tube so you can watch yarn
-flow from the spool, past the hall-effect sensor, and into the crochet hook as
-the planner preview runs. A string of glowing beads now chases along the same
-guide whenever the preview feeds yarn so the flow direction stays obvious at a
-glance.
+Amber pulses now race through the translucent PTFE tube whenever the planner
+feeds yarn so you can watch fiber flow from the spool, past the hall-effect
+sensor, and into the crochet hook. A string of glowing beads wakes up only
+during those feed events—when motion pauses they fade back out so the plaza view
+stays calm between runs.
 
 The source spool now spins in sync with yarn feed events so the hologram shows
 fiber unwinding from the supply while the PTFE tube glows.

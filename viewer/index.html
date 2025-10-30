@@ -2314,7 +2314,7 @@
         group.add(yarnPulseGroup);
         addHoverInfo(
           yarnPulseGroup,
-          'Glowing yarn pulses — trace fiber flow along the PTFE guide during planner playback.',
+          'Glowing yarn pulses — trace fiber flow during active yarn feed events.',
           { passthrough: true },
         );
 
@@ -2328,11 +2328,12 @@
             metalness: 0.18,
             roughness: 0.32,
             transparent: true,
-            opacity: 0.35,
+            opacity: 0.0,
           });
           const pulse = new THREE.Mesh(pulseGeometry, pulseMaterial);
           pulse.castShadow = false;
           pulse.receiveShadow = false;
+          pulse.visible = false;
           yarnPulseGroup.add(pulse);
           yarnPulseControllers.push({
             mesh: pulse,
@@ -2340,12 +2341,13 @@
             curve: ptfeCurve,
             offset: index / pulseCount,
             activeSpeed: 0.18 + index * 0.015,
-            idleSpeed: 0.045 + index * 0.01,
-            restIntensity: 0.18,
+            idleSpeed: 0,
+            restIntensity: 0,
             activeIntensity: 0.85,
-            restOpacity: 0.25,
+            restOpacity: 0,
             activeOpacity: 0.9,
-            currentIntensity: 0.18,
+            currentIntensity: 0,
+            currentOpacity: 0,
             point: new THREE.Vector3(),
           });
         }
@@ -3558,11 +3560,11 @@
             material,
             curve,
             activeSpeed = 0.18,
-            idleSpeed = 0.05,
+            idleSpeed = 0,
             offset = 0,
-            restIntensity = 0.2,
+            restIntensity = 0,
             activeIntensity = 0.8,
-            restOpacity = 0.3,
+            restOpacity = 0,
             activeOpacity = 0.9,
             point,
           } = controller;
@@ -3570,7 +3572,8 @@
             return;
           }
 
-          const speed = yarnExtrusionActive ? activeSpeed : idleSpeed;
+          const isActive = yarnExtrusionActive;
+          const speed = isActive ? activeSpeed : idleSpeed;
           const travel = (offset + elapsed * speed) % 1;
           if (point) {
             curve.getPointAt(travel, point);
@@ -3580,22 +3583,25 @@
             mesh.position.copy(position);
           }
 
-          const target = yarnExtrusionActive ? activeIntensity : restIntensity;
+          const targetIntensity = isActive ? activeIntensity : restIntensity;
           controller.currentIntensity = THREE.MathUtils.damp(
             controller.currentIntensity ?? restIntensity,
-            target,
+            targetIntensity,
             4.5,
             delta,
           );
           material.emissiveIntensity = controller.currentIntensity;
 
-          const intensitySpan = Math.max(activeIntensity - restIntensity, 1e-5);
-          const normalized = THREE.MathUtils.clamp(
-            (controller.currentIntensity - restIntensity) / intensitySpan,
-            0,
-            1,
+          const targetOpacity = isActive ? activeOpacity : restOpacity;
+          controller.currentOpacity = THREE.MathUtils.damp(
+            controller.currentOpacity ?? restOpacity,
+            targetOpacity,
+            5.0,
+            delta,
           );
-          material.opacity = THREE.MathUtils.lerp(restOpacity, activeOpacity, normalized);
+          const clampedOpacity = THREE.MathUtils.clamp(controller.currentOpacity, 0, 1);
+          material.opacity = clampedOpacity;
+          mesh.visible = clampedOpacity > 0.02;
         });
         spoolControllers.forEach((controller) => {
           const {
