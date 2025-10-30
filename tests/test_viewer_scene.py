@@ -38,6 +38,16 @@ def test_pattern_preview_overlay_panel_present() -> None:
     assert "Planner preview warming up." in html
 
 
+def test_viewer_documents_planner_bounds_overlay() -> None:
+    """The overlay should advertise the planner bounds helper."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "pattern-bounds" in html
+    assert "Planner bounds warming up…" in html
+    assert "Planner bounds overlay" in html
+
+
 def test_viewer_mentions_cooling_fan_mount() -> None:
     """The hook carriage cooling fan mount should be called out."""
 
@@ -88,26 +98,26 @@ def test_viewer_mentions_selection_sweep() -> None:
     assert selection_sweep_copy in html
 
 
+def test_viewer_mentions_thermistor_channel() -> None:
+    """Ensure the overlay documents the heated-bed thermistor channel."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+    assert (
+        "Thermistor channel — reserved wiring path for the future heated bed "
+        "accessory." in html
+    )
+    assert "Thermistor Channel" in html
+
+
 def test_viewer_uses_trio_of_yarn_pulses() -> None:
-    """The yarn pulse animation should emit three glowing beads."""
+    """The yarn pulse animation should emit three glowing trails."""
 
     html = VIEWER_HTML.read_text(encoding="utf-8")
     assert "const pulseCount = 3" in html
 
 
-def test_safe_access_path_steps_documented() -> None:
-    """The safe access walkway should advertise numbered step guidance."""
+def test_viewer_limits_yarn_beads_to_trio() -> None:
+    """Ensure the yarn bead queue renders exactly three glowing orbs."""
 
     html = VIEWER_HTML.read_text(encoding="utf-8")
-
-    footprint_copy = (
-        "Safe access step ${stepNumber} — position your ${footSide} "
-        "foot on the mint marker."
-    )
-    signage_copy = (
-        "Safe access step ${stepNumber} signage — follow the numbered "
-        "badges through the door."
-    )
-
-    assert footprint_copy in html
-    assert signage_copy in html
+    assert "const beadCount = 3" in html

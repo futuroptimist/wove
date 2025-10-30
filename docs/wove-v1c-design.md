@@ -47,9 +47,9 @@ Key modules include:
 The Three.js viewer mirrors this assembly with glowing felt pads and a translucent PTFE tube so
 builders can visualize how yarn leaves the spool, touches the hall sensor, and reaches the hook
 before printing hardware. Animated amber pulses now chase through the tube to illustrate feed
-direction while the planner preview runs, and a trio of glowing beads follows the same path during
-yarn feed events so the motion reads clearly from the plaza overview before fading once the feed
-cycle pauses.
+direction while the planner preview runs, and a trio of glowing beads—offset with staggered
+speeds—follows the same path during yarn feed events so the motion reads clearly from the plaza
+overview before fading once the feed cycle pauses.
 The supply spool now spins in the hologram whenever yarn is extruding so teams can watch fiber
 unwind from the source while the tube pulses, then glides to a stop when feed events pause so idle
 segments stay calm.
@@ -197,7 +197,9 @@ hardware.
   payloads animate across the workspace before firmware executes them. The
   viewer streams that sample directly from
   `viewer/assets/base_chain_row.planner.json` so the hologram stays aligned with
-  the repository's planner fixtures.
+  the repository's planner fixtures. A translucent bounds frame now wraps the
+  hologram while the overlay lists the exported X/Y/Z/E ranges so operators can
+  verify the motion envelope matches the CLI payload.
 - Optional polycarbonate shield with hinged access door for production environments;
   the Three.js viewer renders the translucent enclosure so teams can rehearse
   safe access paths before printing hardware. Mint-highlighted floor markings
@@ -224,11 +226,12 @@ hardware.
 - Optional hall-effect sensor for yarn tension measurement via flexible arm deflection.
 - The Three.js assembly viewer now spotlights the hall-effect sensor beside the yarn path so
   builders can rehearse how feedback hardware integrates before printing the mount.
+- Thermistor channel reserved for future heated bed accessory; the Three.js viewer now illuminates
+  the conduit so wiring routes stay obvious before the heater upgrade ships.
 - A tinted electronics bay beneath the work bed now reveals the SKR Mini controller
   stack, cooling fan, and cable harness routing so operators can plan airflow and wiring
   alongside the rest of the assembly.
 - Emergency stop wired in series with board power.
-- Thermistor channel reserved for future heated bed accessory.
 
 ### Power and Wiring
 - 24 V, 10 A supply for steppers; onboard 5 V regulator powers sensors and servos.

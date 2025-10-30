@@ -84,13 +84,17 @@ to the gantry.
 
 Amber pulses now race through the translucent PTFE tube so you can watch yarn
 flow from the spool, past the hall-effect sensor, and into the crochet hook as
-the planner preview runs. Three glowing beads now chase along the same guide
-whenever the preview feeds yarn so the flow direction stays obvious at a
-glance.
+the planner preview runs. Three glowing beads now chase along the same guide,
+staggering their pace whenever the preview feeds yarn so the flow direction
+stays obvious at a glance—even in still frames.
 
 The source spool now spins in sync with yarn feed events so the hologram shows
 fiber unwinding from the supply while the PTFE tube glows. When extrusion
 pauses, the reel now coasts to a stop so idle previews keep the spool parked.
+
+A glowing thermistor channel now traces the reserved wiring route for the
+future heated bed accessory so teams can plan sensor hookups before the upgrade
+lands.
 
 The overlay now includes a Pattern Studio preview panel that cycles through the
 current `wove.pattern_cli --format planner` comment while a progress bar tracks
@@ -100,6 +104,10 @@ planner animation without leaving the scene. The viewer pulls its sample from
 the CLI fixtures, so the hologram stays aligned with the documented base chain
 row recipe. Automated tests compare that asset against `PatternTranslator`
 output to flag drift whenever the CLI evolves.
+
+A translucent planner bounds frame now wraps the hologram while the overlay
+lists the X/Y/Z/E limits emitted by the planner payload so teams can confirm the
+motion envelope before committing the sequence to hardware.
 
 Live coordinates now accompany each planner step so technicians can confirm the
 active `X`, `Y`, `Z`, and yarn-feed positions directly from the overlay while
