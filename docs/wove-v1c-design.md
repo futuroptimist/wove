@@ -166,7 +166,9 @@ target pull force before commanding the actuator.
 The calibration bench inside the Tension Lab renders that automation path. The Three.js viewer now
 parks a micro-servo tension adjuster beside the load-cell carriage with a glowing status light so
 contributors can see how programmable feed loops interface with the spool rig before printing
-hardware.
+hardware. The horn now sweeps through its pull stroke whenever the planner preview feeds yarn and
+the status orb brightens in step, making the servo-driven tension cues obvious from the plaza
+overview.
 
 ### Frame and Build Volume
 - **Frame**: 20x20 mm aluminum extrusion perimeter with printed corner cubes and feet. Designed for
