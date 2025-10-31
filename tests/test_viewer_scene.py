@@ -103,6 +103,16 @@ def test_viewer_mentions_selection_ring_glow() -> None:
     assert selection_ring_copy in html
 
 
+def test_anchor_pucks_sequence_glow() -> None:
+    """Anchor pucks should document the sequential guidance animation."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "anchorPulseControllers = []" in html
+    assert "phaseOffset: index / anchorOffsets.length" in html
+    assert "anchorPulseControllers.forEach" in html
+
+
 def test_viewer_mentions_selection_sweep() -> None:
     """Ensure the viewer copy mentions the rotating cluster sweep."""
 

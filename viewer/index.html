@@ -382,6 +382,7 @@
       const interactiveMeshes = [];
       const productClusters = [];
       const safeAccessHighlights = [];
+      const anchorPulseControllers = [];
       let activeCluster = null;
       const selectionRingHeight = 0.06;
       const selectionSweepSpeed = 0.9;
@@ -2597,21 +2598,22 @@
           anchorGlow.position.set(0, 0.2, 0);
           anchorGroup.add(anchorGlow);
 
-          safeAccessHighlights.push({
-            material: haloMaterial,
-            baseIntensity: 0.5,
-            amplitude: 0.28,
-            speed: 1.8,
-            phaseOffset: index * 0.7,
-            baseOpacity: 0.8,
-            opacityAmplitude: 0.12,
-          });
-          safeAccessHighlights.push({
-            material: capMaterial,
-            baseIntensity: 0.45,
-            amplitude: 0.22,
-            speed: 1.8,
-            phaseOffset: index * 0.7 + 0.9,
+          anchorPulseControllers.push({
+            capMaterial,
+            haloMaterial,
+            halo,
+            light: anchorGlow,
+            baseCapIntensity: capMaterial.emissiveIntensity ?? 0.45,
+            capAmplitude: 0.55,
+            baseHaloIntensity: haloMaterial.emissiveIntensity ?? 0.5,
+            haloAmplitude: 0.65,
+            baseHaloOpacity: typeof haloMaterial.opacity === 'number' ? haloMaterial.opacity : 0.8,
+            haloOpacityAmplitude: 0.18,
+            haloScaleAmplitude: 0.12,
+            baseLightIntensity: anchorGlow.intensity,
+            lightAmplitude: 0.75,
+            phaseOffset: index / anchorOffsets.length,
+            speed: 0.22,
           });
 
           anchorsGroup.add(anchorGroup);
@@ -4392,6 +4394,61 @@
             const opacityPulse =
               opacityBase + Math.sin(elapsed * speed + phaseOffset) * opacityAmp;
             material.opacity = THREE.MathUtils.clamp(opacityPulse, 0, 1);
+          }
+        });
+        anchorPulseControllers.forEach((controller) => {
+          const {
+            capMaterial,
+            haloMaterial,
+            halo,
+            light,
+            baseCapIntensity = 0,
+            capAmplitude = 0,
+            baseHaloIntensity = 0,
+            haloAmplitude = 0,
+            baseHaloOpacity,
+            haloOpacityAmplitude = 0,
+            haloScaleAmplitude = 0,
+            baseLightIntensity = 0,
+            lightAmplitude = 0,
+            phaseOffset = 0,
+            speed = 0.22,
+          } = controller;
+
+          const angle = (elapsed * speed + phaseOffset) * Math.PI * 2;
+          const normalized = 0.5 + 0.5 * Math.sin(angle);
+          const emphasis = normalized * normalized;
+
+          if (capMaterial && typeof capMaterial.emissiveIntensity === 'number') {
+            capMaterial.emissiveIntensity = Math.max(
+              0,
+              baseCapIntensity + capAmplitude * emphasis,
+            );
+          }
+
+          if (haloMaterial && typeof haloMaterial.emissiveIntensity === 'number') {
+            haloMaterial.emissiveIntensity = Math.max(
+              0,
+              baseHaloIntensity + haloAmplitude * emphasis,
+            );
+
+            if (typeof baseHaloOpacity === 'number' && haloMaterial.transparent) {
+              const opacityPulse = THREE.MathUtils.clamp(
+                baseHaloOpacity + haloOpacityAmplitude * (emphasis - 0.5),
+                0,
+                1,
+              );
+              haloMaterial.opacity = opacityPulse;
+            }
+          }
+
+          if (halo) {
+            const scale = 1 + haloScaleAmplitude * emphasis;
+            halo.scale.setScalar(scale);
+          }
+
+          if (light) {
+            light.intensity = baseLightIntensity + lightAmplitude * emphasis;
           }
         });
         yarnFlowControllers.forEach((controller) => {
