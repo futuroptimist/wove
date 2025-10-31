@@ -21,3 +21,23 @@ def test_viewer_planner_preview_matches_fixture() -> None:
     fixture_preview = FIXTURE_PREVIEW.read_text(encoding="utf-8")
 
     assert viewer_preview == fixture_preview
+
+
+def test_viewer_exposes_planner_defaults_panel() -> None:
+    """The overlay should advertise the planner defaults list."""
+
+    html = (PROJECT_ROOT / "viewer" / "index.html").read_text(encoding="utf-8")
+
+    assert "pattern-defaults-status" in html
+    assert "Loading planner defaults…" in html
+    assert "Planner defaults unavailable." in html
+
+
+def test_viewer_ships_fallback_pattern_defaults() -> None:
+    """Ensure fallback planner defaults include feed rate metadata."""
+
+    html = (PROJECT_ROOT / "viewer" / "index.html").read_text(encoding="utf-8")
+
+    assert "fallbackPatternDefaults" in html
+    assert "travel_feed_rate_mm_min" in html
+    assert "default_row_height_mm" in html

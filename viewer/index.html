@@ -121,6 +121,34 @@
         transition: width 0.18s ease-out;
       }
 
+      #pattern-defaults {
+        margin-top: 0.8rem;
+        padding: 0.75rem 0.9rem;
+        border-radius: 0.65rem;
+        background: rgba(255, 215, 179, 0.08);
+        border: 1px solid rgba(255, 194, 125, 0.18);
+      }
+
+      #pattern-defaults-status {
+        margin: 0 0 0.5rem;
+        font-size: 0.84rem;
+        line-height: 1.35;
+        color: #ffe7c9;
+      }
+
+      #pattern-defaults-list {
+        margin: 0;
+        padding-left: 1.1rem;
+        list-style: disc;
+        font-size: 0.84rem;
+        line-height: 1.35;
+        color: #ffe7c9;
+      }
+
+      #pattern-defaults-list li {
+        margin-bottom: 0.3rem;
+      }
+
       #machine-panel {
         margin-top: 1rem;
         padding-top: 1rem;
@@ -258,6 +286,12 @@
         <p id="pattern-bounds" data-tone="neutral">
           Planner bounds warming up…
         </p>
+        <div id="pattern-defaults">
+          <p id="pattern-defaults-status" data-tone="info">
+            Loading planner defaults…
+          </p>
+          <ul id="pattern-defaults-list"></ul>
+        </div>
       </div>
       <div id="machine-panel">
         <h2>Machine Profile</h2>
@@ -296,6 +330,10 @@
       const patternProgressBarElement = document.getElementById('pattern-progress-bar');
       const patternPositionElement = document.getElementById('pattern-position');
       const patternBoundsElement = document.getElementById('pattern-bounds');
+      const patternDefaultsStatusElement = document.getElementById(
+        'pattern-defaults-status',
+      );
+      const patternDefaultsListElement = document.getElementById('pattern-defaults-list');
       const machineProfileStatusElement = document.getElementById('machine-profile-status');
       const machineProfileAxesElement = document.getElementById('machine-profile-axes');
       const homingGuardStatusElement = document.getElementById('homing-guard-status');
@@ -336,7 +374,18 @@
         { comment: 'single stitch 1 of 1: raise', x: 0.0, y: 12.0, z: 4.0, extrusion: 2.1 },
         { comment: 'single stitch 1 of 1: advance', x: 4.5, y: 12.0, z: 4.0, extrusion: 2.1 },
       ];
+      const fallbackPatternDefaults = {
+        safe_z_mm: 4.0,
+        fabric_plane_z_mm: 0.0,
+        travel_feed_rate_mm_min: 1200,
+        plunge_feed_rate_mm_min: 600,
+        yarn_feed_rate_mm_min: 300,
+        default_row_height_mm: 6.0,
+        require_home: false,
+        home_state: 'unknown',
+      };
       Object.freeze(fallbackPatternPlannerEvents);
+      Object.freeze(fallbackPatternDefaults);
       const yarnFlowControllers = [];
       const yarnPulseControllers = [];
       const yarnBeadControllers = [];
@@ -355,6 +404,8 @@
         'Homing guard metadata unavailable. Export planner defaults.require_home and defaults.home_state.';
       const patternBoundsFallbackMessage =
         'Planner bounds unavailable. Export --format planner payloads with bounds to preview the motion envelope.';
+      const patternDefaultsFallbackMessage =
+        'Planner defaults unavailable. Export planner payloads with defaults metadata to surface feed and height settings.';
       let plannerDefaults = null;
 
       const FRAME_HALF_WIDTH = 3.6;
@@ -687,6 +738,64 @@
         setTone(patternBoundsElement, 'info');
       }
 
+      function updatePlannerDefaultsPanel(defaults) {
+        if (!patternDefaultsStatusElement || !patternDefaultsListElement) {
+          return;
+        }
+
+        while (patternDefaultsListElement.firstChild) {
+          patternDefaultsListElement.removeChild(patternDefaultsListElement.firstChild);
+        }
+
+        const data = defaults && typeof defaults === 'object' ? defaults : null;
+        const entries = [];
+
+        const safeZ = Number(data?.safe_z_mm);
+        if (Number.isFinite(safeZ)) {
+          entries.push({ label: 'Safe Z height', value: `${safeZ.toFixed(1)} mm` });
+        }
+
+        const fabricPlane = Number(data?.fabric_plane_z_mm);
+        if (Number.isFinite(fabricPlane)) {
+          entries.push({ label: 'Fabric plane', value: `${fabricPlane.toFixed(1)} mm` });
+        }
+
+        const rowHeight = Number(data?.default_row_height_mm);
+        if (Number.isFinite(rowHeight)) {
+          entries.push({ label: 'Row height', value: `${rowHeight.toFixed(1)} mm` });
+        }
+
+        const travelFeed = Number(data?.travel_feed_rate_mm_min);
+        if (Number.isFinite(travelFeed)) {
+          entries.push({ label: 'Travel feed', value: `${travelFeed.toFixed(0)} mm/min` });
+        }
+
+        const plungeFeed = Number(data?.plunge_feed_rate_mm_min);
+        if (Number.isFinite(plungeFeed)) {
+          entries.push({ label: 'Plunge feed', value: `${plungeFeed.toFixed(0)} mm/min` });
+        }
+
+        const yarnFeed = Number(data?.yarn_feed_rate_mm_min);
+        if (Number.isFinite(yarnFeed)) {
+          entries.push({ label: 'Yarn feed', value: `${yarnFeed.toFixed(0)} mm/min` });
+        }
+
+        if (entries.length === 0) {
+          patternDefaultsStatusElement.textContent = patternDefaultsFallbackMessage;
+          setTone(patternDefaultsStatusElement, 'warning');
+          return;
+        }
+
+        patternDefaultsStatusElement.textContent = 'Planner defaults:';
+        setTone(patternDefaultsStatusElement, 'info');
+
+        entries.forEach(({ label, value }) => {
+          const listItem = document.createElement('li');
+          listItem.textContent = `${label}: ${value}`;
+          patternDefaultsListElement.appendChild(listItem);
+        });
+      }
+
       function setTone(element, tone) {
         if (!element) {
           return;
@@ -782,6 +891,7 @@
               : null;
         }
         updateHomingGuardPanel(plannerDefaults);
+        updatePlannerDefaultsPanel(plannerDefaults);
 
         patternPlannerEvents = Array.isArray(events) ? [...events] : [];
         const providedBounds = Object.prototype.hasOwnProperty.call(options, 'bounds')
@@ -916,7 +1026,7 @@
         } catch (error) {
           console.warn('Unable to load planner preview', error);
           applyPatternPlannerEvents(fallbackPatternPlannerEvents, {
-            defaults: { require_home: false, home_state: 'unknown' },
+            defaults: { ...fallbackPatternDefaults },
           });
           updateMachineProfilePanel(null);
           if (statusElement) {
