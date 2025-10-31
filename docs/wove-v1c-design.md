@@ -255,7 +255,10 @@ hardware.
   the hologram animates. A Planner Defaults list now surfaces the safe Z height,
   fabric plane, row spacing, and feed-rate settings embedded in the planner
   export so operators can reconcile the viewer preview with CLI configuration
-  before a dry run. A companion Machine Profile panel lists the
+  before a dry run. A Yarn Flow monitor in the overlay mirrors the glowing PTFE
+  tube, flipping between feed-active and idle states so the hologram, spool
+  animation, and status text stay synchronized. A companion Machine Profile
+  panel lists the
   microstepping, steps-per-millimeter, and travel bounds from planner exports so
   technicians can confirm the browser preview mirrors the configured gantry
   before committing motion to hardware. The Homing Guard overlay highlights the

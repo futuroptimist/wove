@@ -41,3 +41,5 @@ def test_viewer_ships_fallback_pattern_defaults() -> None:
     assert "fallbackPatternDefaults" in html
     assert "travel_feed_rate_mm_min" in html
     assert "default_row_height_mm" in html
+    assert "yarnFlowStatusFallbackMessage" in html
+    assert "yarnFlowSpoolFallbackMessage" in html
