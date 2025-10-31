@@ -81,6 +81,15 @@ def test_tension_lab_mentions_servo_adjuster() -> None:
     assert "Servo Tensioner Prototype" in html
 
 
+def test_viewer_animates_servo_adjuster() -> None:
+    """Servo controllers should pulse in sync with yarn feed events."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+    assert "const servoActuatorControllers" in html
+    assert "servoActuatorControllers.push" in html
+    assert "servoSignalControllers.push" in html
+
+
 def test_viewer_mentions_selection_ring_glow() -> None:
     """The viewer should document the pulsing roadmap selection ring."""
 

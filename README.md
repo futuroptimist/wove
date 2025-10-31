@@ -143,7 +143,9 @@ Studio panel.
   center of the plaza.
 - **Tension Lab** – stages the hall-effect calibration rig that feeds future
   servo-driven yarn tensioners, complete with a prototype micro-servo adjuster
-  pulsing on the bench.
+  pulsing on the bench. Watch the horn pivot and the status orb brighten
+  whenever the planner preview feeds yarn so teams can rehearse programmable
+  pulls.
 - **Material Prep Pod** – organizes yarn cones, prep bins, and inspection
   checklists so dye lots and weights are verified before automation runs.
 - **Pattern Studio** – previews the planner workspace that visualizes

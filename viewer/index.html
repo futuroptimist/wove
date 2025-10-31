@@ -426,6 +426,8 @@
       const yarnPulseControllers = [];
       const yarnBeadControllers = [];
       const spoolControllers = [];
+      const servoActuatorControllers = [];
+      const servoSignalControllers = [];
       let yarnExtrusionActive = false;
       let patternPlannerEvents = [];
       let patternPreviewGroup = null;
@@ -3622,44 +3624,73 @@
           phaseOffset: 0.6,
         });
 
+        const servoPivot = new THREE.Group();
+        servoPivot.position.set(0.92, 0.5, -0.28);
+        group.add(servoPivot);
+
+        const servoHornMaterial = new THREE.MeshStandardMaterial({
+          color: 0xfff1c6,
+          metalness: 0.48,
+          roughness: 0.22,
+          emissive: 0x7a5b1f,
+          emissiveIntensity: 0.55,
+        });
         const servoHorn = new THREE.Mesh(
           new THREE.CylinderGeometry(0.06, 0.06, 0.24, 24),
-          new THREE.MeshStandardMaterial({
-            color: 0xfff1c6,
-            metalness: 0.48,
-            roughness: 0.22,
-            emissive: 0x7a5b1f,
-            emissiveIntensity: 0.55,
-          }),
+          servoHornMaterial,
         );
         servoHorn.rotation.z = Math.PI / 2;
-        servoHorn.position.set(1.04, 0.5, -0.28);
+        servoHorn.position.set(0.12, 0, 0);
         servoHorn.castShadow = true;
-        group.add(servoHorn);
+        servoPivot.add(servoHorn);
+        safeAccessHighlights.push({
+          material: servoHornMaterial,
+          baseIntensity: 0.55,
+          amplitude: 0.25,
+          speed: 2.4,
+          phaseOffset: 0.8,
+        });
 
+        const linkageDirection = new THREE.Vector3(-0.24, 0, 0.2);
+        const linkageLength = linkageDirection.length();
+        const linkageMaterial = new THREE.MeshStandardMaterial({
+          color: 0xc7d6ff,
+          metalness: 0.55,
+          roughness: 0.28,
+          emissive: 0x2c3d73,
+          emissiveIntensity: 0.45,
+        });
         const linkage = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.018, 0.018, 0.62, 16),
-          new THREE.MeshStandardMaterial({
-            color: 0xc7d6ff,
-            metalness: 0.55,
-            roughness: 0.28,
-            emissive: 0x2c3d73,
-            emissiveIntensity: 0.45,
-          }),
+          new THREE.CylinderGeometry(0.018, 0.018, linkageLength, 16),
+          linkageMaterial,
         );
-        linkage.rotation.z = -Math.PI / 5.5;
-        linkage.position.set(0.68, 0.5, -0.08);
+        const linkageQuaternion = new THREE.Quaternion().setFromUnitVectors(
+          new THREE.Vector3(0, 1, 0),
+          linkageDirection.clone().normalize(),
+        );
+        linkage.quaternion.copy(linkageQuaternion);
+        linkage.position.copy(linkageDirection.clone().multiplyScalar(0.5));
         linkage.castShadow = true;
-        group.add(linkage);
+        servoPivot.add(linkage);
+
+        const servoRestAngle = THREE.MathUtils.degToRad(-10);
+        const servoActiveAngle = THREE.MathUtils.degToRad(12);
+        servoPivot.rotation.y = servoRestAngle;
+        servoActuatorControllers.push({
+          pivot: servoPivot,
+          restAngle: servoRestAngle,
+          activeAngle: servoActiveAngle,
+          damping: 6.5,
+        });
 
         const servoIndicatorMaterial = new THREE.MeshStandardMaterial({
           color: 0xfff4c9,
           emissive: 0xffb347,
-          emissiveIntensity: 0.9,
+          emissiveIntensity: 0.25,
           metalness: 0.25,
           roughness: 0.28,
           transparent: true,
-          opacity: 0.85,
+          opacity: 0.35,
         });
         const servoIndicator = new THREE.Mesh(
           new THREE.SphereGeometry(0.06, 18, 18),
@@ -3668,14 +3699,13 @@
         servoIndicator.position.set(0.86, 0.6, -0.42);
         servoIndicator.castShadow = true;
         group.add(servoIndicator);
-        safeAccessHighlights.push({
+        servoSignalControllers.push({
           material: servoIndicatorMaterial,
-          baseIntensity: 0.9,
-          amplitude: 0.4,
-          speed: 2.8,
-          phaseOffset: 0.9,
-          baseOpacity: 0.85,
-          opacityAmplitude: 0.08,
+          restIntensity: 0.25,
+          activeIntensity: 1.2,
+          restOpacity: 0.35,
+          activeOpacity: 0.9,
+          damping: 5.5,
         });
 
         const servoLight = new THREE.PointLight(0xffd89c, 0.9, 3.2);
@@ -4506,6 +4536,54 @@
             mesh.rotation.z += rotationDelta;
           } else {
             mesh.rotateX(rotationDelta);
+          }
+        });
+        servoActuatorControllers.forEach((controller) => {
+          const { pivot, restAngle = 0, activeAngle = 0, damping = 6.0 } = controller;
+          if (!pivot) {
+            return;
+          }
+          const targetAngle = yarnExtrusionActive ? activeAngle : restAngle;
+          const currentAngle = THREE.MathUtils.damp(
+            controller.currentAngle ?? pivot.rotation.y,
+            targetAngle,
+            damping,
+            delta,
+          );
+          controller.currentAngle = currentAngle;
+          pivot.rotation.y = currentAngle;
+        });
+        servoSignalControllers.forEach((controller) => {
+          const {
+            material,
+            restIntensity = 0.3,
+            activeIntensity = 1.0,
+            restOpacity = controller.restOpacity ?? material?.opacity ?? 1,
+            activeOpacity = controller.activeOpacity ?? controller.restOpacity ?? material?.opacity ?? 1,
+            damping = 5.0,
+          } = controller;
+          if (!material) {
+            return;
+          }
+          const targetIntensity = yarnExtrusionActive ? activeIntensity : restIntensity;
+          controller.currentIntensity = THREE.MathUtils.damp(
+            controller.currentIntensity ?? targetIntensity,
+            targetIntensity,
+            damping,
+            delta,
+          );
+          material.emissiveIntensity = controller.currentIntensity;
+
+          if (typeof material.opacity === 'number') {
+            const targetOpacity = yarnExtrusionActive ? activeOpacity : restOpacity;
+            controller.currentOpacity = THREE.MathUtils.damp(
+              controller.currentOpacity ?? targetOpacity,
+              targetOpacity,
+              damping,
+              delta,
+            );
+            material.opacity = controller.currentOpacity;
+            material.transparent = true;
           }
         });
         if (selectionRingGroup.visible && selectionSweep) {
