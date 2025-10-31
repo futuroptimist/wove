@@ -105,6 +105,10 @@ the CLI fixtures, so the hologram stays aligned with the documented base chain
 row recipe. Automated tests compare that asset against `PatternTranslator`
 output to flag drift whenever the CLI evolves.
 
+The overlay's Planner Defaults list calls out the safe Z height, fabric plane,
+row height, and feed-rate defaults from the planner export so operators can
+validate the viewer preview against CLI settings before rehearsing motion.
+
 A translucent planner bounds frame now wraps the hologram while the overlay
 lists the X/Y/Z/E limits emitted by the planner payload so teams can confirm the
 motion envelope before committing the sequence to hardware.
