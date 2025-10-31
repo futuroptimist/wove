@@ -105,6 +105,11 @@ the CLI fixtures, so the hologram stays aligned with the documented base chain
 row recipe. Automated tests compare that asset against `PatternTranslator`
 output to flag drift whenever the CLI evolves.
 
+The new **Yarn Feed Monitor** panel highlights whether the spool is actively
+feeding fiber and reports how much yarn the planner sequence extrudes. Monitor
+the delivered length alongside the animated spool so operators know how much
+material a dry run will consume before loading the machine.
+
 A translucent planner bounds frame now wraps the hologram while the overlay
 lists the X/Y/Z/E limits emitted by the planner payload so teams can confirm the
 motion envelope before committing the sequence to hardware.
