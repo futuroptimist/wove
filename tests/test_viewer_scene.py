@@ -38,6 +38,16 @@ def test_pattern_preview_overlay_panel_present() -> None:
     assert "Planner preview warming up." in html
 
 
+def test_viewer_surfaces_yarn_feed_monitor() -> None:
+    """The overlay should provide yarn feed status details."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "Yarn Feed Monitor" in html
+    assert "yarn-feed-status" in html
+    assert "Tracking yarn feed activity" in html
+
+
 def test_viewer_documents_planner_bounds_overlay() -> None:
     """The overlay should advertise the planner bounds helper."""
 

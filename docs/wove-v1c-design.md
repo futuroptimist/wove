@@ -258,7 +258,10 @@ hardware.
   export captured a verified homing cycle and calling attention to plans that
   need a fresh homing run. The same panel now streams live `X`, `Y`, `Z`, and
   yarn-feed coordinates so contributors can note the precise motion snapshot as
-  the hologram advances.
+  the hologram advances. A dedicated Yarn Feed Monitor panel mirrors the spool
+  animation by flagging when extrusion is active and tallying the yarn length a
+  planner sequence consumes so calibration crews can plan material usage before
+  loading hardware.
 
 ## Bill of Materials (Initial Release)
 | Subsystem | Component | Qty | Notes |

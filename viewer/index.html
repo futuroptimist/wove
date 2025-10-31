@@ -121,6 +121,27 @@
         transition: width 0.18s ease-out;
       }
 
+      #yarn-panel {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(245, 245, 245, 0.12);
+      }
+
+      #yarn-panel h2 {
+        margin: 0 0 0.35rem;
+        font-size: 0.95rem;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        color: #9fffd7;
+      }
+
+      #yarn-panel p {
+        margin: 0 0 0.45rem;
+        font-size: 0.86rem;
+        line-height: 1.4;
+        color: #d5fff0;
+      }
+
       #machine-panel {
         margin-top: 1rem;
         padding-top: 1rem;
@@ -259,6 +280,15 @@
           Planner bounds warming up…
         </p>
       </div>
+      <div id="yarn-panel">
+        <h2>Yarn Feed Monitor</h2>
+        <p id="yarn-feed-status" data-tone="neutral">
+          Tracking yarn feed activity…
+        </p>
+        <p id="yarn-feed-progress" data-tone="neutral">
+          Yarn delivered: awaiting planner data.
+        </p>
+      </div>
       <div id="machine-panel">
         <h2>Machine Profile</h2>
         <p id="machine-profile-status">Loading machine profile metadata…</p>
@@ -296,6 +326,8 @@
       const patternProgressBarElement = document.getElementById('pattern-progress-bar');
       const patternPositionElement = document.getElementById('pattern-position');
       const patternBoundsElement = document.getElementById('pattern-bounds');
+      const yarnFeedStatusElement = document.getElementById('yarn-feed-status');
+      const yarnFeedProgressElement = document.getElementById('yarn-feed-progress');
       const machineProfileStatusElement = document.getElementById('machine-profile-status');
       const machineProfileAxesElement = document.getElementById('machine-profile-axes');
       const homingGuardStatusElement = document.getElementById('homing-guard-status');
@@ -346,6 +378,7 @@
       let patternPreviewGroup = null;
       let patternPreviewContainer = null;
       let plannerBounds = null;
+      let yarnExtrusionStats = null;
       const patternPreviewDurationSeconds = 14;
       let lastPatternStepIndex = -1;
       let lastPatternProgress = -1;
@@ -355,6 +388,9 @@
         'Homing guard metadata unavailable. Export planner defaults.require_home and defaults.home_state.';
       const patternBoundsFallbackMessage =
         'Planner bounds unavailable. Export --format planner payloads with bounds to preview the motion envelope.';
+      const yarnFeedFallbackStatus =
+        'Yarn feed status unavailable. Export planner events with extrusion data to populate the monitor.';
+      const yarnFeedFallbackProgress = 'Yarn delivered: awaiting extrusion metrics.';
       let plannerDefaults = null;
 
       const FRAME_HALF_WIDTH = 3.6;
@@ -789,6 +825,10 @@
           : null;
         plannerBounds = providedBounds ?? computeBoundsFromEvents(patternPlannerEvents);
         updatePatternBoundsOverlay(plannerBounds);
+        yarnExtrusionStats = computeExtrusionStats(patternPlannerEvents);
+        if (!yarnExtrusionStats && patternPlannerEvents.length === 0) {
+          resetYarnFeedPanel();
+        }
 
         if (patternPreviewContainer) {
           if (patternPreviewGroup) {
@@ -821,6 +861,7 @@
             patternPositionElement.textContent = 'Position: Awaiting planner coordinates…';
             setTone(patternPositionElement, 'neutral');
           }
+          resetYarnFeedPanel();
         }
       }
 
@@ -1210,6 +1251,7 @@
               'Position: Awaiting planner coordinates…';
             setTone(patternPositionElement, 'neutral');
           }
+          resetYarnFeedPanel();
           return;
         }
 
@@ -1240,6 +1282,7 @@
             patternPositionElement.textContent = `Position: ${positionSegments.join(' · ')}`;
             setTone(patternPositionElement, yarnExtrusionActive ? 'ready' : 'info');
           }
+          updateYarnFeedPanel(event, yarnExtrusionActive);
           lastPatternStepIndex = clampedIndex;
         }
 
@@ -1250,6 +1293,114 @@
           lastPatternProgress = clampedProgress;
         }
       }
+
+      function resetYarnFeedPanel() {
+        if (yarnFeedStatusElement) {
+          yarnFeedStatusElement.textContent = yarnFeedFallbackStatus;
+          setTone(yarnFeedStatusElement, 'neutral');
+        }
+        if (yarnFeedProgressElement) {
+          yarnFeedProgressElement.textContent = yarnFeedFallbackProgress;
+          setTone(yarnFeedProgressElement, 'neutral');
+        }
+      }
+
+      function computeExtrusionStats(events) {
+        if (!Array.isArray(events) || events.length === 0) {
+          return null;
+        }
+
+        let baseline = null;
+        let previous = null;
+        let total = 0;
+        let minValue = null;
+        let maxValue = null;
+
+        events.forEach((event) => {
+          const value = Number.isFinite(event?.extrusion) ? event.extrusion : null;
+          if (value === null) {
+            return;
+          }
+
+          if (baseline === null) {
+            baseline = value;
+            previous = value;
+            minValue = value;
+            maxValue = value;
+            return;
+          }
+
+          if (minValue === null || value < minValue) {
+            minValue = value;
+          }
+          if (maxValue === null || value > maxValue) {
+            maxValue = value;
+          }
+
+          if (Number.isFinite(previous)) {
+            const delta = value - previous;
+            if (delta > 0) {
+              total += delta;
+            }
+          }
+          previous = value;
+        });
+
+        if (baseline === null) {
+          return null;
+        }
+
+        return {
+          baseline,
+          min: minValue ?? baseline,
+          max: maxValue ?? baseline,
+          total: Math.max(total, 0),
+        };
+      }
+
+      function updateYarnFeedPanel(event, extrusionActive) {
+        if (!yarnFeedStatusElement || !yarnFeedProgressElement) {
+          return;
+        }
+
+        if (!yarnExtrusionStats) {
+          resetYarnFeedPanel();
+          return;
+        }
+
+        const currentExtrusion = Number.isFinite(event?.extrusion) ? event.extrusion : null;
+        const { baseline, total, max, min } = yarnExtrusionStats;
+
+        if (extrusionActive) {
+          yarnFeedStatusElement.textContent = 'Yarn feed active — monitoring spool output.';
+          setTone(yarnFeedStatusElement, 'ready');
+        } else {
+          yarnFeedStatusElement.textContent = 'Yarn feed idle.';
+          setTone(yarnFeedStatusElement, 'info');
+        }
+
+        if (currentExtrusion === null) {
+          yarnFeedProgressElement.textContent = 'Yarn delivered: awaiting extrusion metrics.';
+          setTone(yarnFeedProgressElement, 'warning');
+          return;
+        }
+
+        const delivered = Math.max(0, currentExtrusion - (baseline ?? 0));
+        const totalSpan = total > 0 ? total : Math.max((max ?? currentExtrusion) - (min ?? 0), 0);
+        if (totalSpan <= 0) {
+          yarnFeedProgressElement.textContent = `Yarn delivered: ${delivered.toFixed(2)} mm`;
+          setTone(yarnFeedProgressElement, 'info');
+          return;
+        }
+
+        const clampedDelivered = Math.min(delivered, totalSpan);
+        const percent = (clampedDelivered / totalSpan) * 100;
+        yarnFeedProgressElement.textContent = `Yarn delivered: ${clampedDelivered.toFixed(2)} mm of ${totalSpan.toFixed(
+          2,
+        )} mm (${percent.toFixed(0)}%)`;
+        setTone(yarnFeedProgressElement, extrusionActive ? 'ready' : 'info');
+      }
+
       function updatePatternPreview(elapsedSeconds) {
         if (!patternPreviewGroup) {
           return;
