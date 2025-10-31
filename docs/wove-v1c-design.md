@@ -167,7 +167,9 @@ target pull force before commanding the actuator.
 The calibration bench inside the Tension Lab renders that automation path. The Three.js viewer now
 parks a micro-servo tension adjuster beside the load-cell carriage with a glowing status light so
 contributors can see how programmable feed loops interface with the spool rig before printing
-hardware.
+hardware. The horn now sweeps through its pull stroke whenever the planner preview feeds yarn and
+the status orb brightens in step, making the servo-driven tension cues obvious from the plaza
+overview.
 
 ### Frame and Build Volume
 - **Frame**: 20x20 mm aluminum extrusion perimeter with printed corner cubes and feet. Designed for
@@ -256,7 +258,10 @@ hardware.
   the hologram animates. A Planner Defaults list now surfaces the safe Z height,
   fabric plane, row spacing, and feed-rate settings embedded in the planner
   export so operators can reconcile the viewer preview with CLI configuration
-  before a dry run. A companion Machine Profile panel lists the
+  before a dry run. A Yarn Flow monitor in the overlay mirrors the glowing PTFE
+  tube, flipping between feed-active and idle states so the hologram, spool
+  animation, and status text stay synchronized. A companion Machine Profile
+  panel lists the
   microstepping, steps-per-millimeter, and travel bounds from planner exports so
   technicians can confirm the browser preview mirrors the configured gantry
   before committing motion to hardware. The Homing Guard overlay highlights the

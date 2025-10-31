@@ -113,6 +113,12 @@ The overlay's Planner Defaults list calls out the safe Z height, fabric plane,
 row height, and feed-rate defaults from the planner export so operators can
 validate the viewer preview against CLI settings before rehearsing motion.
 
+A Yarn Flow monitor in the overlay mirrors the hologram's yarn feed state,
+calling out when the planner is actively pulling fiber and when the spool is
+parked between feed events. The status flips in sync with the glowing PTFE
+guide so teams can see software, animation, and spool choreography agree before
+running hardware.
+
 A translucent planner bounds frame now wraps the hologram while the overlay
 lists the X/Y/Z/E limits emitted by the planner payload so teams can confirm the
 motion envelope before committing the sequence to hardware.
@@ -138,7 +144,9 @@ Studio panel.
   center of the plaza.
 - **Tension Lab** – stages the hall-effect calibration rig that feeds future
   servo-driven yarn tensioners, complete with a prototype micro-servo adjuster
-  pulsing on the bench.
+  pulsing on the bench. Watch the horn pivot and the status orb brighten
+  whenever the planner preview feeds yarn so teams can rehearse programmable
+  pulls.
 - **Material Prep Pod** – organizes yarn cones, prep bins, and inspection
   checklists so dye lots and weights are verified before automation runs.
 - **Pattern Studio** – previews the planner workspace that visualizes
