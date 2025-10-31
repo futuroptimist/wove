@@ -121,7 +121,10 @@ aligned with the configured gantry before rehearsing motion sequences.
 The new **Homing Guard** panel highlights whether the planner required a homed
 machine and echoes the captured `home_state`. Green and amber tones flag when a
 preview came from a verified homing cycle or needs attention so operators can
-double-check the gantry status before executing the motion sequence.
+double-check the gantry status before executing the motion sequence. It now
+echoes the live planner coordinates alongside those status lights so the safety
+overlay tracks the same `X`, `Y`, `Z`, and yarn-feed snapshot as the Pattern
+Studio panel.
 
 - **v1c Crochet Robot** – anchors the mechanical platform showcased at the
   center of the plaza.

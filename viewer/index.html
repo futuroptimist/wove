@@ -272,6 +272,9 @@
         <p id="homing-guard-home-state" data-tone="info">
           Waiting for planner defaults…
         </p>
+        <p id="homing-guard-position" data-tone="neutral">
+          Coordinates: Awaiting planner coordinates…
+        </p>
       </div>
     </div>
     <div id="status">Initializing viewer…</div>
@@ -302,6 +305,7 @@
       const homingGuardHomeStateElement = document.getElementById(
         'homing-guard-home-state',
       );
+      const homingGuardPositionElement = document.getElementById('homing-guard-position');
 
       const pointer = new THREE.Vector2();
       const raycaster = new THREE.Raycaster();
@@ -353,6 +357,8 @@
         'Machine profile metadata unavailable. Export with --machine-profile to surface axis settings.';
       const homingGuardFallbackMessage =
         'Homing guard metadata unavailable. Export planner defaults.require_home and defaults.home_state.';
+      const homingGuardPositionFallbackMessage =
+        'Coordinates: Awaiting planner coordinates…';
       const patternBoundsFallbackMessage =
         'Planner bounds unavailable. Export --format planner payloads with bounds to preview the motion envelope.';
       let plannerDefaults = null;
@@ -821,6 +827,10 @@
             patternPositionElement.textContent = 'Position: Awaiting planner coordinates…';
             setTone(patternPositionElement, 'neutral');
           }
+          if (homingGuardPositionElement) {
+            homingGuardPositionElement.textContent = homingGuardPositionFallbackMessage;
+            setTone(homingGuardPositionElement, 'neutral');
+          }
         }
       }
 
@@ -1210,6 +1220,10 @@
               'Position: Awaiting planner coordinates…';
             setTone(patternPositionElement, 'neutral');
           }
+          if (homingGuardPositionElement) {
+            homingGuardPositionElement.textContent = homingGuardPositionFallbackMessage;
+            setTone(homingGuardPositionElement, 'neutral');
+          }
           return;
         }
 
@@ -1239,6 +1253,10 @@
             ];
             patternPositionElement.textContent = `Position: ${positionSegments.join(' · ')}`;
             setTone(patternPositionElement, yarnExtrusionActive ? 'ready' : 'info');
+            if (homingGuardPositionElement) {
+              homingGuardPositionElement.textContent = `Coordinates: ${positionSegments.join(' · ')}`;
+              setTone(homingGuardPositionElement, yarnExtrusionActive ? 'ready' : 'info');
+            }
           }
           lastPatternStepIndex = clampedIndex;
         }
