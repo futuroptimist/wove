@@ -14,7 +14,10 @@ def test_viewer_exposes_roadmap_panel() -> None:
     for snippet in [
         'id="roadmap-title"',
         "function selectCluster",
-        "Click a pedestal to spotlight its roadmap milestone and watch the camera glide to frame it.",
+        (
+            "Click a pedestal to spotlight its roadmap milestone and watch the camera "
+            "glide to frame it."
+        ),
     ]:
         assert snippet in viewer_html
 
