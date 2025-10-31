@@ -2534,6 +2534,139 @@
           'Dual-axis gantry lifts the crocheting effector while guiding yarn tension.',
         );
 
+        const zLiftGroup = new THREE.Group();
+        zLiftGroup.name = 'z-axis-leadscrew';
+        zLiftGroup.position.set(1.45, 0.8, 0.3);
+
+        const zStepperMaterial = new THREE.MeshStandardMaterial({
+          color: 0x1c1f2b,
+          metalness: 0.55,
+          roughness: 0.32,
+          emissive: 0x0b0e18,
+          emissiveIntensity: 0.35,
+        });
+        const zStepperHeight = 0.6;
+        const zStepper = new THREE.Mesh(
+          new THREE.BoxGeometry(0.62, zStepperHeight, 0.62),
+          zStepperMaterial,
+        );
+        zStepper.position.set(0, zStepperHeight / 2, 0);
+        zStepper.castShadow = true;
+        zStepper.receiveShadow = true;
+        zLiftGroup.add(zStepper);
+        addHoverInfo(
+          zStepper,
+          'Compact Z stepper — drives the leadscrew for hook penetration control.',
+        );
+
+        const couplerMaterial = new THREE.MeshStandardMaterial({
+          color: 0x3c4b6d,
+          metalness: 0.7,
+          roughness: 0.3,
+          emissive: 0x1d2b47,
+          emissiveIntensity: 0.4,
+        });
+        const coupler = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.22, 0.22, 0.18, 24),
+          couplerMaterial,
+        );
+        coupler.position.set(0, zStepperHeight + 0.09, 0);
+        coupler.castShadow = true;
+        coupler.receiveShadow = true;
+        zLiftGroup.add(coupler);
+
+        const leadscrewMaterial = new THREE.MeshStandardMaterial({
+          color: 0xc7d8ff,
+          metalness: 0.85,
+          roughness: 0.22,
+          emissive: 0x415073,
+          emissiveIntensity: 0.35,
+        });
+        const leadscrewHeight = 3.5;
+        const leadscrew = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.11, 0.11, leadscrewHeight, 48),
+          leadscrewMaterial,
+        );
+        leadscrew.position.set(0, zStepperHeight + 0.18 + leadscrewHeight / 2, 0);
+        leadscrew.castShadow = true;
+        leadscrew.receiveShadow = true;
+        zLiftGroup.add(leadscrew);
+        addHoverInfo(
+          leadscrew,
+          'Z-axis T8 leadscrew — raises the hook carriage with a 2 mm pitch.',
+        );
+        safeAccessHighlights.push({
+          material: leadscrewMaterial,
+          baseIntensity: 0.35,
+          amplitude: 0.22,
+          speed: 1.8,
+          phaseOffset: 0.3,
+        });
+
+        const nutMaterial = new THREE.MeshStandardMaterial({
+          color: 0xffe0ad,
+          metalness: 0.7,
+          roughness: 0.28,
+          emissive: 0x6a3910,
+          emissiveIntensity: 0.5,
+        });
+        const nut = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.26, 32), nutMaterial);
+        nut.position.set(0, zStepperHeight + 1.74, 0);
+        nut.castShadow = true;
+        nut.receiveShadow = true;
+        zLiftGroup.add(nut);
+        addHoverInfo(
+          nut,
+          'Anti-backlash nut — preloads the Z carriage to suppress wobble.',
+        );
+        safeAccessHighlights.push({
+          material: nutMaterial,
+          baseIntensity: 0.55,
+          amplitude: 0.28,
+          speed: 2.4,
+          phaseOffset: 1.1,
+        });
+
+        const flexureMaterial = new THREE.MeshStandardMaterial({
+          color: 0xffc37a,
+          metalness: 0.4,
+          roughness: 0.32,
+          emissive: 0x703808,
+          emissiveIntensity: 0.45,
+        });
+        const flexureGeometry = new THREE.BoxGeometry(0.08, 0.42, 0.36);
+        const flexureOffset = 0.26;
+        [-1, 1].forEach((direction) => {
+          const flexure = new THREE.Mesh(flexureGeometry, flexureMaterial);
+          flexure.position.set(direction * flexureOffset, nut.position.y, 0);
+          flexure.castShadow = true;
+          flexure.receiveShadow = true;
+          zLiftGroup.add(flexure);
+        });
+        addHoverInfo(
+          zLiftGroup,
+          'Printed flexures clamp the anti-backlash nut and absorb carriage backlash.',
+          { passthrough: true },
+        );
+        safeAccessHighlights.push({
+          material: flexureMaterial,
+          baseIntensity: 0.5,
+          amplitude: 0.3,
+          speed: 2.0,
+          phaseOffset: 0.6,
+        });
+
+        const zLiftLabel = buildLabel('Z-Axis Leadscrew', '#d8f0ff');
+        zLiftLabel.position.set(0, zStepperHeight + leadscrewHeight + 0.7, 0);
+        zLiftLabel.scale.multiplyScalar(0.34);
+        zLiftGroup.add(zLiftLabel);
+
+        const zLiftGlow = new THREE.PointLight(0xaad6ff, 0.9, 3.2);
+        zLiftGlow.position.set(0, nut.position.y + 0.4, 0.2);
+        zLiftGroup.add(zLiftGlow);
+
+        group.add(zLiftGroup);
+
         const beltGuards = createBeltGuards();
         group.add(beltGuards);
 
