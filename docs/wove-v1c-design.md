@@ -35,7 +35,9 @@ Key modules include:
   of the actuator. The Three.js viewer now renders the fan mount and blades so teams can spot the
   cooling hardware during walkthroughs.
 - **Z Motion**: Leadscrew-driven lift (T8x2) moved by a compact stepper to set hook penetration
-  depth. Anti-backlash nut and printed flexures reduce play.
+  depth. Anti-backlash nut and printed flexures reduce play. The Three.js viewer now spotlights
+  the Z-axis leadscrew, anti-backlash nut, and flexures beside the hook carriage so contributors
+  can rehearse how the lift assembly suppresses wobble before printing hardware.
 
 (yarn-handling)=
 ### Yarn Handling {#yarn-handling}

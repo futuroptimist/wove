@@ -121,3 +121,12 @@ def test_viewer_limits_yarn_beads_to_trio() -> None:
 
     html = VIEWER_HTML.read_text(encoding="utf-8")
     assert "const beadCount = 3" in html
+
+
+def test_viewer_mentions_z_axis_leadscrew() -> None:
+    """The scene should describe the Z-axis leadscrew lift assembly."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+    assert "Z-axis T8 leadscrew" in html
+    assert "Anti-backlash nut — preloads the Z carriage" in html
+    assert "Compact Z stepper" in html
