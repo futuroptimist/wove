@@ -443,6 +443,7 @@
       const maxCameraRadius = 26;
       const cameraMoveDamping = 4.0;
       let userIsControllingCamera = false;
+      let cameraWasMovedByControls = false;
 
       const controls = new OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
@@ -454,15 +455,26 @@
 
       controls.addEventListener('start', () => {
         userIsControllingCamera = true;
+        cameraWasMovedByControls = false;
         desiredCameraTarget.copy(controls.target);
         desiredCameraPosition.copy(camera.position);
       });
 
+      controls.addEventListener('change', () => {
+        if (userIsControllingCamera) {
+          cameraWasMovedByControls = true;
+        }
+      });
+
       controls.addEventListener('end', () => {
         userIsControllingCamera = false;
-        currentCameraTarget.copy(controls.target);
-        desiredCameraTarget.copy(controls.target);
-        desiredCameraPosition.copy(camera.position);
+        if (cameraWasMovedByControls) {
+          currentCameraTarget.copy(controls.target);
+          desiredCameraTarget.copy(controls.target);
+          desiredCameraPosition.copy(camera.position);
+        } else {
+          controls.target.copy(currentCameraTarget);
+        }
       });
 
       const ambientLight = new THREE.AmbientLight(0xbac4ff, 0.5);
