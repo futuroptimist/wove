@@ -1282,7 +1282,7 @@
             patternPositionElement.textContent = `Position: ${positionSegments.join(' · ')}`;
             setTone(patternPositionElement, yarnExtrusionActive ? 'ready' : 'info');
           }
-          updateYarnFeedPanel(event, yarnExtrusionActive);
+          updateYarnFeedPanel(event, yarnExtrusionActive, clampedIndex);
           lastPatternStepIndex = clampedIndex;
         }
 
@@ -1313,12 +1313,15 @@
         let baseline = null;
         let previous = null;
         let total = 0;
+        let delivered = 0;
         let minValue = null;
         let maxValue = null;
+        const cumulativeDelivered = new Array(events.length).fill(0);
 
-        events.forEach((event) => {
+        events.forEach((event, index) => {
           const value = Number.isFinite(event?.extrusion) ? event.extrusion : null;
           if (value === null) {
+            cumulativeDelivered[index] = delivered;
             return;
           }
 
@@ -1327,6 +1330,7 @@
             previous = value;
             minValue = value;
             maxValue = value;
+            cumulativeDelivered[index] = delivered;
             return;
           }
 
@@ -1341,9 +1345,11 @@
             const delta = value - previous;
             if (delta > 0) {
               total += delta;
+              delivered += delta;
             }
           }
           previous = value;
+          cumulativeDelivered[index] = delivered;
         });
 
         if (baseline === null) {
@@ -1355,10 +1361,11 @@
           min: minValue ?? baseline,
           max: maxValue ?? baseline,
           total: Math.max(total, 0),
+          cumulativeDelivered,
         };
       }
 
-      function updateYarnFeedPanel(event, extrusionActive) {
+      function updateYarnFeedPanel(event, extrusionActive, eventIndex) {
         if (!yarnFeedStatusElement || !yarnFeedProgressElement) {
           return;
         }
@@ -1369,7 +1376,7 @@
         }
 
         const currentExtrusion = Number.isFinite(event?.extrusion) ? event.extrusion : null;
-        const { baseline, total, max, min } = yarnExtrusionStats;
+        const { baseline, total, max, min, cumulativeDelivered } = yarnExtrusionStats;
 
         if (extrusionActive) {
           yarnFeedStatusElement.textContent = 'Yarn feed active — monitoring spool output.';
@@ -1385,7 +1392,25 @@
           return;
         }
 
-        const delivered = Math.max(0, currentExtrusion - (baseline ?? 0));
+        let delivered = null;
+        if (
+          Array.isArray(cumulativeDelivered) &&
+          typeof eventIndex === 'number' &&
+          cumulativeDelivered.length > 0
+        ) {
+          const clampedIndex = Math.min(
+            Math.max(Math.floor(eventIndex), 0),
+            cumulativeDelivered.length - 1,
+          );
+          const tracked = cumulativeDelivered[clampedIndex];
+          if (Number.isFinite(tracked)) {
+            delivered = tracked;
+          }
+        }
+
+        if (!Number.isFinite(delivered)) {
+          delivered = Math.max(0, currentExtrusion - (baseline ?? 0));
+        }
         const totalSpan = total > 0 ? total : Math.max((max ?? currentExtrusion) - (min ?? 0), 0);
         if (totalSpan <= 0) {
           yarnFeedProgressElement.textContent = `Yarn delivered: ${delivered.toFixed(2)} mm`;
