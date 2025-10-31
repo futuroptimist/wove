@@ -48,6 +48,15 @@ def test_viewer_documents_planner_bounds_overlay() -> None:
     assert "Planner bounds overlay" in html
 
 
+def test_homing_guard_streams_coordinates() -> None:
+    """The Homing Guard panel should advertise the coordinate stream."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "homing-guard-position" in html
+    assert "Coordinates: Awaiting planner coordinates…" in html
+
+
 def test_viewer_mentions_cooling_fan_mount() -> None:
     """The hook carriage cooling fan mount should be called out."""
 
