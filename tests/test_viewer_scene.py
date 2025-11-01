@@ -126,6 +126,15 @@ def test_viewer_mentions_selection_sweep() -> None:
     assert selection_sweep_copy in html
 
 
+def test_viewer_glides_camera_to_selected_cluster() -> None:
+    """Selecting a cluster should mention the camera glide helper."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+    assert "watch the camera glide to frame it" in html
+    assert "const desiredCameraTarget" in html
+    assert "cameraMoveDamping" in html
+
+
 def test_viewer_mentions_thermistor_channel() -> None:
     """Ensure the overlay documents the heated-bed thermistor channel."""
 

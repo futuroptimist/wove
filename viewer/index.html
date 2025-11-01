@@ -286,7 +286,9 @@
           The glowing safety interlocks mark physical end stops and the
           emergency stop switch described in the v1c roadmap.
         </li>
-        <li>Click a pedestal to spotlight its roadmap milestone.</li>
+        <li>
+          Click a pedestal to spotlight its roadmap milestone and watch the camera glide to frame it.
+        </li>
       </ul>
       <div id="roadmap-panel">
         <h2 id="roadmap-title">Assembly Roadmap</h2>
@@ -467,12 +469,49 @@
       );
       camera.position.set(12, 8, 18);
 
+      const currentCameraTarget = new THREE.Vector3(0, 1.2, 0);
+      const desiredCameraTarget = currentCameraTarget.clone();
+      const desiredCameraPosition = camera.position.clone();
+      const defaultCameraTarget = currentCameraTarget.clone();
+      const defaultCameraPosition = camera.position.clone();
+      const defaultCameraOffset = defaultCameraPosition.clone().sub(defaultCameraTarget);
+      const minCameraRadius = 6;
+      const maxCameraRadius = 26;
+      const cameraMoveDamping = 4.0;
+      let userIsControllingCamera = false;
+      let cameraWasMovedByControls = false;
+
       const controls = new OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
       controls.dampingFactor = 0.05;
       controls.minDistance = 4;
       controls.maxDistance = 60;
       controls.maxPolarAngle = Math.PI * 0.49;
+      controls.target.copy(currentCameraTarget);
+
+      controls.addEventListener('start', () => {
+        userIsControllingCamera = true;
+        cameraWasMovedByControls = false;
+        desiredCameraTarget.copy(controls.target);
+        desiredCameraPosition.copy(camera.position);
+      });
+
+      controls.addEventListener('change', () => {
+        if (userIsControllingCamera) {
+          cameraWasMovedByControls = true;
+        }
+      });
+
+      controls.addEventListener('end', () => {
+        userIsControllingCamera = false;
+        if (cameraWasMovedByControls) {
+          currentCameraTarget.copy(controls.target);
+          desiredCameraTarget.copy(controls.target);
+          desiredCameraPosition.copy(camera.position);
+        } else {
+          controls.target.copy(currentCameraTarget);
+        }
+      });
 
       const ambientLight = new THREE.AmbientLight(0xbac4ff, 0.5);
       scene.add(ambientLight);
@@ -4307,6 +4346,8 @@
             'Assembly Roadmap',
             'Select a product cluster to learn how it advances the automation journey.',
           );
+          desiredCameraTarget.copy(defaultCameraTarget);
+          desiredCameraPosition.copy(defaultCameraPosition);
           return;
         }
 
@@ -4328,6 +4369,33 @@
           selectionSweep.rotation.y = 0;
         }
         updateRoadmapPanel(cluster.userData.name, cluster.userData.roadmap);
+
+        cluster.getWorldPosition(clusterFocusPosition);
+        const baseFocusHeight = cluster.userData.selectionHeight ?? selectionRingHeight;
+        const focusHeight = baseFocusHeight + 0.8;
+        desiredCameraTarget.set(
+          clusterFocusPosition.x,
+          clusterFocusPosition.y + focusHeight,
+          clusterFocusPosition.z,
+        );
+
+        cameraOffsetVector.copy(camera.position).sub(currentCameraTarget);
+        let offsetLength = cameraOffsetVector.length();
+        if (!Number.isFinite(offsetLength) || offsetLength < 1e-3) {
+          cameraOffsetVector.copy(defaultCameraOffset);
+          offsetLength = cameraOffsetVector.length();
+        }
+        if (offsetLength < minCameraRadius) {
+          cameraOffsetVector.setLength(minCameraRadius);
+        } else if (offsetLength > maxCameraRadius) {
+          cameraOffsetVector.setLength(maxCameraRadius);
+        }
+        candidateCameraPosition.copy(desiredCameraTarget).add(cameraOffsetVector);
+        candidateCameraPosition.y = Math.max(
+          candidateCameraPosition.y,
+          desiredCameraTarget.y + 3,
+        );
+        desiredCameraPosition.copy(candidateCameraPosition);
       }
 
       if (productClusters.length > 0) {
@@ -4648,6 +4716,50 @@
             (selectionSweep.rotation.y + delta * selectionSweepSpeed) % (Math.PI * 2);
         }
         updatePatternPreview(elapsed);
+
+        if (!userIsControllingCamera) {
+          currentCameraTarget.x = THREE.MathUtils.damp(
+            currentCameraTarget.x,
+            desiredCameraTarget.x,
+            cameraMoveDamping,
+            delta,
+          );
+          currentCameraTarget.y = THREE.MathUtils.damp(
+            currentCameraTarget.y,
+            desiredCameraTarget.y,
+            cameraMoveDamping,
+            delta,
+          );
+          currentCameraTarget.z = THREE.MathUtils.damp(
+            currentCameraTarget.z,
+            desiredCameraTarget.z,
+            cameraMoveDamping,
+            delta,
+          );
+
+          camera.position.x = THREE.MathUtils.damp(
+            camera.position.x,
+            desiredCameraPosition.x,
+            cameraMoveDamping,
+            delta,
+          );
+          camera.position.y = THREE.MathUtils.damp(
+            camera.position.y,
+            desiredCameraPosition.y,
+            cameraMoveDamping,
+            delta,
+          );
+          camera.position.z = THREE.MathUtils.damp(
+            camera.position.z,
+            desiredCameraPosition.z,
+            cameraMoveDamping,
+            delta,
+          );
+
+          controls.target.copy(currentCameraTarget);
+        } else {
+          currentCameraTarget.copy(controls.target);
+        }
 
         controls.update();
         renderer.render(scene, camera);

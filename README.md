@@ -67,8 +67,9 @@ now wraps the gantry to mirror the production
 enclosure described in the mechanical roadmap—hover the door to read the
 maintenance callout. Snap-on belt guards now clip over the CoreXY loops so stray
 yarn or tools stay clear while operators inspect motion from above. Click a
-product pedestal to spotlight its roadmap milestone and watch the glowing ring
-pulse as it tracks which cluster is selected. A teal sweep now orbits the
+product pedestal to spotlight its roadmap milestone, watch the glowing ring
+pulse as it tracks which cluster is selected, and let the camera glide to frame
+the scene. A teal sweep now orbits the
 selected pedestal so the active milestone stays obvious from the plaza
 overview. The plaza highlights these milestones today:
 
