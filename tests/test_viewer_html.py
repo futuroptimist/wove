@@ -130,3 +130,13 @@ def test_viewer_patterns_surface_position_overlay() -> None:
 
     assert 'id="pattern-position"' in viewer_html
     assert "Position: Loading planner coordinates" in viewer_html
+
+
+def test_safe_access_step_badges_hover() -> None:
+    """Hovering step signage should be animated for the safe access path."""
+
+    viewer_html = _load_viewer_html()
+
+    assert "const stepBadgeControllers" in viewer_html
+    assert "stepBadgeControllers.push" in viewer_html
+    assert "badge.position.y = baseHeight + verticalOffset" in viewer_html

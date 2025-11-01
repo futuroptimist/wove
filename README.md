@@ -73,7 +73,10 @@ the scene. A teal sweep now orbits the
 selected pedestal so the active milestone stays obvious from the plaza
 overview. The plaza highlights these milestones today:
 
-Mint-highlighted floor markings now extend through the open doorway with alternating, pulsing footprints so operators can practice each step without clipping the gantry or tension hardware. Numbered step badges hover above each marker so crews can rehearse the left/right cadence before approaching the enclosure.
+Mint-highlighted floor markings now extend through the open doorway with alternating, pulsing
+footprints so operators can practice each step without clipping the gantry or tension hardware.
+Floating step badges bob above each marker and cant toward the doorway so crews can rehearse the
+left/right cadence before approaching the enclosure.
 
 Pulsing magnetic anchor pucks now mark the removable workpiece bed so crews can
 practice swapping swatch plates into position before the gantry starts tracing

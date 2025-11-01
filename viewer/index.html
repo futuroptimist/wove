@@ -384,6 +384,7 @@
       const interactiveMeshes = [];
       const productClusters = [];
       const safeAccessHighlights = [];
+      const stepBadgeControllers = [];
       const anchorPulseControllers = [];
       let activeCluster = null;
       const selectionRingHeight = 0.06;
@@ -1858,31 +1859,45 @@
             opacityAmplitude: 0.15,
           });
 
-          const { badge, material } = createStepBadge(stepNumber, footSide);
-          badge.rotation.x = -Math.PI / 2;
-          const forwardOffset = 0.32;
-          const radians = THREE.MathUtils.degToRad(rotationDegrees);
-          badge.position.set(
-            x + Math.cos(radians) * forwardOffset,
-            0.055,
-            z - Math.sin(radians) * forwardOffset,
-          );
-          group.add(badge);
-          addHoverInfo(
-            badge,
-            `Safe access step ${stepNumber} signage — follow the numbered badges through the door.`,
-          );
-          safeAccessHighlights.push({
-            material,
-            baseIntensity: 0.65,
-            amplitude: 0.22,
-            speed: 2.2,
-            phaseOffset: phaseOffset + 0.35,
-            baseOpacity: 0.95,
-            opacityAmplitude: 0.05,
-            object: badge,
-          });
-        }
+        const { badge, material } = createStepBadge(stepNumber, footSide);
+        const forwardOffset = 0.42;
+        const radians = THREE.MathUtils.degToRad(rotationDegrees);
+        const facingRadians = THREE.MathUtils.degToRad(rotationDegrees - 90);
+        const baseHeight = 0.58;
+        const baseTilt = THREE.MathUtils.degToRad(-10);
+        badge.position.set(
+          x + Math.cos(radians) * forwardOffset,
+          baseHeight,
+          z - Math.sin(radians) * forwardOffset,
+        );
+        badge.rotation.y = facingRadians;
+        badge.rotation.x = baseTilt;
+        group.add(badge);
+        addHoverInfo(
+          badge,
+          `Safe access step ${stepNumber} signage — follow the numbered badges through the door.`,
+        );
+        safeAccessHighlights.push({
+          material,
+          baseIntensity: 0.65,
+          amplitude: 0.22,
+          speed: 2.2,
+          phaseOffset: phaseOffset + 0.35,
+          baseOpacity: 0.95,
+          opacityAmplitude: 0.05,
+          object: badge,
+          visibleOnly: true,
+        });
+        stepBadgeControllers.push({
+          badge,
+          baseHeight,
+          amplitude: 0.08,
+          speed: 1.8,
+          phaseOffset: phaseOffset + 0.35,
+          baseTilt,
+          tiltAmplitude: THREE.MathUtils.degToRad(3.5),
+        });
+      }
 
         const stepSequence = [
           { x: 3.85, z: 0.12, rotation: 8, phase: 0.0, step: 1 },
@@ -4517,6 +4532,27 @@
 
           if (light) {
             light.intensity = baseLightIntensity + lightAmplitude * emphasis;
+          }
+        });
+        stepBadgeControllers.forEach((controller) => {
+          const {
+            badge,
+            baseHeight = 0.5,
+            amplitude = 0.05,
+            speed = 1.6,
+            phaseOffset = 0,
+            baseTilt = 0,
+            tiltAmplitude = 0,
+          } = controller;
+          if (!badge) {
+            return;
+          }
+          const verticalOffset = Math.sin(elapsed * speed + phaseOffset) * amplitude;
+          badge.position.y = baseHeight + verticalOffset;
+
+          if (tiltAmplitude !== 0) {
+            const tilt = baseTilt + Math.sin(elapsed * speed * 0.85 + phaseOffset) * tiltAmplitude;
+            badge.rotation.x = tilt;
           }
         });
         yarnFlowControllers.forEach((controller) => {
