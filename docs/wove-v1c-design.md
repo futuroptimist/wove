@@ -211,8 +211,9 @@ overview.
   safe access paths before printing hardware. Mint-highlighted floor markings
   now extend through the open doorway with alternating, pulsing footprints so
   operators can practice each step without clipping the gantry or tension
-  hardware. Numbered step badges hover above each footprint so crews can rehearse
-  the left/right cadence before approaching the enclosure.
+  hardware. Floating step badges bob above each footprint and cant toward the
+  doorway so crews can rehearse the left/right cadence before approaching the
+  enclosure.
 
 ## Electronics and Control
 ### Control Board
