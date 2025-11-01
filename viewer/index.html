@@ -324,6 +324,12 @@
         <p id="yarn-flow-spool" data-tone="neutral">
           Spool status: Parked until planner preview loads.
         </p>
+        <p id="yarn-flow-total" data-tone="neutral">
+          Total yarn fed: Awaiting planner preview…
+        </p>
+        <p id="yarn-flow-queue" data-tone="neutral">
+          Remaining feed pulses: Awaiting planner preview…
+        </p>
       </div>
       <div id="machine-panel">
         <h2>Machine Profile</h2>
@@ -378,6 +384,8 @@
       const homingGuardPositionElement = document.getElementById('homing-guard-position');
       const yarnFlowStatusElement = document.getElementById('yarn-flow-status');
       const yarnFlowSpoolElement = document.getElementById('yarn-flow-spool');
+      const yarnFlowTotalElement = document.getElementById('yarn-flow-total');
+      const yarnFlowQueueElement = document.getElementById('yarn-flow-queue');
 
       const pointer = new THREE.Vector2();
       const raycaster = new THREE.Raycaster();
@@ -453,7 +461,14 @@
         'Yarn flow monitor idle — load a planner preview to track feed events.';
       const yarnFlowSpoolFallbackMessage =
         'Spool status: Parked until planner preview loads.';
+      const yarnFlowTotalFallbackMessage =
+        'Total yarn fed: Awaiting planner preview…';
+      const yarnFlowQueueFallbackMessage =
+        'Remaining feed pulses: Awaiting planner preview…';
       let plannerDefaults = null;
+      let patternExtrusionBaseline = 0;
+      let patternExtrusionTarget = 0;
+      let yarnFeedStepIndices = [];
 
       const FRAME_HALF_WIDTH = 3.6;
       const FRAME_HALF_DEPTH = 2.6;
@@ -760,6 +775,40 @@
         return Object.keys(bounds).length > 0 ? bounds : null;
       }
 
+      function computeExtrusionSummary(events, bounds) {
+        let baseline = null;
+        let target = null;
+
+        if (bounds && bounds.extrusion) {
+          const { min, max } = bounds.extrusion;
+          if (Number.isFinite(min)) {
+            baseline = min;
+          }
+          if (Number.isFinite(max)) {
+            target = max;
+          }
+        }
+
+        if (Array.isArray(events)) {
+          events.forEach((event) => {
+            if (!event || typeof event !== 'object') {
+              return;
+            }
+            const value = coerceFiniteNumber(event.extrusion);
+            if (value === null) {
+              return;
+            }
+            baseline = baseline === null ? value : Math.min(baseline, value);
+            target = target === null ? value : Math.max(target, value);
+          });
+        }
+
+        const normalizedBaseline = Number.isFinite(baseline) ? baseline : 0;
+        const normalizedTarget = Number.isFinite(target) ? target : normalizedBaseline;
+
+        return [normalizedBaseline, normalizedTarget];
+      }
+
       function buildBoundsHoverText(bounds) {
         if (!bounds) {
           return 'Planner bounds overlay — load a planner export with bounds metadata to preview the motion envelope.';
@@ -897,10 +946,21 @@
           return;
         }
 
+        patternExtrusionBaseline = 0;
+        patternExtrusionTarget = 0;
+        yarnFeedStepIndices = [];
         yarnFlowStatusElement.textContent = yarnFlowStatusFallbackMessage;
         setTone(yarnFlowStatusElement, 'neutral');
         yarnFlowSpoolElement.textContent = yarnFlowSpoolFallbackMessage;
         setTone(yarnFlowSpoolElement, 'neutral');
+        if (yarnFlowTotalElement) {
+          yarnFlowTotalElement.textContent = yarnFlowTotalFallbackMessage;
+          setTone(yarnFlowTotalElement, 'neutral');
+        }
+        if (yarnFlowQueueElement) {
+          yarnFlowQueueElement.textContent = yarnFlowQueueFallbackMessage;
+          setTone(yarnFlowQueueElement, 'neutral');
+        }
       }
 
       function updateYarnFlowPanel(event, stepIndex, totalSteps) {
@@ -934,6 +994,49 @@
           yarnFlowSpoolElement.textContent =
             'Spool status: Parked until the next feed event.';
           setTone(yarnFlowSpoolElement, 'neutral');
+        }
+
+        if (yarnFlowTotalElement) {
+          const baseline = Number.isFinite(patternExtrusionBaseline)
+            ? patternExtrusionBaseline
+            : 0;
+          const target = Number.isFinite(patternExtrusionTarget)
+            ? patternExtrusionTarget
+            : baseline;
+          const rawExtrusion = Number.isFinite(event.extrusion)
+            ? event.extrusion
+            : baseline;
+          const fed = Math.max(rawExtrusion - baseline, 0);
+          const planned = Math.max(target - baseline, 0);
+          const fedLabel = fed.toFixed(2);
+          let summary = `Total yarn fed: ${fedLabel} mm`;
+          if (planned > 0.0001) {
+            summary += ` of ${planned.toFixed(2)} mm`;
+          }
+          yarnFlowTotalElement.textContent = `${summary}.`;
+          setTone(yarnFlowTotalElement, yarnExtrusionActive ? 'ready' : 'info');
+        }
+
+        if (yarnFlowQueueElement) {
+          const totalFeedSteps = Array.isArray(yarnFeedStepIndices)
+            ? yarnFeedStepIndices.length
+            : 0;
+          if (totalFeedSteps > 0 && Number.isFinite(stepIndex)) {
+            let remainingFeeds = 0;
+            for (let index = 0; index < totalFeedSteps; index += 1) {
+              const feedStep = yarnFeedStepIndices[index];
+              if (typeof feedStep === 'number' && feedStep > stepIndex) {
+                remainingFeeds += 1;
+              }
+            }
+            const summary = `Remaining feed pulses: ${remainingFeeds} of ${totalFeedSteps}.`;
+            yarnFlowQueueElement.textContent = summary;
+            setTone(yarnFlowQueueElement, remainingFeeds === 0 ? 'ready' : 'info');
+          } else {
+            yarnFlowQueueElement.textContent =
+              'Remaining feed pulses: None in this preview.';
+            setTone(yarnFlowQueueElement, 'neutral');
+          }
         }
       }
 
@@ -1023,10 +1126,28 @@
         updatePlannerDefaultsPanel(plannerDefaults);
 
         patternPlannerEvents = Array.isArray(events) ? [...events] : [];
+        yarnFeedStepIndices = [];
+        patternExtrusionBaseline = 0;
+        patternExtrusionTarget = 0;
         const providedBounds = Object.prototype.hasOwnProperty.call(options, 'bounds')
           ? normalizeBounds(options.bounds)
           : null;
         plannerBounds = providedBounds ?? computeBoundsFromEvents(patternPlannerEvents);
+        const [extrusionBaseline, extrusionTarget] = computeExtrusionSummary(
+          patternPlannerEvents,
+          plannerBounds,
+        );
+        patternExtrusionBaseline = extrusionBaseline;
+        patternExtrusionTarget = extrusionTarget;
+        if (patternPlannerEvents.length > 0) {
+          patternPlannerEvents.forEach((event, index) => {
+            const comment =
+              typeof event?.comment === 'string' ? event.comment.toLowerCase() : '';
+            if (comment.includes('feed yarn')) {
+              yarnFeedStepIndices.push(index);
+            }
+          });
+        }
         updatePatternBoundsOverlay(plannerBounds);
 
         if (patternPreviewContainer) {

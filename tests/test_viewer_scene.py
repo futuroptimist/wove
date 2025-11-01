@@ -160,6 +160,17 @@ def test_viewer_limits_yarn_beads_to_trio() -> None:
     assert "const beadCount = 3" in html
 
 
+def test_yarn_flow_panel_includes_totals() -> None:
+    """The Yarn Flow overlay should advertise cumulative feed guidance."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "yarn-flow-total" in html
+    assert "Total yarn fed: Awaiting planner preview…" in html
+    assert "yarn-flow-queue" in html
+    assert "Remaining feed pulses: Awaiting planner preview…" in html
+
+
 def test_viewer_mentions_z_axis_leadscrew() -> None:
     """The scene should describe the Z-axis leadscrew lift assembly."""
 

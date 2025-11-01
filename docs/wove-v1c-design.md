@@ -261,7 +261,10 @@ overview.
   export so operators can reconcile the viewer preview with CLI configuration
   before a dry run. A Yarn Flow monitor in the overlay mirrors the glowing PTFE
   tube, flipping between feed-active and idle states so the hologram, spool
-  animation, and status text stay synchronized. A companion Machine Profile
+  animation, and status text stay synchronized. The same panel now reports how
+  much yarn the preview has fed versus the planned total and highlights the
+  remaining feed pulses so crews can pace dry runs without guessing when the
+  next extrusion event lands. A companion Machine Profile
   panel lists the
   microstepping, steps-per-millimeter, and travel bounds from planner exports so
   technicians can confirm the browser preview mirrors the configured gantry
