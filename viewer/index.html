@@ -121,6 +121,40 @@
         transition: width 0.18s ease-out;
       }
 
+      #planner-panel {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(245, 245, 245, 0.15);
+      }
+
+      #planner-panel h2 {
+        margin: 0 0 0.35rem;
+        font-size: 0.97rem;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        color: #9ee5ff;
+      }
+
+      #planner-panel p {
+        margin: 0 0 0.45rem;
+        font-size: 0.86rem;
+        line-height: 1.35;
+        color: #d9f4ff;
+      }
+
+      #planner-metadata-details {
+        margin: 0;
+        padding-left: 1.1rem;
+        list-style: disc;
+        font-size: 0.84rem;
+        line-height: 1.35;
+        color: #c7ecff;
+      }
+
+      #planner-metadata-details li {
+        margin-bottom: 0.3rem;
+      }
+
       #yarn-panel {
         margin-top: 1rem;
         padding-top: 1rem;
@@ -316,6 +350,13 @@
           <ul id="pattern-defaults-list"></ul>
         </div>
       </div>
+      <div id="planner-panel">
+        <h2>Planner Metadata</h2>
+        <p id="planner-metadata-status" data-tone="info">
+          Loading planner metadata…
+        </p>
+        <ul id="planner-metadata-details"></ul>
+      </div>
       <div id="yarn-panel">
         <h2>Yarn Flow Monitor</h2>
         <p id="yarn-flow-status" data-tone="neutral">
@@ -375,6 +416,10 @@
         'pattern-defaults-status',
       );
       const patternDefaultsListElement = document.getElementById('pattern-defaults-list');
+      const plannerMetadataStatusElement = document.getElementById(
+        'planner-metadata-status',
+      );
+      const plannerMetadataListElement = document.getElementById('planner-metadata-details');
       const machineProfileStatusElement = document.getElementById('machine-profile-status');
       const machineProfileAxesElement = document.getElementById('machine-profile-axes');
       const homingGuardStatusElement = document.getElementById('homing-guard-status');
@@ -458,6 +503,8 @@
         'Planner bounds unavailable. Export --format planner payloads with bounds to preview the motion envelope.';
       const patternDefaultsFallbackMessage =
         'Planner defaults unavailable. Export planner payloads with defaults metadata to surface feed and height settings.';
+      const plannerMetadataFallbackMessage =
+        'Planner metadata unavailable. Export planner payloads with version and units fields to surface schema details.';
       const yarnFlowStatusFallbackMessage =
         'Yarn flow monitor idle — load a planner preview to track feed events.';
       const yarnFlowSpoolFallbackMessage =
@@ -470,6 +517,7 @@
       let patternExtrusionBaseline = 0;
       let patternExtrusionTarget = 0;
       let yarnFeedStepIndices = [];
+      let plannerMetadata = null;
 
       const FRAME_HALF_WIDTH = 3.6;
       const FRAME_HALF_DEPTH = 2.6;
@@ -930,6 +978,96 @@
         });
       }
 
+      function buildPlannerMetadata(metadata, events) {
+        const source = metadata && typeof metadata === 'object' ? metadata : null;
+        const normalized = {};
+
+        if (source) {
+          const versionCandidate =
+            source.version ?? source.schemaVersion ?? source.schema_version ?? null;
+          if (typeof versionCandidate === 'string') {
+            const trimmed = versionCandidate.trim();
+            if (trimmed.length > 0) {
+              normalized.version = trimmed;
+            }
+          } else if (Number.isFinite(versionCandidate)) {
+            normalized.version = versionCandidate.toString();
+          }
+
+          const unitsCandidate = source.units ?? source.unit ?? null;
+          if (typeof unitsCandidate === 'string') {
+            const trimmedUnits = unitsCandidate.trim();
+            if (trimmedUnits.length > 0) {
+              normalized.units = trimmedUnits;
+            }
+          }
+
+          if (typeof source.source === 'string') {
+            const trimmedSource = source.source.trim();
+            if (trimmedSource.length > 0) {
+              normalized.source = trimmedSource;
+            }
+          }
+        }
+
+        const commandCount = Array.isArray(events) ? events.length : 0;
+        if (commandCount > 0) {
+          normalized.commandCount = commandCount;
+        } else if (
+          Number.isFinite(source?.commandCount) &&
+          source.commandCount >= 0
+        ) {
+          normalized.commandCount = Math.round(source.commandCount);
+        }
+
+        return Object.keys(normalized).length > 0 ? normalized : null;
+      }
+
+      function updatePlannerMetadataPanel(metadata) {
+        if (!plannerMetadataStatusElement || !plannerMetadataListElement) {
+          return;
+        }
+
+        while (plannerMetadataListElement.firstChild) {
+          plannerMetadataListElement.removeChild(plannerMetadataListElement.firstChild);
+        }
+
+        const data = metadata && typeof metadata === 'object' ? metadata : null;
+        const entries = [];
+
+        if (typeof data?.version === 'string' && data.version.trim().length > 0) {
+          entries.push({ label: 'Schema version', value: data.version.trim() });
+        }
+
+        if (typeof data?.units === 'string' && data.units.trim().length > 0) {
+          entries.push({ label: 'Units', value: data.units.trim() });
+        }
+
+        if (Number.isFinite(data?.commandCount)) {
+          const rounded = Math.max(0, Math.round(data.commandCount));
+          entries.push({ label: 'Planner steps', value: `${rounded}` });
+        }
+
+        if (typeof data?.source === 'string' && data.source.trim().length > 0) {
+          entries.push({ label: 'Source', value: data.source.trim() });
+        }
+
+        if (entries.length === 0) {
+          plannerMetadataStatusElement.textContent = plannerMetadataFallbackMessage;
+          setTone(plannerMetadataStatusElement, 'warning');
+          return;
+        }
+
+        plannerMetadataStatusElement.textContent = 'Planner metadata:';
+        setTone(plannerMetadataStatusElement, 'info');
+
+        entries.forEach(({ label, value }) => {
+          const listItem = document.createElement('li');
+          listItem.textContent = `${label}: ${value}`;
+          plannerMetadataListElement.appendChild(listItem);
+        });
+      }
+
       function setTone(element, tone) {
         if (!element) {
           return;
@@ -1130,6 +1268,15 @@
         yarnFeedStepIndices = [];
         patternExtrusionBaseline = 0;
         patternExtrusionTarget = 0;
+        if (patternPlannerEvents.length === 0 && options.resetOverlay !== false) {
+          plannerMetadata = null;
+        } else {
+          const metadataInput = Object.prototype.hasOwnProperty.call(options, 'metadata')
+            ? options.metadata
+            : plannerMetadata;
+          plannerMetadata = buildPlannerMetadata(metadataInput, patternPlannerEvents);
+        }
+        updatePlannerMetadataPanel(plannerMetadata);
         const providedBounds = Object.prototype.hasOwnProperty.call(options, 'bounds')
           ? normalizeBounds(options.bounds)
           : null;
@@ -1274,7 +1421,12 @@
           }
           const defaults = payload?.defaults ?? null;
           const bounds = payload?.bounds ?? null;
-          applyPatternPlannerEvents(events, { defaults, bounds });
+          const metadata = {
+            version: payload?.version ?? null,
+            units: typeof payload?.units === 'string' ? payload.units : null,
+            source: 'Base chain row asset',
+          };
+          applyPatternPlannerEvents(events, { defaults, bounds, metadata });
           updateMachineProfilePanel(payload?.machine_profile ?? null);
           if (statusElement) {
             updateStatus('Pattern Studio preview synced with base chain row.');
@@ -1283,6 +1435,11 @@
           console.warn('Unable to load planner preview', error);
           applyPatternPlannerEvents(fallbackPatternPlannerEvents, {
             defaults: { ...fallbackPatternDefaults },
+            metadata: {
+              version: 1,
+              units: 'millimeters',
+              source: 'Fallback preview',
+            },
           });
           updateMachineProfilePanel(null);
           if (statusElement) {

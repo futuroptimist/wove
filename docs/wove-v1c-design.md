@@ -265,8 +265,10 @@ overview.
   animation, and status text stay synchronized. The same panel now reports how
   much yarn the preview has fed versus the planned total and highlights the
   remaining feed pulses so crews can pace dry runs without guessing when the
-  next extrusion event lands. A companion Machine Profile
-  panel lists the
+  next extrusion event lands. A Planner Metadata panel lists the export's
+  schema version, declared units, and planner step count so contributors can
+  confirm the viewer is consuming the expected payload before dry runs. A
+  companion Machine Profile panel lists the
   microstepping, steps-per-millimeter, and travel bounds from planner exports so
   technicians can confirm the browser preview mirrors the configured gantry
   before committing motion to hardware. The Homing Guard overlay highlights the

@@ -43,3 +43,4 @@ def test_viewer_ships_fallback_pattern_defaults() -> None:
     assert "default_row_height_mm" in html
     assert "yarnFlowStatusFallbackMessage" in html
     assert "yarnFlowSpoolFallbackMessage" in html
+    assert "plannerMetadataFallbackMessage" in html
