@@ -100,6 +100,11 @@ A shimmering Z-axis lift now hugs the hook carriage: the T8 leadscrew pulses
 beside the gantry while the anti-backlash nut and printed flexures glow to show
 how the carriage keeps vertical motion tight.
 
+Color-coded axis beacons now glow beside the gantry so visitors can read the
+positive X, Y, and Z directions at a glance. Their hovering arrows match the
+planner coordinate system, making it easier to align CLI exports with the 3D
+scene while touring the plaza.
+
 A glowing thermistor channel now traces the reserved wiring route for the
 future heated bed accessory so teams can plan sensor hookups before the upgrade
 lands.
