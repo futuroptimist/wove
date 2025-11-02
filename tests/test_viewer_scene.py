@@ -38,6 +38,16 @@ def test_pattern_preview_overlay_panel_present() -> None:
     assert "Planner preview warming up." in html
 
 
+def test_pattern_timeline_readout_present() -> None:
+    """Ensure the Pattern Studio timeline readout ships with the overlay."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "pattern-timeline" in html
+    assert "Timeline: Loading planner timeline…" in html
+    assert "Timeline: Awaiting planner preview…" in html
+
+
 def test_viewer_documents_planner_bounds_overlay() -> None:
     """The overlay should advertise the planner bounds helper."""
 
