@@ -2175,6 +2175,169 @@
         return group;
       }
 
+      function createAxisOrientationBeacons() {
+        const group = new THREE.Group();
+        group.name = 'axis-orientation-beacons';
+
+        const baseHeight = 0.06;
+        const columnHeight = 1.15;
+        const arrowLength = 0.9;
+
+        const pedestalMaterial = new THREE.MeshStandardMaterial({
+          color: 0x1a2739,
+          metalness: 0.38,
+          roughness: 0.48,
+          emissive: 0x091324,
+          emissiveIntensity: 0.35,
+        });
+
+        const definitions = [
+          {
+            axis: 'X',
+            color: 0xff6b6b,
+            light: 0xffb6a8,
+            labelColor: '#ffc9c9',
+            direction: new THREE.Vector3(1, 0, 0),
+            position: new THREE.Vector3(-3.05, 0, -1.45),
+            hover: 'X-axis beacon — points toward positive X travel along the gantry.',
+          },
+          {
+            axis: 'Y',
+            color: 0x6bff95,
+            light: 0xb9ffd4,
+            labelColor: '#c9ffe0',
+            direction: new THREE.Vector3(0, 0, 1),
+            position: new THREE.Vector3(-3.05, 0, -0.25),
+            hover: 'Y-axis beacon — points toward positive Y travel across the plaza.',
+          },
+          {
+            axis: 'Z',
+            color: 0x66a0ff,
+            light: 0xc2d8ff,
+            labelColor: '#d5e5ff',
+            direction: new THREE.Vector3(0, 1, 0),
+            position: new THREE.Vector3(-3.05, 0, 0.95),
+            hover: 'Z-axis beacon — highlights upward motion for plunge depth checks.',
+          },
+        ];
+
+        const orientationLabelOffset = definitions.reduce(
+          (accumulator, definition) => accumulator + definition.position.z,
+          0,
+        ) / definitions.length;
+
+        definitions.forEach((definition, index) => {
+          const { axis, color, light, labelColor, direction, position, hover } = definition;
+          const beacon = new THREE.Group();
+          beacon.position.copy(position);
+          beacon.name = `${axis.toLowerCase()}-axis-beacon`;
+
+          const pedestal = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.2, 0.26, baseHeight * 2, 28),
+            pedestalMaterial,
+          );
+          pedestal.position.y = baseHeight;
+          pedestal.castShadow = true;
+          pedestal.receiveShadow = true;
+          beacon.add(pedestal);
+
+          const columnMaterial = new THREE.MeshStandardMaterial({
+            color,
+            emissive: new THREE.Color(color).multiplyScalar(0.35),
+            emissiveIntensity: 0.65,
+            metalness: 0.32,
+            roughness: 0.32,
+            transparent: true,
+            opacity: 0.82,
+            depthWrite: false,
+          });
+          const column = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.08, 0.08, columnHeight, 36),
+            columnMaterial,
+          );
+          column.position.y = baseHeight * 2 + columnHeight / 2;
+          column.castShadow = true;
+          column.receiveShadow = true;
+          beacon.add(column);
+          addHoverInfo(column, hover);
+          safeAccessHighlights.push({
+            material: columnMaterial,
+            baseIntensity: 0.65,
+            amplitude: 0.28,
+            speed: 2.1,
+            phaseOffset: index * 0.6,
+            baseOpacity: 0.82,
+            opacityAmplitude: 0.12,
+          });
+
+          const arrowMaterial = new THREE.MeshStandardMaterial({
+            color,
+            emissive: new THREE.Color(color).multiplyScalar(0.55),
+            emissiveIntensity: 0.9,
+            metalness: 0.42,
+            roughness: 0.28,
+            transparent: true,
+            opacity: 0.88,
+            depthWrite: false,
+          });
+
+          const arrowGroup = new THREE.Group();
+          arrowGroup.position.y = baseHeight * 2 + columnHeight;
+          const shaftLength = arrowLength * 0.65;
+          const tipLength = arrowLength - shaftLength;
+          const shaft = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.022, 0.022, shaftLength, 20),
+            arrowMaterial,
+          );
+          shaft.position.y = shaftLength / 2;
+          shaft.castShadow = true;
+          arrowGroup.add(shaft);
+
+          const tip = new THREE.Mesh(
+            new THREE.ConeGeometry(0.07, tipLength, 28),
+            arrowMaterial,
+          );
+          tip.position.y = shaftLength + tipLength / 2;
+          tip.castShadow = true;
+          arrowGroup.add(tip);
+
+          const orientation = new THREE.Quaternion().setFromUnitVectors(
+            new THREE.Vector3(0, 1, 0),
+            direction.clone().normalize(),
+          );
+          arrowGroup.quaternion.copy(orientation);
+          beacon.add(arrowGroup);
+          addHoverInfo(arrowGroup, hover, { passthrough: true });
+          safeAccessHighlights.push({
+            material: arrowMaterial,
+            baseIntensity: 0.9,
+            amplitude: 0.35,
+            speed: 2.6,
+            phaseOffset: 0.4 + index * 0.55,
+            baseOpacity: 0.88,
+            opacityAmplitude: 0.1,
+          });
+
+          const beaconLight = new THREE.PointLight(light, 1.1, 3.2);
+          beaconLight.position.set(0, arrowLength, 0);
+          arrowGroup.add(beaconLight);
+
+          const label = buildLabel(`${axis}-Axis Beacon`, labelColor);
+          label.position.set(0, baseHeight * 2 + columnHeight + arrowLength + 0.22, 0);
+          label.scale.multiplyScalar(0.32);
+          beacon.add(label);
+
+          group.add(beacon);
+        });
+
+        const banner = buildLabel('Axis Orientation Beacons', '#d4e8ff');
+        banner.position.set(-3.05, baseHeight * 2 + columnHeight + arrowLength + 0.68, orientationLabelOffset);
+        banner.scale.multiplyScalar(0.36);
+        group.add(banner);
+
+        return group;
+      }
+
       function createElectronicsBay() {
         const group = new THREE.Group();
         group.name = 'electronics-bay';
@@ -2692,6 +2855,9 @@
         const electronicsBay = createElectronicsBay();
         electronicsBay.position.set(-2.1, 0.4, -1.4);
         group.add(electronicsBay);
+
+        const axisBeacons = createAxisOrientationBeacons();
+        group.add(axisBeacons);
 
         const tensionAssembly = createTensionPostAssembly();
         tensionAssembly.position.set(-1.5, 0.92, -1.32);
