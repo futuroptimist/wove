@@ -186,5 +186,9 @@ def test_viewer_highlights_axis_orientation_beacons() -> None:
     html = VIEWER_HTML.read_text(encoding="utf-8")
 
     assert "axis-orientation-beacons" in html
-    assert "X-axis beacon — points toward positive X travel along the gantry." in html
+    x_beacon_copy = (
+        "X-axis beacon — points toward positive X travel along "
+        "the gantry."
+    )
+    assert x_beacon_copy in html
     assert "Axis Orientation Beacons" in html
