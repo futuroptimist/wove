@@ -121,6 +121,14 @@
         transition: width 0.18s ease-out;
       }
 
+      #pattern-timeline {
+        margin: 0.55rem 0 0;
+        font-size: 0.86rem;
+        line-height: 1.35;
+        color: #ffe7c9;
+        letter-spacing: 0.01em;
+      }
+
       #yarn-panel {
         margin-top: 1rem;
         padding-top: 1rem;
@@ -303,6 +311,9 @@
         <div id="pattern-progress">
           <div id="pattern-progress-bar"></div>
         </div>
+        <p id="pattern-timeline" data-tone="info">
+          Timeline: Loading planner timeline…
+        </p>
         <p id="pattern-position" data-tone="info">
           Position: Loading planner coordinates…
         </p>
@@ -369,6 +380,7 @@
       const patternStepElement = document.getElementById('pattern-step');
       const patternStepIndexElement = document.getElementById('pattern-step-index');
       const patternProgressBarElement = document.getElementById('pattern-progress-bar');
+      const patternTimelineElement = document.getElementById('pattern-timeline');
       const patternPositionElement = document.getElementById('pattern-position');
       const patternBoundsElement = document.getElementById('pattern-bounds');
       const patternDefaultsStatusElement = document.getElementById(
@@ -448,6 +460,7 @@
       const patternPreviewDurationSeconds = 14;
       let lastPatternStepIndex = -1;
       let lastPatternProgress = -1;
+      let lastTimelineProgress = -1;
       const machineProfileFallbackMessage =
         'Machine profile metadata unavailable. Export with --machine-profile to surface axis settings.';
       const homingGuardFallbackMessage =
@@ -458,6 +471,8 @@
         'Planner bounds unavailable. Export --format planner payloads with bounds to preview the motion envelope.';
       const patternDefaultsFallbackMessage =
         'Planner defaults unavailable. Export planner payloads with defaults metadata to surface feed and height settings.';
+      const patternTimelineFallbackMessage =
+        'Timeline: Awaiting planner preview…';
       const yarnFlowStatusFallbackMessage =
         'Yarn flow monitor idle — load a planner preview to track feed events.';
       const yarnFlowSpoolFallbackMessage =
@@ -930,6 +945,47 @@
         });
       }
 
+      function resetPatternTimeline() {
+        if (!patternTimelineElement) {
+          return;
+        }
+
+        patternTimelineElement.textContent = patternTimelineFallbackMessage;
+        setTone(patternTimelineElement, 'neutral');
+        lastTimelineProgress = -1;
+      }
+
+      function updatePatternTimeline(elapsedSeconds, progressRatio) {
+        if (!patternTimelineElement) {
+          return;
+        }
+
+        const duration = patternPreviewDurationSeconds;
+        const hasValidDuration = Number.isFinite(duration) && duration > 0;
+        const hasValidElapsed = Number.isFinite(elapsedSeconds);
+
+        if (!hasValidDuration || !hasValidElapsed) {
+          resetPatternTimeline();
+          return;
+        }
+
+        const wrapped = ((elapsedSeconds % duration) + duration) % duration;
+        const progress =
+          Number.isFinite(progressRatio) && progressRatio >= 0
+            ? Math.min(progressRatio, 1)
+            : wrapped / duration;
+
+        if (Math.abs(progress - lastTimelineProgress) < 0.002 && lastTimelineProgress >= 0) {
+          return;
+        }
+
+        const clamped = Math.min(Math.max(progress, 0), 1);
+        const percent = Math.round(clamped * 100);
+        patternTimelineElement.textContent = `Timeline: ${wrapped.toFixed(1)} s of ${duration.toFixed(1)} s (${percent}%)`;
+        setTone(patternTimelineElement, yarnExtrusionActive ? 'ready' : 'info');
+        lastTimelineProgress = clamped;
+      }
+
       function setTone(element, tone) {
         if (!element) {
           return;
@@ -1126,6 +1182,7 @@
         updateHomingGuardPanel(plannerDefaults);
         updatePlannerDefaultsPanel(plannerDefaults);
 
+        resetPatternTimeline();
         patternPlannerEvents = Array.isArray(events) ? [...events] : [];
         yarnFeedStepIndices = [];
         patternExtrusionBaseline = 0;
@@ -1166,6 +1223,7 @@
           lastPatternStepIndex = -1;
           lastPatternProgress = -1;
           updatePatternOverlay(0, 0);
+          updatePatternTimeline(0, 0);
         } else if (options.resetOverlay !== false) {
           lastPatternStepIndex = -1;
           lastPatternProgress = -1;
@@ -1187,6 +1245,7 @@
             setTone(homingGuardPositionElement, 'neutral');
           }
           resetYarnFlowPanel();
+          resetPatternTimeline();
         }
       }
 
@@ -1568,6 +1627,7 @@
           yarnExtrusionActive = false;
           lastPatternStepIndex = -1;
           lastPatternProgress = -1;
+          resetPatternTimeline();
           if (patternProgressBarElement) {
             patternProgressBarElement.style.width = '0%';
           }
@@ -1628,10 +1688,12 @@
       }
       function updatePatternPreview(elapsedSeconds) {
         if (!patternPreviewGroup) {
+          resetPatternTimeline();
           return;
         }
         const preview = patternPreviewGroup.userData.preview;
         if (!preview || preview.totalDistance <= 0) {
+          resetPatternTimeline();
           return;
         }
 
@@ -1668,6 +1730,7 @@
         }
 
         updatePatternOverlay(index, progress);
+        updatePatternTimeline(wrapped, progress);
       }
 
       function createSafetyShield() {

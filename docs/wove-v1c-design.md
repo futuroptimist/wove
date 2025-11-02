@@ -257,7 +257,9 @@ overview.
   motion without parsing raw G-code while leaving room for deeper
   interactivity. The overlay's Pattern Studio panel now streams the active
   planner comment and timeline progress so operators can read the motion step as
-  the hologram animates. A Planner Defaults list now surfaces the safe Z height,
+  the hologram animates, and a numeric timeline readout reports the elapsed and
+  total preview seconds (plus percentage) to pace dry runs. A Planner Defaults
+  list now surfaces the safe Z height,
   fabric plane, row spacing, and feed-rate settings embedded in the planner
   export so operators can reconcile the viewer preview with CLI configuration
   before a dry run. A Yarn Flow monitor in the overlay mirrors the glowing PTFE

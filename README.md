@@ -106,8 +106,10 @@ lands.
 
 The overlay now includes a Pattern Studio preview panel that cycles through the
 current `wove.pattern_cli --format planner` comment while a progress bar tracks
-the hologram run. Operators can cross-reference the displayed step with the
-planner animation without leaving the scene. The viewer pulls its sample from
+the hologram run. A timeline readout reports the elapsed and total preview
+seconds (plus percentage) so crews can pace dry runs while the animation
+advances. Operators can cross-reference the displayed step with the planner
+animation without leaving the scene. The viewer pulls its sample from
 `viewer/assets/base_chain_row.planner.json`, the same planner export produced by
 the CLI fixtures, so the hologram stays aligned with the documented base chain
 row recipe. Automated tests compare that asset against `PatternTranslator`
