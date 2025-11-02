@@ -123,6 +123,16 @@ def test_viewer_surfaces_homing_guard_panel() -> None:
     assert homing_guard_copy in viewer_html
 
 
+def test_viewer_surfaces_planner_metadata_panel() -> None:
+    """Ensure the planner metadata overlay advertises schema details."""
+
+    viewer_html = _load_viewer_html()
+
+    assert "Planner Metadata" in viewer_html
+    assert "planner-metadata-status" in viewer_html
+    assert "Planner metadata unavailable." in viewer_html
+
+
 def test_viewer_patterns_surface_position_overlay() -> None:
     """Ensure the Pattern Studio panel advertises live coordinate updates."""
 

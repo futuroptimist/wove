@@ -137,6 +137,10 @@ microstepping, steps-per-millimeter, and travel ranges whenever planner exports
 embed machine metadata via `--machine-profile`. Verify the browser preview is
 aligned with the configured gantry before rehearsing motion sequences.
 
+A **Planner Metadata** panel now lists the export's schema version, declared
+units, and total planner steps so contributors can confirm the viewer is
+rendering the expected payload before rehearsing motion.
+
 The new **Homing Guard** panel highlights whether the planner required a homed
 machine and echoes the captured `home_state`. Green and amber tones flag when a
 preview came from a verified homing cycle or needs attention so operators can
