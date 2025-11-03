@@ -169,6 +169,8 @@ def test_yarn_flow_panel_includes_totals() -> None:
     assert "Total yarn fed: Awaiting planner preview…" in html
     assert "yarn-flow-queue" in html
     assert "Remaining feed pulses: Awaiting planner preview…" in html
+    assert "yarn-flow-upcoming" in html
+    assert "Next feed pulses: Awaiting planner preview…" in html
 
 
 def test_viewer_mentions_z_axis_leadscrew() -> None:

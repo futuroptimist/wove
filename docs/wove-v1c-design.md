@@ -276,9 +276,10 @@ overview.
   before committing motion to hardware. The Homing Guard overlay highlights the
   `require_home` setting and recorded `home_state`, switching to green when the
   export captured a verified homing cycle and calling attention to plans that
-  need a fresh homing run. The same panel now streams live `X`, `Y`, `Z`, and
-  yarn-feed coordinates so contributors can note the precise motion snapshot as
-  the hologram advances.
+  need a fresh homing run. The Yarn Flow monitor also surfaces the upcoming feed
+  pulse step numbers so operators know exactly when the yarn will advance again,
+  and the same panel streams live `X`, `Y`, `Z`, and yarn-feed coordinates so
+  contributors can note the precise motion snapshot as the hologram advances.
 
 ## Bill of Materials (Initial Release)
 | Subsystem | Component | Qty | Notes |
