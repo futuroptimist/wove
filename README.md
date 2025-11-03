@@ -129,7 +129,9 @@ calling out when the planner is actively pulling fiber and when the spool is
 parked between feed events. The status flips in sync with the glowing PTFE
 guide and now reports how much yarn has been fed versus the planned total,
 along with the remaining feed pulses, so teams can confirm software, animation,
-and spool choreography agree before running hardware.
+and spool choreography agree before running hardware. The overlay now lists the
+upcoming feed pulse steps so operators can anticipate exactly when the next
+yarn draws will occur during the planner loop.
 
 A translucent planner bounds frame now wraps the hologram while the overlay
 lists the X/Y/Z/E limits emitted by the planner payload so teams can confirm the

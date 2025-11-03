@@ -371,6 +371,9 @@
         <p id="yarn-flow-queue" data-tone="neutral">
           Remaining feed pulses: Awaiting planner preview…
         </p>
+        <p id="yarn-flow-upcoming" data-tone="neutral">
+          Next feed pulses: Awaiting planner preview…
+        </p>
       </div>
       <div id="machine-panel">
         <h2>Machine Profile</h2>
@@ -431,6 +434,7 @@
       const yarnFlowSpoolElement = document.getElementById('yarn-flow-spool');
       const yarnFlowTotalElement = document.getElementById('yarn-flow-total');
       const yarnFlowQueueElement = document.getElementById('yarn-flow-queue');
+      const yarnFlowUpcomingElement = document.getElementById('yarn-flow-upcoming');
 
       const pointer = new THREE.Vector2();
       const raycaster = new THREE.Raycaster();
@@ -513,6 +517,8 @@
         'Total yarn fed: Awaiting planner preview…';
       const yarnFlowQueueFallbackMessage =
         'Remaining feed pulses: Awaiting planner preview…';
+      const yarnFlowUpcomingFallbackMessage =
+        'Next feed pulses: Awaiting planner preview…';
       let plannerDefaults = null;
       let patternExtrusionBaseline = 0;
       let patternExtrusionTarget = 0;
@@ -1121,6 +1127,10 @@
           yarnFlowQueueElement.textContent = yarnFlowQueueFallbackMessage;
           setTone(yarnFlowQueueElement, 'neutral');
         }
+        if (yarnFlowUpcomingElement) {
+          yarnFlowUpcomingElement.textContent = yarnFlowUpcomingFallbackMessage;
+          setTone(yarnFlowUpcomingElement, 'neutral');
+        }
       }
 
       function updateYarnFlowPanel(event, stepIndex, totalSteps) {
@@ -1196,6 +1206,41 @@
             yarnFlowQueueElement.textContent =
               'Remaining feed pulses: None in this preview.';
             setTone(yarnFlowQueueElement, 'neutral');
+          }
+        }
+
+        if (yarnFlowUpcomingElement) {
+          const totalFeedSteps = Array.isArray(yarnFeedStepIndices)
+            ? yarnFeedStepIndices.length
+            : 0;
+          if (totalFeedSteps > 0 && Number.isFinite(stepIndex)) {
+            const upcomingIndices = [];
+            for (let index = 0; index < totalFeedSteps; index += 1) {
+              const feedStep = yarnFeedStepIndices[index];
+              if (typeof feedStep === 'number' && feedStep > stepIndex) {
+                upcomingIndices.push(feedStep);
+              }
+            }
+
+            if (upcomingIndices.length > 0) {
+              const previewLabels = upcomingIndices
+                .slice(0, 4)
+                .map((value) => `#${value + 1}`);
+              let summary = `Next feed pulses: ${previewLabels.join(', ')}`;
+              if (upcomingIndices.length > previewLabels.length) {
+                summary += ', …';
+              }
+              yarnFlowUpcomingElement.textContent = `${summary}.`;
+              setTone(yarnFlowUpcomingElement, 'info');
+            } else {
+              yarnFlowUpcomingElement.textContent =
+                'Next feed pulses: None remaining in this preview.';
+              setTone(yarnFlowUpcomingElement, 'ready');
+            }
+          } else {
+            yarnFlowUpcomingElement.textContent =
+              'Next feed pulses: None in this preview.';
+            setTone(yarnFlowUpcomingElement, 'neutral');
           }
         }
       }
