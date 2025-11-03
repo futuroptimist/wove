@@ -65,6 +65,15 @@ def test_viewer_mentions_cooling_fan_mount() -> None:
     assert "20 mm fan" in html
 
 
+def test_viewer_animates_cooling_fans() -> None:
+    """Cooling fans should spin alongside yarn feed events."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+    assert "const fanControllers" in html
+    assert "fanControllers.push" in html
+    assert "fanControllers.forEach" in html
+
+
 def test_viewer_highlights_tension_post_and_ptfe_path() -> None:
     """The Three.js viewer advertises the tension post and PTFE guide tube."""
 
