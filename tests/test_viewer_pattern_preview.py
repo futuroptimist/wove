@@ -44,3 +44,13 @@ def test_viewer_ships_fallback_pattern_defaults() -> None:
     assert "yarnFlowStatusFallbackMessage" in html
     assert "yarnFlowSpoolFallbackMessage" in html
     assert "plannerMetadataFallbackMessage" in html
+
+
+def test_planner_defaults_panel_mentions_homing_guard() -> None:
+    """The planner defaults overlay should echo homing guard metadata."""
+
+    html = (PROJECT_ROOT / "viewer" / "index.html").read_text(encoding="utf-8")
+
+    assert "Homing guard" in html
+    assert "Optional for this planner preview" in html
+    assert "Recorded home state" in html

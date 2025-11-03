@@ -120,7 +120,9 @@ output to flag drift whenever the CLI evolves.
 
 The overlay's Planner Defaults list calls out the safe Z height, fabric plane,
 row height, and feed-rate defaults from the planner export so operators can
-validate the viewer preview against CLI settings before rehearsing motion.
+validate the viewer preview against CLI settings before rehearsing motion. It
+also repeats the `require_home` guard and recorded `home_state` so the safety
+expectations stay in view alongside the feed-rate metadata.
 
 A Yarn Flow monitor in the overlay mirrors the hologram's yarn feed state,
 calling out when the planner is actively pulling fiber and when the spool is
