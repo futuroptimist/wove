@@ -487,6 +487,7 @@
       const yarnPulseControllers = [];
       const yarnBeadControllers = [];
       const spoolControllers = [];
+      const fanControllers = [];
       const servoActuatorControllers = [];
       const servoSignalControllers = [];
       let yarnExtrusionActive = false;
@@ -2655,6 +2656,15 @@
         fan.position.set(0.54, 0.48, 0);
         fan.castShadow = true;
         group.add(fan);
+        fanControllers.push({
+          mesh: fan,
+          axis: 'z',
+          idleSpeed: 1.4,
+          activeSpeed: 3.6,
+          linkedToExtrusion: true,
+          damping: 4.5,
+          direction: 1,
+        });
         addHoverInfo(fan, 'Cooling fan — pulls heat away from the driver stack.');
 
         const fanGlow = new THREE.PointLight(0x6fd8ff, 1.4, 2.8);
@@ -3435,6 +3445,15 @@
           bladesGroup.add(blade);
         }
         fanGroup.add(bladesGroup);
+        fanControllers.push({
+          mesh: bladesGroup,
+          axis: 'x',
+          idleSpeed: 2.2,
+          activeSpeed: 5.8,
+          linkedToExtrusion: true,
+          damping: 5.2,
+          direction: 1,
+        });
 
         const guardMaterial = new THREE.MeshStandardMaterial({
           color: 0xaec4ff,
@@ -5207,6 +5226,40 @@
             mesh.rotation.z += rotationDelta;
           } else {
             mesh.rotateX(rotationDelta);
+          }
+        });
+        fanControllers.forEach((controller) => {
+          const {
+            mesh,
+            axis = 'y',
+            idleSpeed = 0,
+            activeSpeed = idleSpeed,
+            linkedToExtrusion = false,
+            damping = 6.0,
+            direction = 1,
+          } = controller;
+          if (!mesh) {
+            return;
+          }
+          const isActive = linkedToExtrusion ? yarnExtrusionActive : true;
+          const targetSpeed = isActive ? activeSpeed : idleSpeed;
+          const currentSpeed = THREE.MathUtils.damp(
+            controller.currentSpeed ?? targetSpeed,
+            targetSpeed,
+            damping,
+            delta,
+          );
+          controller.currentSpeed = currentSpeed;
+          if (Math.abs(currentSpeed) < 1e-5) {
+            return;
+          }
+          const rotationDelta = delta * currentSpeed * direction;
+          if (axis === 'x') {
+            mesh.rotation.x += rotationDelta;
+          } else if (axis === 'z') {
+            mesh.rotation.z += rotationDelta;
+          } else {
+            mesh.rotation.y += rotationDelta;
           }
         });
         servoActuatorControllers.forEach((controller) => {

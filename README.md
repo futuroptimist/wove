@@ -96,6 +96,9 @@ stays obvious at a glance—even in still frames.
 The source spool now spins in sync with yarn feed events so the hologram shows
 fiber unwinding from the supply while the PTFE tube glows. When extrusion
 pauses, the reel now coasts to a stop so idle previews keep the spool parked.
+A pair of cooling fans—the electronics bay exhaust and the hook-carriage
+mount—idle with a gentle spin and ramp up whenever the yarn feed engages, so the
+viewer keeps thermal cues in step with spool choreography.
 A shimmering Z-axis lift now hugs the hook carriage: the T8 leadscrew pulses
 beside the gantry while the anti-backlash nut and printed flexures glow to show
 how the carriage keeps vertical motion tight.
