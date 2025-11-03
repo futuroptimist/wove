@@ -135,6 +135,16 @@ def test_viewer_glides_camera_to_selected_cluster() -> None:
     assert "cameraMoveDamping" in html
 
 
+def test_viewer_supports_keyboard_cluster_navigation() -> None:
+    """Arrow keys should cycle roadmap milestones."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "Press ←/→ to cycle roadmap milestones without leaving the keyboard." in html
+    assert "window.addEventListener('keydown'" in html
+    assert "event.key === 'ArrowRight'" in html
+
+
 def test_viewer_mentions_thermistor_channel() -> None:
     """Ensure the overlay documents the heated-bed thermistor channel."""
 
