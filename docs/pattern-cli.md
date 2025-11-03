@@ -128,7 +128,10 @@ The resulting JSON object lists each command with its comment and the updated
 constraints such as the safe Z height and row spacing. The planner defaults
 also record the `require_home` guard and the `home_state` reported during
 translation so browser tooling can surface homing expectations alongside the
-motion bounds. The browser assembly viewer uses those bounds to render a
+motion bounds. The Planner Defaults panel in the Three.js overlay mirrors those
+fields so the homing expectations appear next to the feed-rate metadata while
+operators review the preview. The browser assembly viewer uses those bounds to
+render a
 translucent frame and overlay summary so builders can verify the envelope before
 running hardware. When a machine profile was provided, the `machine_profile.axes`
 mapping mirrors the JSON/YAML schema

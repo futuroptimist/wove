@@ -962,6 +962,27 @@
           entries.push({ label: 'Yarn feed', value: `${yarnFeed.toFixed(0)} mm/min` });
         }
 
+        const requireHome =
+          typeof data?.require_home === 'boolean' ? data.require_home : null;
+        if (requireHome !== null) {
+          const guardDescription = requireHome
+            ? 'Required before running motion'
+            : 'Optional for this planner preview';
+          entries.push({ label: 'Homing guard', value: guardDescription });
+        }
+
+        const homeStateValue = normalizeHomeState(data?.home_state);
+        if (homeStateValue) {
+          const formattedHomeState = homeStateValue
+            .split(/\s+/)
+            .filter(Boolean)
+            .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+            .join(' ');
+          entries.push({ label: 'Recorded home state', value: formattedHomeState });
+        } else if (requireHome !== null) {
+          entries.push({ label: 'Recorded home state', value: 'Unavailable' });
+        }
+
         if (entries.length === 0) {
           patternDefaultsStatusElement.textContent = patternDefaultsFallbackMessage;
           setTone(patternDefaultsStatusElement, 'warning');
