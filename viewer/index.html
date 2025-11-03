@@ -323,6 +323,9 @@
         <li>
           Click a pedestal to spotlight its roadmap milestone and watch the camera glide to frame it.
         </li>
+        <li>
+          Press ←/→ to cycle roadmap milestones without leaving the keyboard.
+        </li>
       </ul>
       <div id="roadmap-panel">
         <h2 id="roadmap-title">Assembly Roadmap</h2>
@@ -4963,6 +4966,66 @@
         return null;
       }
 
+      function cycleCluster(direction) {
+        if (!Number.isFinite(direction) || direction === 0) {
+          return;
+        }
+        if (!Array.isArray(productClusters) || productClusters.length === 0) {
+          return;
+        }
+
+        const currentIndex = activeCluster ? productClusters.indexOf(activeCluster) : -1;
+        const baseIndex = currentIndex >= 0 ? currentIndex : 0;
+        const nextIndex = (baseIndex + direction + productClusters.length) % productClusters.length;
+        const nextCluster = productClusters[nextIndex];
+        if (!nextCluster || nextCluster === activeCluster) {
+          return;
+        }
+
+        userIsControllingCamera = false;
+        cameraWasMovedByControls = false;
+        selectCluster(nextCluster);
+
+        if (statusElement) {
+          const label =
+            nextCluster.userData && typeof nextCluster.userData.name === 'string'
+              ? nextCluster.userData.name
+              : 'roadmap milestone';
+          updateStatus(`Keyboard focus: ${label}`);
+        }
+      }
+
+      function onKeyDown(event) {
+        if (!event || typeof event.key !== 'string') {
+          return;
+        }
+        if (!Array.isArray(productClusters) || productClusters.length === 0) {
+          return;
+        }
+
+        const target = event.target;
+        if (target) {
+          const tagName = target.tagName ? target.tagName.toUpperCase() : '';
+          if (
+            tagName === 'INPUT' ||
+            tagName === 'TEXTAREA' ||
+            tagName === 'SELECT' ||
+            tagName === 'BUTTON' ||
+            target.isContentEditable
+          ) {
+            return;
+          }
+        }
+
+        if (event.key === 'ArrowRight') {
+          event.preventDefault();
+          cycleCluster(1);
+        } else if (event.key === 'ArrowLeft') {
+          event.preventDefault();
+          cycleCluster(-1);
+        }
+      }
+
       const clock = new THREE.Clock();
 
       function animate() {
@@ -5407,6 +5470,7 @@
       }
 
       window.addEventListener('pointerdown', onPointerDown);
+      window.addEventListener('keydown', onKeyDown);
 
       window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;

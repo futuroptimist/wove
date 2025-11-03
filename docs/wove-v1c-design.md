@@ -200,7 +200,9 @@ overview.
   cluster so teams can track the focus from above, while a rotating teal arc
   orbits the ring to reinforce which milestone is active. Clicking a pedestal
   now swings the camera toward that work cell so crews immediately focus on the
-  selected milestone. The material prep pod pedestal now highlights the
+  selected milestone. Keyboard shortcuts (←/→) cycle the same pedestals so
+  technicians can tour the roadmap without leaving the keyboard. The material
+  prep pod pedestal now highlights the
   cone tree, staging bins, inspection scale, and traceability cards that feed
   yarn into the crochet cell. The Pattern Studio hologram loops a base chain
   row exported from `wove.pattern_cli --format planner`, previewing how planner
