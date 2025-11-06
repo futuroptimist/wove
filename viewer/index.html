@@ -377,6 +377,9 @@
         <p id="yarn-flow-upcoming" data-tone="neutral">
           Next feed pulses: Awaiting planner preview…
         </p>
+        <p id="yarn-flow-position" data-tone="neutral">
+          Coordinates: Awaiting yarn flow coordinates…
+        </p>
       </div>
       <div id="machine-panel">
         <h2>Machine Profile</h2>
@@ -438,6 +441,7 @@
       const yarnFlowTotalElement = document.getElementById('yarn-flow-total');
       const yarnFlowQueueElement = document.getElementById('yarn-flow-queue');
       const yarnFlowUpcomingElement = document.getElementById('yarn-flow-upcoming');
+      const yarnFlowPositionElement = document.getElementById('yarn-flow-position');
 
       const pointer = new THREE.Vector2();
       const raycaster = new THREE.Raycaster();
@@ -523,6 +527,12 @@
         'Remaining feed pulses: Awaiting planner preview…';
       const yarnFlowUpcomingFallbackMessage =
         'Next feed pulses: Awaiting planner preview…';
+      const yarnFlowPositionFallbackMessage =
+        'Coordinates: Awaiting yarn flow coordinates…';
+
+      function formatCoordinate(value) {
+        return Number.isFinite(value) ? value.toFixed(1) : '—';
+      }
       let plannerDefaults = null;
       let patternExtrusionBaseline = 0;
       let patternExtrusionTarget = 0;
@@ -1135,6 +1145,10 @@
           yarnFlowUpcomingElement.textContent = yarnFlowUpcomingFallbackMessage;
           setTone(yarnFlowUpcomingElement, 'neutral');
         }
+        if (yarnFlowPositionElement) {
+          yarnFlowPositionElement.textContent = yarnFlowPositionFallbackMessage;
+          setTone(yarnFlowPositionElement, 'neutral');
+        }
       }
 
       function updateYarnFlowPanel(event, stepIndex, totalSteps) {
@@ -1246,6 +1260,17 @@
               'Next feed pulses: None in this preview.';
             setTone(yarnFlowUpcomingElement, 'neutral');
           }
+        }
+
+        if (yarnFlowPositionElement) {
+          const positionSegments = [
+            `X ${formatCoordinate(event.x)} mm`,
+            `Y ${formatCoordinate(event.y)} mm`,
+            `Z ${formatCoordinate(event.z)} mm`,
+            `E ${formatCoordinate(event.extrusion)} mm`,
+          ];
+          yarnFlowPositionElement.textContent = `Coordinates: ${positionSegments.join(' · ')}`;
+          setTone(yarnFlowPositionElement, yarnExtrusionActive ? 'ready' : 'info');
         }
       }
 
@@ -1827,8 +1852,6 @@
           yarnExtrusionActive =
             typeof comment === 'string' && comment.toLowerCase().includes('feed yarn');
           if (patternPositionElement) {
-            const formatCoordinate = (value) =>
-              Number.isFinite(value) ? value.toFixed(1) : '—';
             const positionSegments = [
               `X ${formatCoordinate(event.x)} mm`,
               `Y ${formatCoordinate(event.y)} mm`,
