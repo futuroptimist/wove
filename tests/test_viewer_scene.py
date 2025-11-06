@@ -190,6 +190,10 @@ def test_yarn_flow_panel_includes_totals() -> None:
     assert "Remaining feed pulses: Awaiting planner preview…" in html
     assert "yarn-flow-upcoming" in html
     assert "Next feed pulses: Awaiting planner preview…" in html
+    assert "yarn-flow-position" in html
+    assert "Coordinates: Awaiting yarn flow coordinates…" in html
+    assert "yarnFlowPositionElement" in html
+    assert "Coordinates: ${positionSegments.join(' · ')}" in html
 
 
 def test_viewer_mentions_z_axis_leadscrew() -> None:
