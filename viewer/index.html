@@ -661,6 +661,298 @@
         'Hook motions pending…',
       ];
       Object.freeze(stitchDetailsFallbackMessages);
+
+      function emptyStitchBreakdown() {
+        return {
+          ready: false,
+          chainCount: 0,
+          singleCount: 0,
+          turnMoves: 0,
+          advanceMoves: 0,
+          repositionMoves: 0,
+          pauseCount: 0,
+          plungeCount: 0,
+          raiseCount: 0,
+          feedActions: 0,
+        };
+      }
+
+      function emptyPlanSummary() {
+        return {
+          ready: false,
+          steps: 0,
+          feedLength: 0,
+          feedCount: 0,
+          xSpan: null,
+          ySpan: null,
+          breakdown: emptyStitchBreakdown(),
+        };
+      }
+
+      function drawWrappedText(context, text, x, y, maxWidth, lineHeight) {
+        const content = typeof text === 'string' ? text : String(text ?? '');
+        if (content.trim().length === 0) {
+          return y;
+        }
+
+        const words = content.split(/\s+/);
+        let line = '';
+        let cursorY = y;
+
+        words.forEach((word) => {
+          const candidate = line.length > 0 ? `${line} ${word}` : word;
+          if (context.measureText(candidate).width > maxWidth && line) {
+            context.fillText(line, x, cursorY);
+            line = word;
+            cursorY += lineHeight;
+          } else {
+            line = candidate;
+          }
+        });
+
+        if (line.length > 0) {
+          context.fillText(line, x, cursorY);
+          cursorY += lineHeight;
+        }
+
+        return cursorY;
+      }
+
+      function renderConsoleDisplay(statusText, detailLines) {
+        if (!consoleContext || !consoleTexture) {
+          return;
+        }
+
+        const { width, height } = consoleCanvas;
+        const gradient = consoleContext.createLinearGradient(0, 0, width, height);
+        gradient.addColorStop(0, '#091428');
+        gradient.addColorStop(1, '#1a2440');
+        consoleContext.fillStyle = gradient;
+        consoleContext.fillRect(0, 0, width, height);
+
+        consoleContext.fillStyle = '#cde3ff';
+        consoleContext.font = 'bold 40px "Segoe UI", sans-serif';
+        consoleContext.fillText('Knitting Console', 32, 60);
+
+        consoleContext.fillStyle = '#8faeff';
+        consoleContext.font = '24px "Segoe UI", sans-serif';
+        let cursorY = drawWrappedText(
+          consoleContext,
+          statusText,
+          32,
+          110,
+          width - 64,
+          34,
+        );
+
+        consoleContext.fillStyle = '#dbe7ff';
+        consoleContext.font = '22px "Segoe UI", sans-serif';
+        const lines = Array.isArray(detailLines) ? detailLines : [];
+        lines.forEach((line) => {
+          cursorY = drawWrappedText(
+            consoleContext,
+            line,
+            32,
+            cursorY + 6,
+            width - 64,
+            30,
+          );
+        });
+
+        consoleTexture.needsUpdate = true;
+      }
+
+      function pluralize(word, count, pluralForm = null) {
+        const rounded = Math.round(Math.abs(Number(count) || 0));
+        if (rounded === 1) {
+          return word;
+        }
+        if (typeof pluralForm === 'string' && pluralForm.length > 0) {
+          return pluralForm;
+        }
+        return `${word}s`;
+      }
+
+      function formatCount(count, singular, pluralForm = null) {
+        const value = Number(count);
+        if (!Number.isFinite(value)) {
+          const pluralWord = pluralize(singular, 0, pluralForm);
+          return `0 ${pluralWord}`;
+        }
+        const rounded = Math.round(value);
+        const word = pluralize(singular, rounded, pluralForm);
+        return `${rounded} ${word}`;
+      }
+
+      function analyzeStitchBreakdown(events) {
+        if (!Array.isArray(events) || events.length === 0) {
+          return emptyStitchBreakdown();
+        }
+
+        const chainLabels = new Set();
+        const singleLabels = new Set();
+        let turnMoves = 0;
+        let advanceMoves = 0;
+        let repositionMoves = 0;
+        let pauseCount = 0;
+        let plungeCount = 0;
+        let raiseCount = 0;
+        let feedActions = 0;
+
+        events.forEach((event) => {
+          const comment =
+            typeof event?.comment === 'string' ? event.comment.trim() : '';
+          if (!comment) {
+            return;
+          }
+
+          const [rawLabel, rawAction] = comment.split(':');
+          const label = rawLabel ? rawLabel.trim().toLowerCase() : '';
+          const action = rawAction ? rawAction.trim().toLowerCase() : '';
+          const target = action || label;
+
+          if (label.startsWith('chain stitch')) {
+            chainLabels.add(label);
+          } else if (
+            label.startsWith('single stitch') ||
+            label.startsWith('single crochet')
+          ) {
+            singleLabels.add(label);
+          }
+
+          if (target.includes('feed yarn')) {
+            feedActions += 1;
+          }
+          if (target.includes('plunge')) {
+            plungeCount += 1;
+          }
+          if (target.includes('raise')) {
+            raiseCount += 1;
+          }
+          if (target.includes('turn')) {
+            turnMoves += 1;
+          }
+          if (target.includes('reposition')) {
+            repositionMoves += 1;
+          }
+          if (target.includes('advance') || target.includes('travel')) {
+            advanceMoves += 1;
+          }
+          if (target.includes('pause')) {
+            pauseCount += 1;
+          }
+        });
+
+        const ready =
+          chainLabels.size > 0 ||
+          singleLabels.size > 0 ||
+          turnMoves > 0 ||
+          advanceMoves > 0 ||
+          repositionMoves > 0 ||
+          pauseCount > 0 ||
+          plungeCount > 0 ||
+          raiseCount > 0 ||
+          feedActions > 0;
+
+        return {
+          ready,
+          chainCount: chainLabels.size,
+          singleCount: singleLabels.size,
+          turnMoves,
+          advanceMoves,
+          repositionMoves,
+          pauseCount,
+          plungeCount,
+          raiseCount,
+          feedActions,
+        };
+      }
+
+      function buildStitchSummaryLine(label, count) {
+        if (!Number.isFinite(count) || count <= 0) {
+          return `${label} — no stitches recorded.`;
+        }
+        const formatted = formatCount(count, 'stitch', 'stitches');
+        return `${label} — ${formatted} traced.`;
+      }
+
+      function buildSupportMovesLine(breakdown) {
+        const segments = [];
+        if (breakdown.turnMoves > 0) {
+          segments.push(formatCount(breakdown.turnMoves, 'turn'));
+        }
+        if (breakdown.advanceMoves > 0) {
+          segments.push(formatCount(breakdown.advanceMoves, 'advance'));
+        }
+        if (breakdown.repositionMoves > 0) {
+          segments.push(
+            formatCount(breakdown.repositionMoves, 'reposition move', 'reposition moves'),
+          );
+        }
+        if (breakdown.pauseCount > 0) {
+          segments.push(formatCount(breakdown.pauseCount, 'pause'));
+        }
+        if (segments.length === 0) {
+          return 'Support moves — none recorded.';
+        }
+        return `Support moves — ${segments.join(' · ')}.`;
+      }
+
+      function buildHookMotionLine(breakdown) {
+        const segments = [];
+        if (breakdown.plungeCount > 0) {
+          segments.push(formatCount(breakdown.plungeCount, 'plunge'));
+        }
+        if (breakdown.raiseCount > 0) {
+          segments.push(formatCount(breakdown.raiseCount, 'raise'));
+        }
+        if (breakdown.feedActions > 0) {
+          segments.push(
+            formatCount(breakdown.feedActions, 'feed pulse', 'feed pulses'),
+          );
+        }
+        if (segments.length === 0) {
+          return 'Hook motions — no actuator cues recorded.';
+        }
+        return `Hook motions — ${segments.join(' · ')}.`;
+      }
+
+      function updateStitchBreakdownPanel(planSummary) {
+        if (!stitchStatusElement || !stitchDetailsElement) {
+          return;
+        }
+
+        while (stitchDetailsElement.firstChild) {
+          stitchDetailsElement.removeChild(stitchDetailsElement.firstChild);
+        }
+
+        const breakdown = planSummary?.breakdown ?? emptyStitchBreakdown();
+        if (!planSummary?.ready || !breakdown.ready) {
+          stitchStatusElement.textContent = stitchStatusFallbackMessage;
+          setTone(stitchStatusElement, 'neutral');
+          stitchDetailsFallbackMessages.forEach((message) => {
+            const listItem = document.createElement('li');
+            listItem.textContent = message;
+            stitchDetailsElement.appendChild(listItem);
+          });
+          return;
+        }
+
+        stitchStatusElement.textContent = 'Stitch breakdown ready.';
+        setTone(stitchStatusElement, 'info');
+        const lines = [
+          buildStitchSummaryLine('Chain stitches', breakdown.chainCount),
+          buildStitchSummaryLine('Single crochet stitches', breakdown.singleCount),
+          buildSupportMovesLine(breakdown),
+          buildHookMotionLine(breakdown),
+        ];
+        lines.forEach((line) => {
+          const listItem = document.createElement('li');
+          listItem.textContent = line;
+          stitchDetailsElement.appendChild(listItem);
+        });
+      }
+
       let plannerDefaults = null;
       let patternExtrusionBaseline = 0;
       let patternExtrusionTarget = 0;
@@ -1279,296 +1571,6 @@
         }
       }
 
-      function emptyStitchBreakdown() {
-        return {
-          ready: false,
-          chainCount: 0,
-          singleCount: 0,
-          turnMoves: 0,
-          advanceMoves: 0,
-          repositionMoves: 0,
-          pauseCount: 0,
-          plungeCount: 0,
-          raiseCount: 0,
-          feedActions: 0,
-        };
-      }
-
-      function emptyPlanSummary() {
-        return {
-          ready: false,
-          steps: 0,
-          feedLength: 0,
-          feedCount: 0,
-          xSpan: null,
-          ySpan: null,
-          breakdown: emptyStitchBreakdown(),
-        };
-      }
-
-      function drawWrappedText(context, text, x, y, maxWidth, lineHeight) {
-        const content = typeof text === 'string' ? text : String(text ?? '');
-        if (content.trim().length === 0) {
-          return y;
-        }
-
-        const words = content.split(/\s+/);
-        let line = '';
-        let cursorY = y;
-
-        words.forEach((word) => {
-          const candidate = line.length > 0 ? `${line} ${word}` : word;
-          if (context.measureText(candidate).width > maxWidth && line) {
-            context.fillText(line, x, cursorY);
-            line = word;
-            cursorY += lineHeight;
-          } else {
-            line = candidate;
-          }
-        });
-
-        if (line.length > 0) {
-          context.fillText(line, x, cursorY);
-          cursorY += lineHeight;
-        }
-
-        return cursorY;
-      }
-
-      function renderConsoleDisplay(statusText, detailLines) {
-        if (!consoleContext || !consoleTexture) {
-          return;
-        }
-
-        const { width, height } = consoleCanvas;
-        const gradient = consoleContext.createLinearGradient(0, 0, width, height);
-        gradient.addColorStop(0, '#091428');
-        gradient.addColorStop(1, '#1a2440');
-        consoleContext.fillStyle = gradient;
-        consoleContext.fillRect(0, 0, width, height);
-
-        consoleContext.fillStyle = '#cde3ff';
-        consoleContext.font = 'bold 40px "Segoe UI", sans-serif';
-        consoleContext.fillText('Knitting Console', 32, 60);
-
-        consoleContext.fillStyle = '#8faeff';
-        consoleContext.font = '24px "Segoe UI", sans-serif';
-        let cursorY = drawWrappedText(
-          consoleContext,
-          statusText,
-          32,
-          110,
-          width - 64,
-          34,
-        );
-
-        consoleContext.fillStyle = '#dbe7ff';
-        consoleContext.font = '22px "Segoe UI", sans-serif';
-        const lines = Array.isArray(detailLines) ? detailLines : [];
-        lines.forEach((line) => {
-          cursorY = drawWrappedText(
-            consoleContext,
-            line,
-            32,
-            cursorY + 6,
-            width - 64,
-            30,
-          );
-        });
-
-        consoleTexture.needsUpdate = true;
-      }
-
-      function pluralize(word, count, pluralForm = null) {
-        const rounded = Math.round(Math.abs(Number(count) || 0));
-        if (rounded === 1) {
-          return word;
-        }
-        if (typeof pluralForm === 'string' && pluralForm.length > 0) {
-          return pluralForm;
-        }
-        return `${word}s`;
-      }
-
-      function formatCount(count, singular, pluralForm = null) {
-        const value = Number(count);
-        if (!Number.isFinite(value)) {
-          const pluralWord = pluralize(singular, 0, pluralForm);
-          return `0 ${pluralWord}`;
-        }
-        const rounded = Math.round(value);
-        const word = pluralize(singular, rounded, pluralForm);
-        return `${rounded} ${word}`;
-      }
-
-      function analyzeStitchBreakdown(events) {
-        if (!Array.isArray(events) || events.length === 0) {
-          return emptyStitchBreakdown();
-        }
-
-        const chainLabels = new Set();
-        const singleLabels = new Set();
-        let turnMoves = 0;
-        let advanceMoves = 0;
-        let repositionMoves = 0;
-        let pauseCount = 0;
-        let plungeCount = 0;
-        let raiseCount = 0;
-        let feedActions = 0;
-
-        events.forEach((event) => {
-          const comment =
-            typeof event?.comment === 'string' ? event.comment.trim() : '';
-          if (!comment) {
-            return;
-          }
-
-          const [rawLabel, rawAction] = comment.split(':');
-          const label = rawLabel ? rawLabel.trim().toLowerCase() : '';
-          const action = rawAction ? rawAction.trim().toLowerCase() : '';
-          const target = action || label;
-
-          if (label.startsWith('chain stitch')) {
-            chainLabels.add(label);
-          } else if (
-            label.startsWith('single stitch') ||
-            label.startsWith('single crochet')
-          ) {
-            singleLabels.add(label);
-          }
-
-          if (target.includes('feed yarn')) {
-            feedActions += 1;
-          }
-          if (target.includes('plunge')) {
-            plungeCount += 1;
-          }
-          if (target.includes('raise')) {
-            raiseCount += 1;
-          }
-          if (target.includes('turn')) {
-            turnMoves += 1;
-          }
-          if (target.includes('reposition')) {
-            repositionMoves += 1;
-          }
-          if (target.includes('advance') || target.includes('travel')) {
-            advanceMoves += 1;
-          }
-          if (target.includes('pause')) {
-            pauseCount += 1;
-          }
-        });
-
-        const ready =
-          chainLabels.size > 0 ||
-          singleLabels.size > 0 ||
-          turnMoves > 0 ||
-          advanceMoves > 0 ||
-          repositionMoves > 0 ||
-          pauseCount > 0 ||
-          plungeCount > 0 ||
-          raiseCount > 0 ||
-          feedActions > 0;
-
-        return {
-          ready,
-          chainCount: chainLabels.size,
-          singleCount: singleLabels.size,
-          turnMoves,
-          advanceMoves,
-          repositionMoves,
-          pauseCount,
-          plungeCount,
-          raiseCount,
-          feedActions,
-        };
-      }
-
-      function buildStitchSummaryLine(label, count) {
-        if (!Number.isFinite(count) || count <= 0) {
-          return `${label} — no stitches recorded.`;
-        }
-        const formatted = formatCount(count, 'stitch', 'stitches');
-        return `${label} — ${formatted} traced.`;
-      }
-
-      function buildSupportMovesLine(breakdown) {
-        const segments = [];
-        if (breakdown.turnMoves > 0) {
-          segments.push(formatCount(breakdown.turnMoves, 'turn'));
-        }
-        if (breakdown.advanceMoves > 0) {
-          segments.push(formatCount(breakdown.advanceMoves, 'advance'));
-        }
-        if (breakdown.repositionMoves > 0) {
-          segments.push(
-            formatCount(breakdown.repositionMoves, 'reposition move', 'reposition moves'),
-          );
-        }
-        if (breakdown.pauseCount > 0) {
-          segments.push(formatCount(breakdown.pauseCount, 'pause'));
-        }
-        if (segments.length === 0) {
-          return 'Support moves — none recorded.';
-        }
-        return `Support moves — ${segments.join(' · ')}.`;
-      }
-
-      function buildHookMotionLine(breakdown) {
-        const segments = [];
-        if (breakdown.plungeCount > 0) {
-          segments.push(formatCount(breakdown.plungeCount, 'plunge'));
-        }
-        if (breakdown.raiseCount > 0) {
-          segments.push(formatCount(breakdown.raiseCount, 'raise'));
-        }
-        if (breakdown.feedActions > 0) {
-          segments.push(
-            formatCount(breakdown.feedActions, 'feed pulse', 'feed pulses'),
-          );
-        }
-        if (segments.length === 0) {
-          return 'Hook motions — no actuator cues recorded.';
-        }
-        return `Hook motions — ${segments.join(' · ')}.`;
-      }
-
-      function updateStitchBreakdownPanel(planSummary) {
-        if (!stitchStatusElement || !stitchDetailsElement) {
-          return;
-        }
-
-        while (stitchDetailsElement.firstChild) {
-          stitchDetailsElement.removeChild(stitchDetailsElement.firstChild);
-        }
-
-        const breakdown = planSummary?.breakdown ?? emptyStitchBreakdown();
-        if (!planSummary?.ready || !breakdown.ready) {
-          stitchStatusElement.textContent = stitchStatusFallbackMessage;
-          setTone(stitchStatusElement, 'neutral');
-          stitchDetailsFallbackMessages.forEach((message) => {
-            const listItem = document.createElement('li');
-            listItem.textContent = message;
-            stitchDetailsElement.appendChild(listItem);
-          });
-          return;
-        }
-
-        stitchStatusElement.textContent = 'Stitch breakdown ready.';
-        setTone(stitchStatusElement, 'info');
-        const lines = [
-          buildStitchSummaryLine('Chain stitches', breakdown.chainCount),
-          buildStitchSummaryLine('Single crochet stitches', breakdown.singleCount),
-          buildSupportMovesLine(breakdown),
-          buildHookMotionLine(breakdown),
-        ];
-        lines.forEach((line) => {
-          const listItem = document.createElement('li');
-          listItem.textContent = line;
-          stitchDetailsElement.appendChild(listItem);
-        });
-      }
 
       function summarizePlan(events, bounds) {
         const plannerEvents = Array.isArray(events) ? events : [];
