@@ -23,6 +23,20 @@ def test_viewer_planner_preview_matches_fixture() -> None:
     assert viewer_preview == fixture_preview
 
 
+def test_knitting_preview_asset_matches_fixture() -> None:
+    """The v1k preview asset should mirror the knitting research fixture."""
+
+    viewer_asset = VIEWER_PREVIEW_ROOT / "v1k_research_preview.planner.json"
+    fixture_asset = FIXTURE_PREVIEW_ROOT / "v1k_research_preview.planner.json"
+
+    assert viewer_asset.exists()
+    assert fixture_asset.exists()
+
+    assert viewer_asset.read_text(encoding="utf-8") == fixture_asset.read_text(
+        encoding="utf-8"
+    )
+
+
 def test_viewer_exposes_planner_defaults_panel() -> None:
     """The overlay should advertise the planner defaults list."""
 

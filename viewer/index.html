@@ -176,6 +176,74 @@
         color: #c8fff2;
       }
 
+      #console-panel {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(245, 245, 245, 0.15);
+      }
+
+      #console-panel h2 {
+        margin: 0 0 0.35rem;
+        font-size: 0.95rem;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        color: #a7c8ff;
+      }
+
+      #console-panel p {
+        margin: 0 0 0.5rem;
+        font-size: 0.86rem;
+        line-height: 1.35;
+        color: #dbe7ff;
+      }
+
+      #console-details {
+        margin: 0;
+        padding-left: 1.1rem;
+        list-style: disc;
+        font-size: 0.84rem;
+        line-height: 1.35;
+        color: #dbe7ff;
+      }
+
+      #console-details li {
+        margin-bottom: 0.3rem;
+      }
+
+      #stitch-panel {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(245, 245, 245, 0.15);
+      }
+
+      #stitch-panel h2 {
+        margin: 0 0 0.35rem;
+        font-size: 0.95rem;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        color: #ddb8ff;
+      }
+
+      #stitch-panel p {
+        margin: 0 0 0.5rem;
+        font-size: 0.86rem;
+        line-height: 1.35;
+        color: #f0e4ff;
+      }
+
+      #stitch-details {
+        margin: 0;
+        padding-left: 1.1rem;
+        list-style: disc;
+        font-size: 0.84rem;
+        line-height: 1.35;
+        color: #f0e4ff;
+      }
+
+      #stitch-details li {
+        margin-bottom: 0.3rem;
+      }
+
       #pattern-defaults {
         margin-top: 0.8rem;
         padding: 0.75rem 0.9rem;
@@ -378,6 +446,29 @@
           Next feed pulses: Awaiting planner preview…
         </p>
       </div>
+      <div id="console-panel">
+        <h2>Control Console Comparison</h2>
+        <p id="console-status" data-tone="neutral">
+          Comparing crochet motion with the v1k knitting preview…
+        </p>
+        <ul id="console-details">
+          <li>Crochet metrics pending…</li>
+          <li>Knitting metrics pending…</li>
+          <li>Difference analysis pending…</li>
+        </ul>
+      </div>
+      <div id="stitch-panel">
+        <h2>Stitch Breakdown</h2>
+        <p id="stitch-status" data-tone="neutral">
+          Classifying planner stitches…
+        </p>
+        <ul id="stitch-details">
+          <li>Chain stitches pending…</li>
+          <li>Single crochet stitches pending…</li>
+          <li>Support moves pending…</li>
+          <li>Hook motions pending…</li>
+        </ul>
+      </div>
       <div id="machine-panel">
         <h2>Machine Profile</h2>
         <p id="machine-profile-status">Loading machine profile metadata…</p>
@@ -438,6 +529,10 @@
       const yarnFlowTotalElement = document.getElementById('yarn-flow-total');
       const yarnFlowQueueElement = document.getElementById('yarn-flow-queue');
       const yarnFlowUpcomingElement = document.getElementById('yarn-flow-upcoming');
+      const consoleStatusElement = document.getElementById('console-status');
+      const consoleDetailsElement = document.getElementById('console-details');
+      const stitchStatusElement = document.getElementById('stitch-status');
+      const stitchDetailsElement = document.getElementById('stitch-details');
 
       const pointer = new THREE.Vector2();
       const raycaster = new THREE.Raycaster();
@@ -450,6 +545,7 @@
       const selectionRingHeight = 0.06;
       const selectionSweepSpeed = 0.9;
       const patternPreviewSource = 'assets/base_chain_row.planner.json';
+      const knittingPreviewSource = 'assets/v1k_research_preview.planner.json';
       const fallbackPatternPlannerEvents = [
         { comment: 'use millimeters', x: 0.0, y: 0.0, z: 4.0, extrusion: 0.0 },
         { comment: 'absolute positioning', x: 0.0, y: 0.0, z: 4.0, extrusion: 0.0 },
@@ -486,6 +582,14 @@
       };
       Object.freeze(fallbackPatternPlannerEvents);
       Object.freeze(fallbackPatternDefaults);
+      const fallbackKnittingPlanSummary = Object.freeze({
+        ready: true,
+        steps: 38,
+        feedLength: 3.9,
+        feedCount: 8,
+        xSpan: 36.0,
+        ySpan: 16.0,
+      });
       const yarnFlowControllers = [];
       const yarnPulseControllers = [];
       const yarnBeadControllers = [];
@@ -493,6 +597,24 @@
       const fanControllers = [];
       const servoActuatorControllers = [];
       const servoSignalControllers = [];
+      const consoleCanvas = document.createElement('canvas');
+      consoleCanvas.width = 512;
+      consoleCanvas.height = 512;
+      const consoleContext = consoleCanvas.getContext('2d');
+      const consoleTexture = new THREE.CanvasTexture(consoleCanvas);
+      consoleTexture.colorSpace = THREE.SRGBColorSpace;
+      consoleTexture.anisotropy = Math.min(
+        renderer.capabilities.getMaxAnisotropy(),
+        8,
+      );
+      const consoleMaterial = new THREE.MeshStandardMaterial({
+        map: consoleTexture,
+        emissiveMap: consoleTexture,
+        emissive: new THREE.Color(0x2e5cff),
+        emissiveIntensity: 0.75,
+        metalness: 0.28,
+        roughness: 0.32,
+      });
       let yarnExtrusionActive = false;
       let patternPlannerEvents = [];
       let patternPreviewGroup = null;
@@ -523,11 +645,31 @@
         'Remaining feed pulses: Awaiting planner preview…';
       const yarnFlowUpcomingFallbackMessage =
         'Next feed pulses: Awaiting planner preview…';
+      const consoleStatusFallbackMessage =
+        'Comparing crochet motion with the v1k knitting preview…';
+      const consoleDetailsFallbackMessages = [
+        'Crochet metrics pending…',
+        'Knitting metrics pending…',
+        'Difference analysis pending…',
+      ];
+      Object.freeze(consoleDetailsFallbackMessages);
+      const stitchStatusFallbackMessage = 'Classifying planner stitches…';
+      const stitchDetailsFallbackMessages = [
+        'Chain stitches pending…',
+        'Single crochet stitches pending…',
+        'Support moves pending…',
+        'Hook motions pending…',
+      ];
+      Object.freeze(stitchDetailsFallbackMessages);
       let plannerDefaults = null;
       let patternExtrusionBaseline = 0;
       let patternExtrusionTarget = 0;
       let yarnFeedStepIndices = [];
       let plannerMetadata = null;
+      let crochetPlanSummary = emptyPlanSummary();
+      let knittingPlanSummary = emptyPlanSummary();
+      renderConsoleDisplay(consoleStatusFallbackMessage, consoleDetailsFallbackMessages);
+      updateStitchBreakdownPanel(crochetPlanSummary);
 
       const FRAME_HALF_WIDTH = 3.6;
       const FRAME_HALF_DEPTH = 2.6;
@@ -1137,6 +1279,441 @@
         }
       }
 
+      function emptyStitchBreakdown() {
+        return {
+          ready: false,
+          chainCount: 0,
+          singleCount: 0,
+          turnMoves: 0,
+          advanceMoves: 0,
+          repositionMoves: 0,
+          pauseCount: 0,
+          plungeCount: 0,
+          raiseCount: 0,
+          feedActions: 0,
+        };
+      }
+
+      function emptyPlanSummary() {
+        return {
+          ready: false,
+          steps: 0,
+          feedLength: 0,
+          feedCount: 0,
+          xSpan: null,
+          ySpan: null,
+          breakdown: emptyStitchBreakdown(),
+        };
+      }
+
+      function drawWrappedText(context, text, x, y, maxWidth, lineHeight) {
+        const content = typeof text === 'string' ? text : String(text ?? '');
+        if (content.trim().length === 0) {
+          return y;
+        }
+
+        const words = content.split(/\s+/);
+        let line = '';
+        let cursorY = y;
+
+        words.forEach((word) => {
+          const candidate = line.length > 0 ? `${line} ${word}` : word;
+          if (context.measureText(candidate).width > maxWidth && line) {
+            context.fillText(line, x, cursorY);
+            line = word;
+            cursorY += lineHeight;
+          } else {
+            line = candidate;
+          }
+        });
+
+        if (line.length > 0) {
+          context.fillText(line, x, cursorY);
+          cursorY += lineHeight;
+        }
+
+        return cursorY;
+      }
+
+      function renderConsoleDisplay(statusText, detailLines) {
+        if (!consoleContext || !consoleTexture) {
+          return;
+        }
+
+        const { width, height } = consoleCanvas;
+        const gradient = consoleContext.createLinearGradient(0, 0, width, height);
+        gradient.addColorStop(0, '#091428');
+        gradient.addColorStop(1, '#1a2440');
+        consoleContext.fillStyle = gradient;
+        consoleContext.fillRect(0, 0, width, height);
+
+        consoleContext.fillStyle = '#cde3ff';
+        consoleContext.font = 'bold 40px "Segoe UI", sans-serif';
+        consoleContext.fillText('Knitting Console', 32, 60);
+
+        consoleContext.fillStyle = '#8faeff';
+        consoleContext.font = '24px "Segoe UI", sans-serif';
+        let cursorY = drawWrappedText(
+          consoleContext,
+          statusText,
+          32,
+          110,
+          width - 64,
+          34,
+        );
+
+        consoleContext.fillStyle = '#dbe7ff';
+        consoleContext.font = '22px "Segoe UI", sans-serif';
+        const lines = Array.isArray(detailLines) ? detailLines : [];
+        lines.forEach((line) => {
+          cursorY = drawWrappedText(
+            consoleContext,
+            line,
+            32,
+            cursorY + 6,
+            width - 64,
+            30,
+          );
+        });
+
+        consoleTexture.needsUpdate = true;
+      }
+
+      function pluralize(word, count, pluralForm = null) {
+        const rounded = Math.round(Math.abs(Number(count) || 0));
+        if (rounded === 1) {
+          return word;
+        }
+        if (typeof pluralForm === 'string' && pluralForm.length > 0) {
+          return pluralForm;
+        }
+        return `${word}s`;
+      }
+
+      function formatCount(count, singular, pluralForm = null) {
+        const value = Number(count);
+        if (!Number.isFinite(value)) {
+          const pluralWord = pluralize(singular, 0, pluralForm);
+          return `0 ${pluralWord}`;
+        }
+        const rounded = Math.round(value);
+        const word = pluralize(singular, rounded, pluralForm);
+        return `${rounded} ${word}`;
+      }
+
+      function analyzeStitchBreakdown(events) {
+        if (!Array.isArray(events) || events.length === 0) {
+          return emptyStitchBreakdown();
+        }
+
+        const chainLabels = new Set();
+        const singleLabels = new Set();
+        let turnMoves = 0;
+        let advanceMoves = 0;
+        let repositionMoves = 0;
+        let pauseCount = 0;
+        let plungeCount = 0;
+        let raiseCount = 0;
+        let feedActions = 0;
+
+        events.forEach((event) => {
+          const comment =
+            typeof event?.comment === 'string' ? event.comment.trim() : '';
+          if (!comment) {
+            return;
+          }
+
+          const [rawLabel, rawAction] = comment.split(':');
+          const label = rawLabel ? rawLabel.trim().toLowerCase() : '';
+          const action = rawAction ? rawAction.trim().toLowerCase() : '';
+          const target = action || label;
+
+          if (label.startsWith('chain stitch')) {
+            chainLabels.add(label);
+          } else if (
+            label.startsWith('single stitch') ||
+            label.startsWith('single crochet')
+          ) {
+            singleLabels.add(label);
+          }
+
+          if (target.includes('feed yarn')) {
+            feedActions += 1;
+          }
+          if (target.includes('plunge')) {
+            plungeCount += 1;
+          }
+          if (target.includes('raise')) {
+            raiseCount += 1;
+          }
+          if (target.includes('turn')) {
+            turnMoves += 1;
+          }
+          if (target.includes('reposition')) {
+            repositionMoves += 1;
+          }
+          if (target.includes('advance') || target.includes('travel')) {
+            advanceMoves += 1;
+          }
+          if (target.includes('pause')) {
+            pauseCount += 1;
+          }
+        });
+
+        const ready =
+          chainLabels.size > 0 ||
+          singleLabels.size > 0 ||
+          turnMoves > 0 ||
+          advanceMoves > 0 ||
+          repositionMoves > 0 ||
+          pauseCount > 0 ||
+          plungeCount > 0 ||
+          raiseCount > 0 ||
+          feedActions > 0;
+
+        return {
+          ready,
+          chainCount: chainLabels.size,
+          singleCount: singleLabels.size,
+          turnMoves,
+          advanceMoves,
+          repositionMoves,
+          pauseCount,
+          plungeCount,
+          raiseCount,
+          feedActions,
+        };
+      }
+
+      function buildStitchSummaryLine(label, count) {
+        if (!Number.isFinite(count) || count <= 0) {
+          return `${label} — no stitches recorded.`;
+        }
+        const formatted = formatCount(count, 'stitch', 'stitches');
+        return `${label} — ${formatted} traced.`;
+      }
+
+      function buildSupportMovesLine(breakdown) {
+        const segments = [];
+        if (breakdown.turnMoves > 0) {
+          segments.push(formatCount(breakdown.turnMoves, 'turn'));
+        }
+        if (breakdown.advanceMoves > 0) {
+          segments.push(formatCount(breakdown.advanceMoves, 'advance'));
+        }
+        if (breakdown.repositionMoves > 0) {
+          segments.push(
+            formatCount(breakdown.repositionMoves, 'reposition move', 'reposition moves'),
+          );
+        }
+        if (breakdown.pauseCount > 0) {
+          segments.push(formatCount(breakdown.pauseCount, 'pause'));
+        }
+        if (segments.length === 0) {
+          return 'Support moves — none recorded.';
+        }
+        return `Support moves — ${segments.join(' · ')}.`;
+      }
+
+      function buildHookMotionLine(breakdown) {
+        const segments = [];
+        if (breakdown.plungeCount > 0) {
+          segments.push(formatCount(breakdown.plungeCount, 'plunge'));
+        }
+        if (breakdown.raiseCount > 0) {
+          segments.push(formatCount(breakdown.raiseCount, 'raise'));
+        }
+        if (breakdown.feedActions > 0) {
+          segments.push(
+            formatCount(breakdown.feedActions, 'feed pulse', 'feed pulses'),
+          );
+        }
+        if (segments.length === 0) {
+          return 'Hook motions — no actuator cues recorded.';
+        }
+        return `Hook motions — ${segments.join(' · ')}.`;
+      }
+
+      function updateStitchBreakdownPanel(planSummary) {
+        if (!stitchStatusElement || !stitchDetailsElement) {
+          return;
+        }
+
+        while (stitchDetailsElement.firstChild) {
+          stitchDetailsElement.removeChild(stitchDetailsElement.firstChild);
+        }
+
+        const breakdown = planSummary?.breakdown ?? emptyStitchBreakdown();
+        if (!planSummary?.ready || !breakdown.ready) {
+          stitchStatusElement.textContent = stitchStatusFallbackMessage;
+          setTone(stitchStatusElement, 'neutral');
+          stitchDetailsFallbackMessages.forEach((message) => {
+            const listItem = document.createElement('li');
+            listItem.textContent = message;
+            stitchDetailsElement.appendChild(listItem);
+          });
+          return;
+        }
+
+        stitchStatusElement.textContent = 'Stitch breakdown ready.';
+        setTone(stitchStatusElement, 'info');
+        const lines = [
+          buildStitchSummaryLine('Chain stitches', breakdown.chainCount),
+          buildStitchSummaryLine('Single crochet stitches', breakdown.singleCount),
+          buildSupportMovesLine(breakdown),
+          buildHookMotionLine(breakdown),
+        ];
+        lines.forEach((line) => {
+          const listItem = document.createElement('li');
+          listItem.textContent = line;
+          stitchDetailsElement.appendChild(listItem);
+        });
+      }
+
+      function summarizePlan(events, bounds) {
+        const plannerEvents = Array.isArray(events) ? events : [];
+        const normalizedBounds = normalizeBounds(bounds);
+        const computedBounds =
+          normalizedBounds ?? computeBoundsFromEvents(plannerEvents);
+        const [baseline, target] = computeExtrusionSummary(
+          plannerEvents,
+          computedBounds,
+        );
+
+        const breakdown = analyzeStitchBreakdown(plannerEvents);
+
+        let feedCount = 0;
+        plannerEvents.forEach((event) => {
+          const comment =
+            typeof event?.comment === 'string' ? event.comment.toLowerCase() : '';
+          if (comment.includes('feed yarn')) {
+            feedCount += 1;
+          }
+        });
+
+        const xSpan = computedBounds?.x
+          ? computedBounds.x.max - computedBounds.x.min
+          : null;
+        const ySpan = computedBounds?.y
+          ? computedBounds.y.max - computedBounds.y.min
+          : null;
+
+        return {
+          ready: plannerEvents.length > 0,
+          steps: plannerEvents.length,
+          feedLength: Math.max(target - baseline, 0),
+          feedCount,
+          xSpan: Number.isFinite(xSpan) ? xSpan : null,
+          ySpan: Number.isFinite(ySpan) ? ySpan : null,
+          breakdown,
+        };
+      }
+
+      function formatFeedLabel(feedLength, feedCount) {
+        if (!Number.isFinite(feedLength)) {
+          return 'yarn feed unavailable';
+        }
+        const baseLabel = `yarn feed ${feedLength.toFixed(2)} mm`;
+        if (!Number.isFinite(feedCount) || feedCount <= 0) {
+          return baseLabel;
+        }
+        const plural = feedCount === 1 ? 'pulse' : 'pulses';
+        return `${baseLabel} across ${feedCount} ${plural}`;
+      }
+
+      function formatDelta(value, label, fractionDigits = 2) {
+        if (!Number.isFinite(value) || Math.abs(value) < 1e-9) {
+          return `${label} unchanged`;
+        }
+        const digits = Number.isInteger(fractionDigits) ? fractionDigits : 2;
+        const rounded = value.toFixed(digits);
+        const sign = value > 0 ? '+' : '';
+        return `${sign}${rounded} ${label}`;
+      }
+
+      function buildPlanSummaryLabel(prefix, summary) {
+        if (!summary || !summary.ready) {
+          return `${prefix} — metrics unavailable`;
+        }
+
+        const segments = [`${summary.steps} steps`];
+        segments.push(formatFeedLabel(summary.feedLength, summary.feedCount));
+        if (Number.isFinite(summary.xSpan) && Number.isFinite(summary.ySpan)) {
+          segments.push(
+            `span ${summary.xSpan.toFixed(1)} × ${summary.ySpan.toFixed(1)} mm`,
+          );
+        }
+        return `${prefix} — ${segments.join(' · ')}`;
+      }
+
+      function buildPlanDifferenceSummary(crochet, knitting) {
+        if (!crochet?.ready || !knitting?.ready) {
+          return 'Difference analysis pending…';
+        }
+
+        const segments = [
+          formatDelta(knitting.steps - crochet.steps, 'steps', 0),
+          formatDelta(
+            knitting.feedLength - crochet.feedLength,
+            'mm yarn feed',
+          ),
+        ];
+
+        if (Number.isFinite(knitting.xSpan) && Number.isFinite(crochet.xSpan)) {
+          segments.push(
+            formatDelta(knitting.xSpan - crochet.xSpan, 'mm X span'),
+          );
+        }
+        if (Number.isFinite(knitting.ySpan) && Number.isFinite(crochet.ySpan)) {
+          segments.push(
+            formatDelta(knitting.ySpan - crochet.ySpan, 'mm Y span'),
+          );
+        }
+
+        return `Delta — ${segments.join(' · ')}`;
+      }
+
+      function updateConsolePanel() {
+        if (!consoleStatusElement || !consoleDetailsElement) {
+          return;
+        }
+
+        while (consoleDetailsElement.firstChild) {
+          consoleDetailsElement.removeChild(consoleDetailsElement.firstChild);
+        }
+
+        if (!crochetPlanSummary.ready || !knittingPlanSummary.ready) {
+          consoleStatusElement.textContent = consoleStatusFallbackMessage;
+          setTone(consoleStatusElement, 'neutral');
+          consoleDetailsFallbackMessages.forEach((message) => {
+            const listItem = document.createElement('li');
+            listItem.textContent = message;
+            consoleDetailsElement.appendChild(listItem);
+          });
+          renderConsoleDisplay(
+            consoleStatusFallbackMessage,
+            consoleDetailsFallbackMessages,
+          );
+          return;
+        }
+
+        const lines = [
+          buildPlanSummaryLabel('Crochet plan', crochetPlanSummary),
+          buildPlanSummaryLabel('Knitting preview', knittingPlanSummary),
+          buildPlanDifferenceSummary(crochetPlanSummary, knittingPlanSummary),
+        ];
+
+        consoleStatusElement.textContent =
+          'Console comparison ready: crochet vs. knitting.';
+        setTone(consoleStatusElement, 'info');
+        lines.forEach((line) => {
+          const listItem = document.createElement('li');
+          listItem.textContent = line;
+          consoleDetailsElement.appendChild(listItem);
+        });
+        renderConsoleDisplay(consoleStatusElement.textContent, lines);
+      }
+
       function updateYarnFlowPanel(event, stepIndex, totalSteps) {
         if (!yarnFlowStatusElement || !yarnFlowSpoolElement) {
           return;
@@ -1403,6 +1980,9 @@
             homingGuardPositionElement.textContent = homingGuardPositionFallbackMessage;
             setTone(homingGuardPositionElement, 'neutral');
           }
+          crochetPlanSummary = emptyPlanSummary();
+          updateConsolePanel();
+          updateStitchBreakdownPanel(crochetPlanSummary);
           resetYarnFlowPanel();
         }
       }
@@ -1497,6 +2077,15 @@
             source: 'Base chain row asset',
           };
           applyPatternPlannerEvents(events, { defaults, bounds, metadata });
+          crochetPlanSummary = summarizePlan(events, bounds);
+          if (!crochetPlanSummary.ready) {
+            crochetPlanSummary = summarizePlan(
+              fallbackPatternPlannerEvents,
+              null,
+            );
+          }
+          updateConsolePanel();
+          updateStitchBreakdownPanel(crochetPlanSummary);
           updateMachineProfilePanel(payload?.machine_profile ?? null);
           if (statusElement) {
             updateStatus('Pattern Studio preview synced with base chain row.');
@@ -1511,11 +2100,37 @@
               source: 'Fallback preview',
             },
           });
+          crochetPlanSummary = summarizePlan(
+            fallbackPatternPlannerEvents,
+            null,
+          );
+          updateConsolePanel();
+          updateStitchBreakdownPanel(crochetPlanSummary);
           updateMachineProfilePanel(null);
           if (statusElement) {
             updateStatus('Using fallback planner preview.');
           }
         }
+      }
+
+      async function loadKnittingPreview() {
+        try {
+          const response = await fetch(knittingPreviewSource, { cache: 'no-cache' });
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          const payload = await response.json();
+          const events = eventsFromPlannerPayload(payload);
+          const bounds = payload?.bounds ?? null;
+          knittingPlanSummary = summarizePlan(events, bounds);
+          if (!knittingPlanSummary.ready) {
+            knittingPlanSummary = fallbackKnittingPlanSummary;
+          }
+        } catch (error) {
+          console.warn('Unable to load knitting preview', error);
+          knittingPlanSummary = fallbackKnittingPlanSummary;
+        }
+        updateConsolePanel();
       }
 
       function buildPlannerPreview(events, options = {}) {
@@ -4705,13 +5320,7 @@
 
         const consoleScreen = new THREE.Mesh(
           new THREE.BoxGeometry(0.08, 0.48, 0.58),
-          new THREE.MeshStandardMaterial({
-            color: 0x101425,
-            emissive: 0x3a7bff,
-            emissiveIntensity: 0.65,
-            metalness: 0.28,
-            roughness: 0.28,
-          }),
+          consoleMaterial,
         );
         consoleScreen.position.set(-1.16, 0.66, 0.46);
         consoleScreen.rotation.y = Math.PI / 3.5;
@@ -4879,6 +5488,7 @@
 
       populateProductLines();
       loadPlannerPreviewFromSource();
+      loadKnittingPreview();
 
       function updateRoadmapPanel(title, description) {
         roadmapTitleElement.textContent = title;

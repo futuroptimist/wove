@@ -212,6 +212,18 @@ overview.
   the repository's planner fixtures. A translucent bounds frame now wraps the
   hologram while the overlay lists the exported X/Y/Z/E ranges so operators can
   verify the motion envelope matches the CLI payload.
+  The v1k research rig's control console now renders a live comparison between
+  the active crochet preview and the knitting roadmap asset bundled with the
+  viewer. The overlay surfaces step counts, yarn feed totals, feed pulse counts,
+  and XY span deltas so builders can quantify how the knitting sequence expands
+  beyond the crochet motion. The console screen mirrors the same metrics with a
+  dedicated texture, keeping the virtual display synchronized with the overlay
+  while crews evaluate the upgrade path.
+  A companion **Stitch Breakdown** panel classifies each planner export into
+  chain stitches, single crochet stitches, support moves, and hook motions so
+  contributors can see how the DSL expands into motion. The counts surface turns,
+  repositions, plunges, raises, and feed pulses to verify every stitch cycle the
+  hologram performs before exporting a motion plan.
 - Optional polycarbonate shield with hinged access door for production environments;
   the Three.js viewer renders the translucent enclosure so teams can rehearse
   safe access paths before printing hardware. Mint-highlighted floor markings

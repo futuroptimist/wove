@@ -192,6 +192,38 @@ def test_yarn_flow_panel_includes_totals() -> None:
     assert "Next feed pulses: Awaiting planner preview…" in html
 
 
+def test_console_panel_includes_comparison_copy() -> None:
+    """The control console overlay should describe the comparison."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "Control Console Comparison" in html
+    assert "Comparing crochet motion with the v1k knitting preview…" in html
+    assert "Difference analysis pending…" in html
+
+
+def test_console_panel_loads_knitting_preview() -> None:
+    """Ensure the scene fetches the knitting preview asset and renders results."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "v1k_research_preview.planner.json" in html
+    assert "loadKnittingPreview" in html
+    assert "Console comparison ready: crochet vs. knitting." in html
+
+
+def test_stitch_breakdown_panel_has_placeholders() -> None:
+    """The Stitch Breakdown overlay should expose placeholder copy."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "Stitch Breakdown" in html
+    assert "Classifying planner stitches…" in html
+    assert "Chain stitches pending…" in html
+    assert "Hook motions pending…" in html
+    assert "updateStitchBreakdownPanel" in html
+
+
 def test_viewer_mentions_z_axis_leadscrew() -> None:
     """The scene should describe the Z-axis leadscrew lift assembly."""
 

@@ -137,6 +137,21 @@ and spool choreography agree before running hardware. The overlay now lists the
 upcoming feed pulse steps so operators can anticipate exactly when the next
 yarn draws will occur during the planner loop.
 
+The control console stationed beside the v1k research rig now streams a live
+comparison between the loaded crochet plan and the knitting preview fixture.
+The overlay's **Control Console Comparison** panel highlights the step counts,
+yarn feed totals, and XY spans for each plan while the 3D console screen renders
+the same summary. Operators can immediately spot how the upcoming knitting path
+expands beyond the crochet sequence, including the extra yarn feed pulses and
+travel span delta the knitting prototype requires.
+
+The overlay's new **Stitch Breakdown** panel classifies the planner preview so
+the crochet recipe translates into visible stitch counts. Chain and single
+crochet stitches are tallied alongside support moves (turns, advances,
+repositions, and pauses) and hook motions (plunges, raises, and feed pulses).
+Technicians can reconcile the DSL with the animation and confirm each stitch
+cycle appears before committing the motion plan to hardware.
+
 A translucent planner bounds frame now wraps the hologram while the overlay
 lists the X/Y/Z/E limits emitted by the planner payload so teams can confirm the
 motion envelope before committing the sequence to hardware.

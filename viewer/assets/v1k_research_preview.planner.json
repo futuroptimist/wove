@@ -1,0 +1,452 @@
+{
+  "version": 1,
+  "units": "millimeters",
+  "defaults": {
+    "safe_z_mm": 4.0,
+    "fabric_plane_z_mm": 0.0,
+    "travel_feed_rate_mm_min": 1500,
+    "plunge_feed_rate_mm_min": 600,
+    "yarn_feed_rate_mm_min": 320,
+    "default_row_height_mm": 8.0,
+    "require_home": true,
+    "home_state": "homed"
+  },
+  "bounds": {
+    "x_mm": {
+      "min": 0.0,
+      "max": 36.0
+    },
+    "y_mm": {
+      "min": 0.0,
+      "max": 16.0
+    },
+    "z_mm": {
+      "min": -1.2,
+      "max": 4.0
+    },
+    "extrusion_mm": {
+      "min": 0.0,
+      "max": 3.9
+    }
+  },
+  "commands": [
+    {
+      "index": 0,
+      "command": "G21",
+      "state": {
+        "x_mm": 0.0,
+        "y_mm": 0.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 0.0
+      },
+      "comment": "use millimeters"
+    },
+    {
+      "index": 1,
+      "command": "G90",
+      "state": {
+        "x_mm": 0.0,
+        "y_mm": 0.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 0.0
+      },
+      "comment": "absolute positioning"
+    },
+    {
+      "index": 2,
+      "command": "G92 X0.00 Y0.00 Z4.00 E0",
+      "state": {
+        "x_mm": 0.0,
+        "y_mm": 0.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 0.0
+      },
+      "comment": "zero axes"
+    },
+    {
+      "index": 3,
+      "command": "G1 Z-1.20 F600",
+      "state": {
+        "x_mm": 0.0,
+        "y_mm": 0.0,
+        "z_mm": -1.2,
+        "extrusion_mm": 0.0
+      },
+      "comment": "knit swatch 1 of 6: plunge"
+    },
+    {
+      "index": 4,
+      "command": "G1 E0.45 F320",
+      "state": {
+        "x_mm": 0.0,
+        "y_mm": 0.0,
+        "z_mm": -1.2,
+        "extrusion_mm": 0.45
+      },
+      "comment": "knit swatch 1 of 6: feed yarn"
+    },
+    {
+      "index": 5,
+      "command": "G1 Z4.00 F600",
+      "state": {
+        "x_mm": 0.0,
+        "y_mm": 0.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 0.45
+      },
+      "comment": "knit swatch 1 of 6: raise"
+    },
+    {
+      "index": 6,
+      "command": "G0 X9.00 Y0.00 F1500",
+      "state": {
+        "x_mm": 9.0,
+        "y_mm": 0.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 0.45
+      },
+      "comment": "knit swatch 1 of 6: travel"
+    },
+    {
+      "index": 7,
+      "command": "G1 Z-1.20 F600",
+      "state": {
+        "x_mm": 9.0,
+        "y_mm": 0.0,
+        "z_mm": -1.2,
+        "extrusion_mm": 0.45
+      },
+      "comment": "knit swatch 2 of 6: plunge"
+    },
+    {
+      "index": 8,
+      "command": "G1 E0.90 F320",
+      "state": {
+        "x_mm": 9.0,
+        "y_mm": 0.0,
+        "z_mm": -1.2,
+        "extrusion_mm": 0.9
+      },
+      "comment": "knit swatch 2 of 6: feed yarn"
+    },
+    {
+      "index": 9,
+      "command": "G1 Z4.00 F600",
+      "state": {
+        "x_mm": 9.0,
+        "y_mm": 0.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 0.9
+      },
+      "comment": "knit swatch 2 of 6: raise"
+    },
+    {
+      "index": 10,
+      "command": "G0 X18.00 Y0.00 F1500",
+      "state": {
+        "x_mm": 18.0,
+        "y_mm": 0.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 0.9
+      },
+      "comment": "knit swatch 2 of 6: travel"
+    },
+    {
+      "index": 11,
+      "command": "G1 Z-1.20 F600",
+      "state": {
+        "x_mm": 18.0,
+        "y_mm": 0.0,
+        "z_mm": -1.2,
+        "extrusion_mm": 0.9
+      },
+      "comment": "knit swatch 3 of 6: plunge"
+    },
+    {
+      "index": 12,
+      "command": "G1 E1.35 F320",
+      "state": {
+        "x_mm": 18.0,
+        "y_mm": 0.0,
+        "z_mm": -1.2,
+        "extrusion_mm": 1.35
+      },
+      "comment": "knit swatch 3 of 6: feed yarn"
+    },
+    {
+      "index": 13,
+      "command": "G1 Z4.00 F600",
+      "state": {
+        "x_mm": 18.0,
+        "y_mm": 0.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 1.35
+      },
+      "comment": "knit swatch 3 of 6: raise"
+    },
+    {
+      "index": 14,
+      "command": "G0 X27.00 Y0.00 F1500",
+      "state": {
+        "x_mm": 27.0,
+        "y_mm": 0.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 1.35
+      },
+      "comment": "knit swatch 3 of 6: travel"
+    },
+    {
+      "index": 15,
+      "command": "G0 X27.00 Y8.00 F1500",
+      "state": {
+        "x_mm": 27.0,
+        "y_mm": 8.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 1.35
+      },
+      "comment": "transition to next knitting track"
+    },
+    {
+      "index": 16,
+      "command": "G0 X18.00 Y8.00 F1500",
+      "state": {
+        "x_mm": 18.0,
+        "y_mm": 8.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 1.35
+      },
+      "comment": "stage reverse sweep"
+    },
+    {
+      "index": 17,
+      "command": "G1 Z-1.20 F600",
+      "state": {
+        "x_mm": 18.0,
+        "y_mm": 8.0,
+        "z_mm": -1.2,
+        "extrusion_mm": 1.35
+      },
+      "comment": "knit swatch 4 of 6: plunge"
+    },
+    {
+      "index": 18,
+      "command": "G1 E1.80 F320",
+      "state": {
+        "x_mm": 18.0,
+        "y_mm": 8.0,
+        "z_mm": -1.2,
+        "extrusion_mm": 1.8
+      },
+      "comment": "knit swatch 4 of 6: feed yarn"
+    },
+    {
+      "index": 19,
+      "command": "G1 Z4.00 F600",
+      "state": {
+        "x_mm": 18.0,
+        "y_mm": 8.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 1.8
+      },
+      "comment": "knit swatch 4 of 6: raise"
+    },
+    {
+      "index": 20,
+      "command": "G0 X9.00 Y8.00 F1500",
+      "state": {
+        "x_mm": 9.0,
+        "y_mm": 8.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 1.8
+      },
+      "comment": "knit swatch 4 of 6: travel"
+    },
+    {
+      "index": 21,
+      "command": "G1 Z-1.20 F600",
+      "state": {
+        "x_mm": 9.0,
+        "y_mm": 8.0,
+        "z_mm": -1.2,
+        "extrusion_mm": 1.8
+      },
+      "comment": "knit swatch 5 of 6: plunge"
+    },
+    {
+      "index": 22,
+      "command": "G1 E2.25 F320",
+      "state": {
+        "x_mm": 9.0,
+        "y_mm": 8.0,
+        "z_mm": -1.2,
+        "extrusion_mm": 2.25
+      },
+      "comment": "knit swatch 5 of 6: feed yarn"
+    },
+    {
+      "index": 23,
+      "command": "G1 Z4.00 F600",
+      "state": {
+        "x_mm": 9.0,
+        "y_mm": 8.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 2.25
+      },
+      "comment": "knit swatch 5 of 6: raise"
+    },
+    {
+      "index": 24,
+      "command": "G0 X0.00 Y8.00 F1500",
+      "state": {
+        "x_mm": 0.0,
+        "y_mm": 8.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 2.25
+      },
+      "comment": "knit swatch 5 of 6: travel"
+    },
+    {
+      "index": 25,
+      "command": "G1 Z-1.20 F600",
+      "state": {
+        "x_mm": 0.0,
+        "y_mm": 8.0,
+        "z_mm": -1.2,
+        "extrusion_mm": 2.25
+      },
+      "comment": "knit swatch 6 of 6: plunge"
+    },
+    {
+      "index": 26,
+      "command": "G1 E2.70 F320",
+      "state": {
+        "x_mm": 0.0,
+        "y_mm": 8.0,
+        "z_mm": -1.2,
+        "extrusion_mm": 2.7
+      },
+      "comment": "knit swatch 6 of 6: feed yarn"
+    },
+    {
+      "index": 27,
+      "command": "G1 Z4.00 F600",
+      "state": {
+        "x_mm": 0.0,
+        "y_mm": 8.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 2.7
+      },
+      "comment": "knit swatch 6 of 6: raise"
+    },
+    {
+      "index": 28,
+      "command": "G0 X0.00 Y16.00 F1500",
+      "state": {
+        "x_mm": 0.0,
+        "y_mm": 16.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 2.7
+      },
+      "comment": "advance to finishing track"
+    },
+    {
+      "index": 29,
+      "command": "G1 Z-0.80 F600",
+      "state": {
+        "x_mm": 0.0,
+        "y_mm": 16.0,
+        "z_mm": -0.8,
+        "extrusion_mm": 2.7
+      },
+      "comment": "bind-off preview: plunge"
+    },
+    {
+      "index": 30,
+      "command": "G1 E3.30 F320",
+      "state": {
+        "x_mm": 0.0,
+        "y_mm": 16.0,
+        "z_mm": -0.8,
+        "extrusion_mm": 3.3
+      },
+      "comment": "bind-off preview: feed yarn"
+    },
+    {
+      "index": 31,
+      "command": "G1 Z4.00 F600",
+      "state": {
+        "x_mm": 0.0,
+        "y_mm": 16.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 3.3
+      },
+      "comment": "bind-off preview: raise"
+    },
+    {
+      "index": 32,
+      "command": "G0 X36.00 Y16.00 F1500",
+      "state": {
+        "x_mm": 36.0,
+        "y_mm": 16.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 3.3
+      },
+      "comment": "bind-off preview: travel"
+    },
+    {
+      "index": 33,
+      "command": "G1 Z-0.80 F600",
+      "state": {
+        "x_mm": 36.0,
+        "y_mm": 16.0,
+        "z_mm": -0.8,
+        "extrusion_mm": 3.3
+      },
+      "comment": "bind-off preview: plunge (final)"
+    },
+    {
+      "index": 34,
+      "command": "G1 E3.90 F320",
+      "state": {
+        "x_mm": 36.0,
+        "y_mm": 16.0,
+        "z_mm": -0.8,
+        "extrusion_mm": 3.9
+      },
+      "comment": "bind-off preview: feed yarn"
+    },
+    {
+      "index": 35,
+      "command": "G1 Z4.00 F600",
+      "state": {
+        "x_mm": 36.0,
+        "y_mm": 16.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 3.9
+      },
+      "comment": "bind-off preview: raise"
+    },
+    {
+      "index": 36,
+      "command": "G0 X36.00 Y0.00 F1500",
+      "state": {
+        "x_mm": 36.0,
+        "y_mm": 0.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 3.9
+      },
+      "comment": "return sweep toward origin"
+    },
+    {
+      "index": 37,
+      "command": "G0 X0.00 Y0.00 F1500",
+      "state": {
+        "x_mm": 0.0,
+        "y_mm": 0.0,
+        "z_mm": 4.0,
+        "extrusion_mm": 3.9
+      },
+      "comment": "planner complete — ready for knitting handoff"
+    }
+  ]
+}
