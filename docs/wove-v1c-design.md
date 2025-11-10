@@ -58,6 +58,10 @@ overview before fading once the feed cycle pauses.
 The supply spool now spins in the hologram whenever yarn is extruding so teams can watch fiber
 unwind from the source while the tube pulses, then glides to a stop when feed events pause so idle
 segments stay calm.
+A progress ring now wraps that spool, filling around the reel as the hologram pulls yarn so
+technicians can gauge completion without staring at the overlay. The Yarn Flow panel mirrors the
+same percentage, highlighting when the preview reaches its planned payout and flagging runs that
+feed fiber without a declared target.
 
 #### Tension Profiles and Bench Tests
 

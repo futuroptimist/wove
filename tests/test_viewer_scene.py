@@ -196,6 +196,32 @@ def test_yarn_flow_panel_includes_totals() -> None:
     assert "Coordinates: ${positionSegments.join(' · ')}" in html
 
 
+def test_yarn_flow_panel_mentions_spool_progress() -> None:
+    """Ensure the Yarn Flow overlay calls out spool progress guidance."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "yarn-flow-progress" in html
+    assert "Spool progress: Awaiting planner preview…" in html
+
+
+def test_viewer_builds_spool_progress_ring() -> None:
+    """The 3D scene should describe the spool progress indicator."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "const spoolProgressSegments" in html
+    assert "spoolProgressSegments.push" in html
+    assert "spoolProgressSegments.forEach" in html
+    progress_copy = " ".join(
+        [
+            "Spool progress ring — fills as the planner feeds yarn",
+            "around the supply reel.",
+        ]
+    )
+    assert progress_copy in html
+
+
 def test_viewer_mentions_z_axis_leadscrew() -> None:
     """The scene should describe the Z-axis leadscrew lift assembly."""
 
