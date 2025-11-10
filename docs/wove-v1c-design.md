@@ -284,6 +284,9 @@ overview.
   pulse step numbers so operators know exactly when the yarn will advance again,
   and the same panel streams live `X`, `Y`, `Z`, and yarn-feed coordinates so
   contributors can note the precise motion snapshot as the hologram advances.
+  Countdown timers quantify the seconds until the next yarn feed and highlight
+  the following pulses so dry runs stay paced to the planner timeline rather
+  than the raw step indices.
 
 ## Bill of Materials (Initial Release)
 | Subsystem | Component | Qty | Notes |
