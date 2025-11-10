@@ -377,6 +377,9 @@
         <p id="yarn-flow-upcoming" data-tone="neutral">
           Next feed pulses: Awaiting planner preview…
         </p>
+        <p id="yarn-flow-timing" data-tone="neutral">
+          Feed timing: Awaiting planner preview…
+        </p>
         <p id="yarn-flow-position" data-tone="neutral">
           Coordinates: Awaiting yarn flow coordinates…
         </p>
@@ -441,6 +444,7 @@
       const yarnFlowTotalElement = document.getElementById('yarn-flow-total');
       const yarnFlowQueueElement = document.getElementById('yarn-flow-queue');
       const yarnFlowUpcomingElement = document.getElementById('yarn-flow-upcoming');
+      const yarnFlowTimingElement = document.getElementById('yarn-flow-timing');
       const yarnFlowPositionElement = document.getElementById('yarn-flow-position');
 
       const pointer = new THREE.Vector2();
@@ -527,6 +531,8 @@
         'Remaining feed pulses: Awaiting planner preview…';
       const yarnFlowUpcomingFallbackMessage =
         'Next feed pulses: Awaiting planner preview…';
+      const yarnFlowTimingFallbackMessage =
+        'Feed timing: Awaiting planner preview…';
       const yarnFlowPositionFallbackMessage =
         'Coordinates: Awaiting yarn flow coordinates…';
 
@@ -1145,13 +1151,17 @@
           yarnFlowUpcomingElement.textContent = yarnFlowUpcomingFallbackMessage;
           setTone(yarnFlowUpcomingElement, 'neutral');
         }
+        if (yarnFlowTimingElement) {
+          yarnFlowTimingElement.textContent = yarnFlowTimingFallbackMessage;
+          setTone(yarnFlowTimingElement, 'neutral');
+        }
         if (yarnFlowPositionElement) {
           yarnFlowPositionElement.textContent = yarnFlowPositionFallbackMessage;
           setTone(yarnFlowPositionElement, 'neutral');
         }
       }
 
-      function updateYarnFlowPanel(event, stepIndex, totalSteps) {
+      function updateYarnFlowPanel(event, stepIndex, totalSteps, progressRatio) {
         if (!yarnFlowStatusElement || !yarnFlowSpoolElement) {
           return;
         }
@@ -1259,6 +1269,93 @@
             yarnFlowUpcomingElement.textContent =
               'Next feed pulses: None in this preview.';
             setTone(yarnFlowUpcomingElement, 'neutral');
+          }
+        }
+
+        if (yarnFlowTimingElement) {
+          const preview =
+            patternPreviewGroup &&
+            patternPreviewGroup.userData &&
+            typeof patternPreviewGroup.userData === 'object'
+              ? patternPreviewGroup.userData.preview || null
+              : null;
+          const cumulativeDistances =
+            preview && Array.isArray(preview.cumulativeDistances)
+              ? preview.cumulativeDistances
+              : null;
+          const totalDistance =
+            preview && Number.isFinite(preview.totalDistance)
+              ? preview.totalDistance
+              : null;
+          const totalDuration = Number.isFinite(patternPreviewDurationSeconds)
+            ? patternPreviewDurationSeconds
+            : null;
+          const hasProgress = Number.isFinite(progressRatio);
+          const hasFeedSteps =
+            Array.isArray(yarnFeedStepIndices) && yarnFeedStepIndices.length > 0;
+
+          if (
+            !hasProgress ||
+            !hasFeedSteps ||
+            !cumulativeDistances ||
+            !Number.isFinite(totalDistance) ||
+            !totalDuration ||
+            totalDuration <= 0 ||
+            totalDistance <= 0
+          ) {
+            yarnFlowTimingElement.textContent = yarnFlowTimingFallbackMessage;
+            setTone(yarnFlowTimingElement, 'neutral');
+          } else {
+            const clampedProgress = Math.min(Math.max(progressRatio, 0), 1);
+            const currentTime = clampedProgress * totalDuration;
+            const countdowns = [];
+
+            yarnFeedStepIndices.forEach((feedStep) => {
+              if (typeof feedStep !== 'number') {
+                return;
+              }
+              const clampedIndex = Math.min(
+                Math.max(Math.round(feedStep), 0),
+                cumulativeDistances.length - 1,
+              );
+              const distance = cumulativeDistances[clampedIndex];
+              if (!Number.isFinite(distance)) {
+                return;
+              }
+              const progress = Math.min(
+                Math.max(distance / totalDistance, 0),
+                1,
+              );
+              const eventTime = progress * totalDuration;
+              let delta = eventTime - currentTime;
+              if (delta <= 1e-3) {
+                delta += totalDuration;
+              }
+              countdowns.push({ step: feedStep, delta });
+            });
+
+            if (countdowns.length === 0) {
+              yarnFlowTimingElement.textContent =
+                'Feed timing: No additional feed pulses in this preview.';
+              setTone(yarnFlowTimingElement, 'ready');
+            } else {
+              countdowns.sort((a, b) => a.delta - b.delta);
+              const next = countdowns[0];
+              const segments = [`Next in ${next.delta.toFixed(1)} s (#${next.step + 1})`];
+              if (countdowns.length > 1) {
+                const second = countdowns[1];
+                segments.push(
+                  `Following: #${second.step + 1} in ${second.delta.toFixed(1)} s`,
+                );
+              }
+              yarnFlowTimingElement.textContent = `Feed timing: ${segments.join(
+                '; ',
+              )}.`;
+              setTone(
+                yarnFlowTimingElement,
+                yarnExtrusionActive ? 'ready' : 'info',
+              );
+            }
           }
         }
 
@@ -1865,7 +1962,7 @@
               setTone(homingGuardPositionElement, yarnExtrusionActive ? 'ready' : 'info');
             }
           }
-          updateYarnFlowPanel(event, clampedIndex, totalSteps);
+          updateYarnFlowPanel(event, clampedIndex, totalSteps, clampedProgress);
           lastPatternStepIndex = clampedIndex;
         }
 

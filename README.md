@@ -137,7 +137,9 @@ and spool choreography agree before running hardware. The overlay now lists the
 upcoming feed pulse steps so operators can anticipate exactly when the next
 yarn draws will occur during the planner loop, and it streams the live
 `X`, `Y`, `Z`, and yarn-feed coordinates alongside those cues so crews can log
-the precise motion snapshot in sync with the animation.
+the precise motion snapshot in sync with the animation. Countdown timers now
+quantify the seconds until the next yarn feed and highlight the following
+events, translating the planner preview into a realtime pacing guide.
 
 A translucent planner bounds frame now wraps the hologram while the overlay
 lists the X/Y/Z/E limits emitted by the planner payload so teams can confirm the
