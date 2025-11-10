@@ -172,7 +172,8 @@ def test_viewer_highlights_cable_chain() -> None:
 
     assert "Cable Chain" in html
     assert (
-        "Cable chain — routes gantry wiring from the electronics bay to the hook carriage." in html
+        "Cable chain — routes gantry wiring from the electronics bay to "
+        "the hook carriage." in html
     )
 
 
