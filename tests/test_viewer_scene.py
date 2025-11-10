@@ -165,6 +165,18 @@ def test_viewer_mentions_thermistor_channel() -> None:
     assert "Thermistor Channel" in html
 
 
+def test_viewer_highlights_cable_chain() -> None:
+    """Ensure the viewer documents the cable chain wiring route."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "Cable Chain" in html
+    assert (
+        "Cable chain — routes gantry wiring from the electronics bay to "
+        "the hook carriage." in html
+    )
+
+
 def test_viewer_uses_trio_of_yarn_pulses() -> None:
     """The yarn pulse animation should emit three glowing trails."""
 

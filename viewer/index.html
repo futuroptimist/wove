@@ -2896,6 +2896,130 @@
         return group;
       }
 
+      function createCableChain() {
+        const group = new THREE.Group();
+        group.name = 'cable-chain';
+
+        const pathPoints = [
+          new THREE.Vector3(-1.72, 0.82, -1.08),
+          new THREE.Vector3(-1.72, 1.52, -1.02),
+          new THREE.Vector3(-0.92, 1.92, -0.82),
+          new THREE.Vector3(-0.12, 2.08, -0.42),
+          new THREE.Vector3(0.82, 2.24, 0.05),
+          new THREE.Vector3(1.8, 2.36, 0.46),
+          new THREE.Vector3(2.32, 2.42, 0.58),
+        ];
+
+        const chainCurve = new THREE.CatmullRomCurve3(pathPoints);
+
+        const chainMaterial = new THREE.MeshStandardMaterial({
+          color: 0x262f42,
+          metalness: 0.62,
+          roughness: 0.34,
+          emissive: 0x0d1423,
+          emissiveIntensity: 0.45,
+        });
+
+        const chain = new THREE.Mesh(
+          new THREE.TubeGeometry(chainCurve, 96, 0.06, 18, false),
+          chainMaterial,
+        );
+        chain.castShadow = true;
+        chain.receiveShadow = true;
+        group.add(chain);
+        addHoverInfo(
+          chain,
+          'Cable chain — routes gantry wiring from the electronics bay to the hook carriage.',
+        );
+        safeAccessHighlights.push({
+          material: chainMaterial,
+          baseIntensity: 0.45,
+          amplitude: 0.35,
+          speed: 1.8,
+          phaseOffset: 0.3,
+        });
+
+        const segmentGeometry = new THREE.BoxGeometry(0.18, 0.08, 0.24);
+        const segmentCount = 14;
+        for (let index = 0; index < segmentCount; index += 1) {
+          const t = index / (segmentCount - 1);
+          const position = chainCurve.getPointAt(t);
+          const tangent = chainCurve.getTangentAt(t).normalize();
+          const segmentMaterial = new THREE.MeshStandardMaterial({
+            color: 0x3a4561,
+            metalness: 0.55,
+            roughness: 0.36,
+            emissive: 0x1a2234,
+            emissiveIntensity: 0.32,
+          });
+          const segment = new THREE.Mesh(segmentGeometry, segmentMaterial);
+          segment.position.copy(position);
+          segment.castShadow = true;
+          segment.receiveShadow = true;
+          const quaternion = new THREE.Quaternion().setFromUnitVectors(
+            new THREE.Vector3(0, 0, 1),
+            tangent,
+          );
+          segment.quaternion.copy(quaternion);
+          group.add(segment);
+          safeAccessHighlights.push({
+            material: segmentMaterial,
+            baseIntensity: 0.32,
+            amplitude: 0.24,
+            speed: 2.2,
+            phaseOffset: 0.5 + t * Math.PI,
+          });
+        }
+
+        const inletMaterial = new THREE.MeshStandardMaterial({
+          color: 0x4c5d7a,
+          metalness: 0.48,
+          roughness: 0.4,
+          emissive: 0x1f2a3f,
+          emissiveIntensity: 0.38,
+        });
+        const inlet = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.16, 24), inletMaterial);
+        inlet.rotation.x = Math.PI / 2;
+        inlet.position.copy(pathPoints[0]);
+        inlet.castShadow = true;
+        group.add(inlet);
+        safeAccessHighlights.push({
+          material: inletMaterial,
+          baseIntensity: 0.38,
+          amplitude: 0.28,
+          speed: 2.4,
+          phaseOffset: 1.1,
+        });
+
+        const outletMaterial = inletMaterial.clone();
+        const outlet = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.12, 0.12, 0.18, 24),
+          outletMaterial,
+        );
+        outlet.rotation.x = Math.PI / 2;
+        outlet.position.copy(pathPoints[pathPoints.length - 1]);
+        outlet.castShadow = true;
+        group.add(outlet);
+        safeAccessHighlights.push({
+          material: outletMaterial,
+          baseIntensity: 0.38,
+          amplitude: 0.28,
+          speed: 2.4,
+          phaseOffset: 1.6,
+        });
+
+        const guideLight = new THREE.PointLight(0x7cc2ff, 1.2, 4.2);
+        guideLight.position.set(0.6, 2.28, 0.1);
+        group.add(guideLight);
+
+        const label = buildLabel('Cable Chain', '#cde8ff');
+        label.position.set(0.2, 2.58, -0.32);
+        label.scale.multiplyScalar(0.36);
+        group.add(label);
+
+        return group;
+      }
+
       function createTensionPostAssembly() {
         const group = new THREE.Group();
         group.name = 'tension-post-assembly';
@@ -3220,6 +3344,9 @@
         const electronicsBay = createElectronicsBay();
         electronicsBay.position.set(-2.1, 0.4, -1.4);
         group.add(electronicsBay);
+
+        const cableChain = createCableChain();
+        group.add(cableChain);
 
         const axisBeacons = createAxisOrientationBeacons();
         group.add(axisBeacons);

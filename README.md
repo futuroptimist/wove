@@ -88,6 +88,11 @@ Peek through the tinted electronics bay under the work bed to see the SKR Mini
 controller stack, cooling fan, and glowing status LED that route motion power up
 to the gantry.
 
+Printed cable chains now snake from the electronics bay toward the hook carriage
+with sequential pulses so contributors can trace how wiring and PTFE guides ride
+the gantry. Hover the glowing links to rehearse how harnesses cross the work
+area without snagging tooling or yarn during maintenance walkthroughs.
+
 Amber pulses now race through the translucent PTFE tube so you can watch yarn
 flow from the spool, past the hall-effect sensor, and into the crochet hook as
 the planner preview runs. Three glowing beads now chase along the same guide,
