@@ -102,6 +102,10 @@ stays obvious at a glance—even in still frames.
 The source spool now spins in sync with yarn feed events so the hologram shows
 fiber unwinding from the supply while the PTFE tube glows. When extrusion
 pauses, the reel now coasts to a stop so idle previews keep the spool parked.
+A golden progress ring now wraps that spool, filling around the reel as the
+planner feeds yarn so crews can read completion from across the plaza. The Yarn
+Flow monitor echoes the same percentage so the overlay and hologram agree on
+how much of the planned payout has completed.
 A pair of cooling fans—the electronics bay exhaust and the hook-carriage
 mount—idle with a gentle spin and ramp up whenever the yarn feed engages, so the
 viewer keeps thermal cues in step with spool choreography.

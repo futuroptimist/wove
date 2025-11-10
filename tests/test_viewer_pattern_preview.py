@@ -54,3 +54,14 @@ def test_planner_defaults_panel_mentions_homing_guard() -> None:
     assert "Homing guard" in html
     assert "Optional for this planner preview" in html
     assert "Recorded home state" in html
+
+
+def test_yarn_flow_panel_mentions_spool_progress() -> None:
+    """Ensure the Yarn Flow overlay advertises spool progress guidance."""
+
+    html = (PROJECT_ROOT / "viewer" / "index.html").read_text(encoding="utf-8")
+
+    assert "yarn-flow-progress" in html
+    assert "Spool progress: Awaiting planner preview…" in html
+    assert "yarnFlowProgressFallbackMessage" in html
+    assert "Spool progress:" in html

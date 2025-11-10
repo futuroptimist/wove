@@ -371,6 +371,9 @@
         <p id="yarn-flow-total" data-tone="neutral">
           Total yarn fed: Awaiting planner preview…
         </p>
+        <p id="yarn-flow-progress" data-tone="neutral">
+          Spool progress: Awaiting planner preview…
+        </p>
         <p id="yarn-flow-queue" data-tone="neutral">
           Remaining feed pulses: Awaiting planner preview…
         </p>
@@ -442,6 +445,7 @@
       const yarnFlowStatusElement = document.getElementById('yarn-flow-status');
       const yarnFlowSpoolElement = document.getElementById('yarn-flow-spool');
       const yarnFlowTotalElement = document.getElementById('yarn-flow-total');
+      const yarnFlowProgressElement = document.getElementById('yarn-flow-progress');
       const yarnFlowQueueElement = document.getElementById('yarn-flow-queue');
       const yarnFlowUpcomingElement = document.getElementById('yarn-flow-upcoming');
       const yarnFlowTimingElement = document.getElementById('yarn-flow-timing');
@@ -498,6 +502,7 @@
       const yarnPulseControllers = [];
       const yarnBeadControllers = [];
       const spoolControllers = [];
+      const spoolProgressSegments = [];
       const fanControllers = [];
       const servoActuatorControllers = [];
       const servoSignalControllers = [];
@@ -509,6 +514,7 @@
       const patternPreviewDurationSeconds = 14;
       let lastPatternStepIndex = -1;
       let lastPatternProgress = -1;
+      let spoolProgressRatio = 0;
       const machineProfileFallbackMessage =
         'Machine profile metadata unavailable. Export with --machine-profile to surface axis settings.';
       const homingGuardFallbackMessage =
@@ -527,6 +533,8 @@
         'Spool status: Parked until planner preview loads.';
       const yarnFlowTotalFallbackMessage =
         'Total yarn fed: Awaiting planner preview…';
+      const yarnFlowProgressFallbackMessage =
+        'Spool progress: Awaiting planner preview…';
       const yarnFlowQueueFallbackMessage =
         'Remaining feed pulses: Awaiting planner preview…';
       const yarnFlowUpcomingFallbackMessage =
@@ -1143,6 +1151,10 @@
           yarnFlowTotalElement.textContent = yarnFlowTotalFallbackMessage;
           setTone(yarnFlowTotalElement, 'neutral');
         }
+        if (yarnFlowProgressElement) {
+          yarnFlowProgressElement.textContent = yarnFlowProgressFallbackMessage;
+          setTone(yarnFlowProgressElement, 'neutral');
+        }
         if (yarnFlowQueueElement) {
           yarnFlowQueueElement.textContent = yarnFlowQueueFallbackMessage;
           setTone(yarnFlowQueueElement, 'neutral');
@@ -1159,6 +1171,7 @@
           yarnFlowPositionElement.textContent = yarnFlowPositionFallbackMessage;
           setTone(yarnFlowPositionElement, 'neutral');
         }
+        spoolProgressRatio = 0;
       }
 
       function updateYarnFlowPanel(event, stepIndex, totalSteps, progressRatio) {
@@ -1194,26 +1207,50 @@
           setTone(yarnFlowSpoolElement, 'neutral');
         }
 
+        const baseline = Number.isFinite(patternExtrusionBaseline)
+          ? patternExtrusionBaseline
+          : 0;
+        const target = Number.isFinite(patternExtrusionTarget)
+          ? patternExtrusionTarget
+          : baseline;
+        const rawExtrusion = Number.isFinite(event.extrusion)
+          ? event.extrusion
+          : baseline;
+        const fedAmount = Math.max(rawExtrusion - baseline, 0);
+        const plannedAmount = Math.max(target - baseline, 0);
         if (yarnFlowTotalElement) {
-          const baseline = Number.isFinite(patternExtrusionBaseline)
-            ? patternExtrusionBaseline
-            : 0;
-          const target = Number.isFinite(patternExtrusionTarget)
-            ? patternExtrusionTarget
-            : baseline;
-          const rawExtrusion = Number.isFinite(event.extrusion)
-            ? event.extrusion
-            : baseline;
-          const fed = Math.max(rawExtrusion - baseline, 0);
-          const planned = Math.max(target - baseline, 0);
-          const fedLabel = fed.toFixed(2);
+          const fedLabel = fedAmount.toFixed(2);
           let summary = `Total yarn fed: ${fedLabel} mm`;
-          if (planned > 0.0001) {
-            summary += ` of ${planned.toFixed(2)} mm`;
+          if (plannedAmount > 0.0001) {
+            summary += ` of ${plannedAmount.toFixed(2)} mm`;
           }
           yarnFlowTotalElement.textContent = `${summary}.`;
           setTone(yarnFlowTotalElement, yarnExtrusionActive ? 'ready' : 'info');
         }
+
+        let progressRatio;
+        let progressText;
+        let progressTone;
+        if (plannedAmount > 0.0001) {
+          progressRatio = THREE.MathUtils.clamp(fedAmount / plannedAmount, 0, 1);
+          const percent = Math.round(progressRatio * 100);
+          progressText = `Spool progress: ${percent}% of planned yarn fed.`;
+          progressTone = percent >= 100 ? 'ready' : yarnExtrusionActive ? 'ready' : 'info';
+        } else if (fedAmount > 0.0001) {
+          progressRatio = 1;
+          progressText = 'Spool progress: Feeding yarn without a declared target.';
+          progressTone = 'warning';
+        } else {
+          progressRatio = 0;
+          progressText = yarnFlowProgressFallbackMessage;
+          progressTone = 'neutral';
+        }
+
+        if (yarnFlowProgressElement) {
+          yarnFlowProgressElement.textContent = progressText;
+          setTone(yarnFlowProgressElement, progressTone);
+        }
+        spoolProgressRatio = progressRatio;
 
         if (yarnFlowQueueElement) {
           const totalFeedSteps = Array.isArray(yarnFeedStepIndices)
@@ -1479,6 +1516,7 @@
         );
         patternExtrusionBaseline = extrusionBaseline;
         patternExtrusionTarget = extrusionTarget;
+        spoolProgressRatio = 0;
         if (patternPlannerEvents.length > 0) {
           patternPlannerEvents.forEach((event, index) => {
             const comment =
@@ -1917,6 +1955,7 @@
           yarnExtrusionActive = false;
           lastPatternStepIndex = -1;
           lastPatternProgress = -1;
+          spoolProgressRatio = 0;
           if (patternProgressBarElement) {
             patternProgressBarElement.style.width = '0%';
           }
@@ -3748,6 +3787,48 @@
         spool.rotation.z = Math.PI / 2;
         spool.castShadow = true;
         group.add(spool);
+        const spoolProgressGroup = new THREE.Group();
+        spoolProgressGroup.name = 'spool-progress-ring';
+        spoolProgressGroup.position.set(-2.4, 2.12, -1.6);
+        group.add(spoolProgressGroup);
+        addHoverInfo(
+          spoolProgressGroup,
+          'Spool progress ring — fills as the planner feeds yarn around the supply reel.',
+          { passthrough: true },
+        );
+        const spoolProgressSegmentCount = 24;
+        const spoolProgressAngle = (Math.PI * 2) / spoolProgressSegmentCount;
+        for (let index = 0; index < spoolProgressSegmentCount; index += 1) {
+          const segmentMaterial = new THREE.MeshStandardMaterial({
+            color: 0xffb173,
+            emissive: 0xff8c2f,
+            emissiveIntensity: 0.12,
+            metalness: 0.32,
+            roughness: 0.4,
+            transparent: true,
+            opacity: 0.2,
+            side: THREE.DoubleSide,
+            depthWrite: false,
+          });
+          const segment = new THREE.Mesh(
+            new THREE.TorusGeometry(0.96, 0.035, 12, 16, spoolProgressAngle),
+            segmentMaterial,
+          );
+          segment.rotation.y = Math.PI / 2;
+          segment.rotation.x = index * spoolProgressAngle;
+          spoolProgressGroup.add(segment);
+          spoolProgressSegments.push({
+            mesh: segment,
+            material: segmentMaterial,
+            baseIntensity: 0.12,
+            activeIntensity: 0.9,
+            baseOpacity: 0.2,
+            activeOpacity: 0.92,
+            damping: 5.5,
+            currentIntensity: 0.12,
+            currentOpacity: 0.2,
+          });
+        }
         spoolControllers.push({
           mesh: spool,
           axis: 'x',
@@ -5513,6 +5594,50 @@
           material.opacity = controller.currentOpacity;
           mesh.visible = material.opacity > 0.02;
         });
+        if (spoolProgressSegments.length > 0) {
+          const normalizedProgress = THREE.MathUtils.clamp(spoolProgressRatio, 0, 1);
+          const scaledProgress = normalizedProgress * spoolProgressSegments.length;
+          const fullSegments = Math.floor(scaledProgress);
+          const partialStrength = scaledProgress - fullSegments;
+          spoolProgressSegments.forEach((controller, index) => {
+            const {
+              mesh,
+              material,
+              baseIntensity = 0,
+              activeIntensity = baseIntensity,
+              baseOpacity = 0,
+              activeOpacity = baseOpacity,
+              damping = 5.0,
+            } = controller;
+            if (!mesh || !material) {
+              return;
+            }
+            let targetStrength = 0;
+            if (index < fullSegments) {
+              targetStrength = 1;
+            } else if (index === fullSegments) {
+              targetStrength = partialStrength;
+            }
+            const intensityTarget =
+              baseIntensity + (activeIntensity - baseIntensity) * targetStrength;
+            controller.currentIntensity = THREE.MathUtils.damp(
+              controller.currentIntensity ?? baseIntensity,
+              intensityTarget,
+              damping,
+              delta,
+            );
+            material.emissiveIntensity = controller.currentIntensity;
+            const opacityTarget =
+              baseOpacity + (activeOpacity - baseOpacity) * targetStrength;
+            controller.currentOpacity = THREE.MathUtils.damp(
+              controller.currentOpacity ?? baseOpacity,
+              opacityTarget,
+              damping,
+              delta,
+            );
+            material.opacity = controller.currentOpacity;
+          });
+        }
         spoolControllers.forEach((controller) => {
           const {
             mesh,
