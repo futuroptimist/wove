@@ -1218,31 +1218,27 @@
           setTone(yarnFlowTotalElement, yarnExtrusionActive ? 'ready' : 'info');
         }
 
-        let progressRatio = 0;
-        if (yarnFlowProgressElement) {
-          let progressText = yarnFlowProgressFallbackMessage;
-          let progressTone = 'neutral';
-          if (plannedAmount > 0.0001) {
-            const ratio = THREE.MathUtils.clamp(fedAmount / plannedAmount, 0, 1);
-            progressRatio = ratio;
-            const percent = Math.round(ratio * 100);
-            progressText = `Spool progress: ${percent}% of planned yarn fed.`;
-            progressTone = percent >= 100 ? 'ready' : yarnExtrusionActive ? 'ready' : 'info';
-          } else if (fedAmount > 0.0001) {
-            progressRatio = 1;
-            progressText = 'Spool progress: Feeding yarn without a declared target.';
-            progressTone = 'warning';
-          } else {
-            progressRatio = 0;
-          }
-          yarnFlowProgressElement.textContent = progressText;
-          setTone(yarnFlowProgressElement, progressTone);
-        } else if (plannedAmount > 0.0001) {
+        let progressRatio;
+        let progressText;
+        let progressTone;
+        if (plannedAmount > 0.0001) {
           progressRatio = THREE.MathUtils.clamp(fedAmount / plannedAmount, 0, 1);
+          const percent = Math.round(progressRatio * 100);
+          progressText = `Spool progress: ${percent}% of planned yarn fed.`;
+          progressTone = percent >= 100 ? 'ready' : yarnExtrusionActive ? 'ready' : 'info';
         } else if (fedAmount > 0.0001) {
           progressRatio = 1;
+          progressText = 'Spool progress: Feeding yarn without a declared target.';
+          progressTone = 'warning';
         } else {
           progressRatio = 0;
+          progressText = yarnFlowProgressFallbackMessage;
+          progressTone = 'neutral';
+        }
+
+        if (yarnFlowProgressElement) {
+          yarnFlowProgressElement.textContent = progressText;
+          setTone(yarnFlowProgressElement, progressTone);
         }
         spoolProgressRatio = progressRatio;
 
