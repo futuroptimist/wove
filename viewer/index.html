@@ -1328,7 +1328,7 @@
               );
               const eventTime = progress * totalDuration;
               let delta = eventTime - currentTime;
-              if (delta <= 1e-3) {
+              if (delta < 0) {
                 delta += totalDuration;
               }
               countdowns.push({ step: feedStep, delta });
@@ -1935,9 +1935,12 @@
 
         const clampedIndex = Math.min(Math.max(stepIndex, 0), totalSteps - 1);
         const clampedProgress = Math.min(Math.max(progressRatio, 0), 1);
+        const event = patternPlannerEvents[clampedIndex] ?? {};
+        const progressDelta = Math.abs(clampedProgress - lastPatternProgress);
+        const progressChanged = progressDelta > 1e-4;
+        const progressBarNeedsUpdate = progressDelta > 0.01;
 
         if (clampedIndex !== lastPatternStepIndex) {
-          const event = patternPlannerEvents[clampedIndex] ?? {};
           const comment =
             typeof event.comment === 'string' && event.comment.trim().length > 0
               ? event.comment
@@ -1962,14 +1965,20 @@
               setTone(homingGuardPositionElement, yarnExtrusionActive ? 'ready' : 'info');
             }
           }
-          updateYarnFlowPanel(event, clampedIndex, totalSteps, clampedProgress);
-          lastPatternStepIndex = clampedIndex;
         }
 
-        if (Math.abs(clampedProgress - lastPatternProgress) > 0.01) {
-          if (patternProgressBarElement) {
-            patternProgressBarElement.style.width = `${(clampedProgress * 100).toFixed(1)}%`;
-          }
+        if (progressBarNeedsUpdate && patternProgressBarElement) {
+          patternProgressBarElement.style.width = `${(clampedProgress * 100).toFixed(1)}%`;
+        }
+
+        if (clampedIndex !== lastPatternStepIndex || progressChanged) {
+          updateYarnFlowPanel(event, clampedIndex, totalSteps, clampedProgress);
+        }
+
+        if (clampedIndex !== lastPatternStepIndex) {
+          lastPatternStepIndex = clampedIndex;
+        }
+        if (progressChanged) {
           lastPatternProgress = clampedProgress;
         }
       }
