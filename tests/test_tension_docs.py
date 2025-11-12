@@ -1,3 +1,4 @@
+# isort: skip_file
 """Test code examples from docs/tension.md remain valid."""
 
 from wove import (
@@ -111,11 +112,13 @@ def test_clamp_tension_to_catalog_bounds():
 
 def test_create_calibration():
     """Validate the 'Create a Calibration' doc example."""
-    calibration = HallSensorCalibration.from_pairs([
-        (102.0, 20.0),
-        (168.5, 55.0),
-        (220.0, 85.0),
-    ])
+    calibration = HallSensorCalibration.from_pairs(
+        [
+            (102.0, 20.0),
+            (168.5, 55.0),
+            (220.0, 85.0),
+        ]
+    )
     assert isinstance(calibration, HallSensorCalibration)
     assert len(calibration.points) == 3
     assert calibration.points[0].reading == 102.0
@@ -124,11 +127,13 @@ def test_create_calibration():
 
 def test_translate_sensor_readings():
     """Validate the 'Translate Sensor Readings' doc example."""
-    calibration = HallSensorCalibration.from_pairs([
-        (102.0, 20.0),
-        (168.5, 55.0),
-        (220.0, 85.0),
-    ])
+    calibration = HallSensorCalibration.from_pairs(
+        [
+            (102.0, 20.0),
+            (168.5, 55.0),
+            (220.0, 85.0),
+        ]
+    )
     reading = 185.0
     grams = estimate_tension_for_sensor_reading(reading, calibration)
     # Should interpolate between 168.5->55g and 220.0->85g
@@ -138,11 +143,13 @@ def test_translate_sensor_readings():
 
 def test_match_sensor_reading_to_catalog():
     """Validate the 'Match Sensor Reading to Catalog' doc example."""
-    calibration = HallSensorCalibration.from_pairs([
-        (102.0, 20.0),
-        (168.5, 55.0),
-        (220.0, 85.0),
-    ])
+    calibration = HallSensorCalibration.from_pairs(
+        [
+            (102.0, 20.0),
+            (168.5, 55.0),
+            (220.0, 85.0),
+        ]
+    )
     match = match_tension_profile_for_sensor_reading(185.0, calibration)
     assert isinstance(match, ForceMatch)
     # Reading 185.0 -> ~61g, closest to dk (55g)
@@ -151,11 +158,13 @@ def test_match_sensor_reading_to_catalog():
 
 def test_interpolate_profile_from_sensor_reading():
     """Validate the 'Interpolate Profile from Sensor Reading' doc example."""
-    calibration = HallSensorCalibration.from_pairs([
-        (102.0, 20.0),
-        (168.5, 55.0),
-        (220.0, 85.0),
-    ])
+    calibration = HallSensorCalibration.from_pairs(
+        [
+            (102.0, 20.0),
+            (168.5, 55.0),
+            (220.0, 85.0),
+        ]
+    )
     profile = estimate_profile_for_sensor_reading(185.0, calibration)
     assert isinstance(profile, EstimatedTension)
     assert 30.0 < profile.feed_rate_mm_s < 40.0
@@ -164,11 +173,13 @@ def test_interpolate_profile_from_sensor_reading():
 
 def test_compute_target_sensor_reading():
     """Validate the 'Compute Target Sensor Reading' doc example."""
-    calibration = HallSensorCalibration.from_pairs([
-        (102.0, 20.0),
-        (168.5, 55.0),
-        (220.0, 85.0),
-    ])
+    calibration = HallSensorCalibration.from_pairs(
+        [
+            (102.0, 20.0),
+            (168.5, 55.0),
+            (220.0, 85.0),
+        ]
+    )
     target_grams = 65.0
     target_reading = estimate_sensor_reading_for_tension(target_grams, calibration)
     # 65g falls between 55g->168.5 and 85g->220.0
@@ -178,11 +189,13 @@ def test_compute_target_sensor_reading():
 
 def test_clamping_behavior_clamp_true():
     """Validate the 'Clamping Behavior' doc example with clamp=True."""
-    calibration = HallSensorCalibration.from_pairs([
-        (102.0, 20.0),
-        (168.5, 55.0),
-        (220.0, 85.0),
-    ])
+    calibration = HallSensorCalibration.from_pairs(
+        [
+            (102.0, 20.0),
+            (168.5, 55.0),
+            (220.0, 85.0),
+        ]
+    )
     clamped = estimate_tension_for_sensor_reading(250.0, calibration, clamp=True)
     # Should clamp to highest calibration point
     assert clamped == 85.0
@@ -190,11 +203,13 @@ def test_clamping_behavior_clamp_true():
 
 def test_clamping_behavior_clamp_false():
     """Validate the 'Clamping Behavior' doc example with clamp=False."""
-    calibration = HallSensorCalibration.from_pairs([
-        (102.0, 20.0),
-        (168.5, 55.0),
-        (220.0, 85.0),
-    ])
+    calibration = HallSensorCalibration.from_pairs(
+        [
+            (102.0, 20.0),
+            (168.5, 55.0),
+            (220.0, 85.0),
+        ]
+    )
     try:
         estimate_tension_for_sensor_reading(250.0, calibration, clamp=False)
         assert False, "Should have raised ValueError"
@@ -251,11 +266,13 @@ def test_calibration_point_and_hall_sensor_calibration():
     assert len(calibration.points) == 3
 
     # Convenience constructor
-    calibration2 = HallSensorCalibration.from_pairs([
-        (102.0, 20.0),
-        (168.5, 55.0),
-        (220.0, 85.0),
-    ])
+    calibration2 = HallSensorCalibration.from_pairs(
+        [
+            (102.0, 20.0),
+            (168.5, 55.0),
+            (220.0, 85.0),
+        ]
+    )
     assert calibration2.points[0].grams == 20.0
     assert calibration2.points[-1].grams == 85.0
 
@@ -339,11 +356,13 @@ def test_workflow_2_measure_pull_force_match_catalog():
 
 def test_workflow_3_hall_effect_sensor_integration():
     """Validate Workflow 3: Hall-Effect Sensor Integration."""
-    calibration = HallSensorCalibration.from_pairs([
-        (102.0, 20.0),
-        (168.5, 55.0),
-        (220.0, 85.0),
-    ])
+    calibration = HallSensorCalibration.from_pairs(
+        [
+            (102.0, 20.0),
+            (168.5, 55.0),
+            (220.0, 85.0),
+        ]
+    )
 
     live_reading = 185.0
     current_tension = estimate_tension_for_sensor_reading(live_reading, calibration)

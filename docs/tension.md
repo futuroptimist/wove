@@ -402,7 +402,7 @@ except ValueError as e:
 
 ## Integration with Design Roadmap
 
-The tension profiles documented here align with the [v1c mechanical design roadmap](wove-v1c-design.md#yarn-handling). The roadmap describes:
+The tension profiles documented here align with the {ref}`v1c mechanical design roadmap <yarn-handling>`. The roadmap describes:
 
 - Dual-post tensioner design with replaceable felt pads
 - Hall-effect sensor mounting for tension feedback
@@ -419,9 +419,8 @@ Use these utilities to:
 ## See Also
 
 - [Gauge calculators](gauge.md) for stitch and row conversions
-- [Machine profiles](machine-profile.md) for axis configuration and homing
+- [Pattern CLI](pattern-cli.md) for motion planning integration and machine profile configuration
 - [Mechanical design roadmap](wove-v1c-design.md) for hardware context
-- [Pattern CLI](pattern-cli.md) for motion planning integration
 
 ## API Reference
 
