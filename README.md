@@ -41,6 +41,8 @@ Key features include:
   the same feed-rate and variation context. Call
   `estimate_sensor_reading_for_tension` to compute the hall-effect reading a
   servo-driven tensioner should target for a desired pull force.
+  See [docs/tension.md](docs/tension.md) for complete usage examples and API
+  reference.
 - LLM helpers described in [AGENTS.md](AGENTS.md).
 - Sample Codex prompts in [`docs/prompts/codex/automation.md`](docs/prompts/codex/automation.md).
 
