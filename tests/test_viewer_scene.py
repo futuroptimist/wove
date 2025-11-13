@@ -245,7 +245,8 @@ def test_viewer_attaches_yarn_feed_billboard() -> None:
     html = VIEWER_HTML.read_text(encoding="utf-8")
 
     assert (
-        "Yarn feed progress display — projects live feed vs planned yarn totals." in html
+        "Yarn feed progress display — projects live feed vs planned yarn totals."
+        in html
     )
     assert "spoolProgressLabelController = spoolProgressBillboard" in html
 
