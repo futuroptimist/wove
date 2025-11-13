@@ -1405,10 +1405,7 @@
           yarnFlowProgressElement.textContent = progressText;
           setTone(yarnFlowProgressElement, progressTone);
         }
-        const overrideRatio = Number.isFinite(progressRatio)
-          ? THREE.MathUtils.clamp(progressRatio, 0, 1)
-          : null;
-        spoolProgressRatio = overrideRatio ?? derivedProgressRatio;
+        spoolProgressRatio = derivedProgressRatio;
         if (spoolProgressLabelController) {
           const headerText = yarnExtrusionActive ? 'Yarn Feed Active' : 'Yarn Feed Idle';
           spoolProgressLabelController.update({
