@@ -503,6 +503,7 @@
       const yarnBeadControllers = [];
       const spoolControllers = [];
       const spoolProgressSegments = [];
+      let spoolProgressLabelController = null;
       const fanControllers = [];
       const servoActuatorControllers = [];
       const servoSignalControllers = [];
@@ -744,6 +745,145 @@
         const baseScale = 0.02;
         sprite.scale.set(canvas.width * baseScale, canvas.height * baseScale, 1);
         return sprite;
+      }
+
+      function createSpoolProgressBillboard() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 256;
+        const context = canvas.getContext('2d');
+        if (!context) {
+          return null;
+        }
+
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.anisotropy = 4;
+
+        const material = new THREE.SpriteMaterial({
+          map: texture,
+          transparent: true,
+          depthWrite: false,
+        });
+
+        const sprite = new THREE.Sprite(material);
+        sprite.scale.set(1.65, 0.85, 1);
+        sprite.center.set(0.5, 0);
+        sprite.renderOrder = 7;
+
+        const toneStyles = {
+          ready: { accent: '#5fffd2', text: '#dafcf1' },
+          info: { accent: '#9bb7ff', text: '#e5ebff' },
+          warning: { accent: '#ffc27d', text: '#fff1dc' },
+          neutral: { accent: '#cfd6ff', text: '#f4f6ff' },
+        };
+
+        let lastHeader = '';
+        let lastDetailKey = '';
+        let lastTone = '';
+
+        function drawPanel(header, detailLines, tone) {
+          const palette = toneStyles[tone] || toneStyles.neutral;
+          context.clearRect(0, 0, canvas.width, canvas.height);
+
+          const paddingX = 18;
+          const paddingY = 18;
+          const width = canvas.width - paddingX * 2;
+          const height = canvas.height - paddingY * 2;
+          const radius = 26;
+
+          context.save();
+          context.beginPath();
+          context.moveTo(paddingX + radius, paddingY);
+          context.lineTo(paddingX + width - radius, paddingY);
+          context.quadraticCurveTo(
+            paddingX + width,
+            paddingY,
+            paddingX + width,
+            paddingY + radius,
+          );
+          context.lineTo(paddingX + width, paddingY + height - radius);
+          context.quadraticCurveTo(
+            paddingX + width,
+            paddingY + height,
+            paddingX + width - radius,
+            paddingY + height,
+          );
+          context.lineTo(paddingX + radius, paddingY + height);
+          context.quadraticCurveTo(
+            paddingX,
+            paddingY + height,
+            paddingX,
+            paddingY + height - radius,
+          );
+          context.lineTo(paddingX, paddingY + radius);
+          context.quadraticCurveTo(
+            paddingX,
+            paddingY,
+            paddingX + radius,
+            paddingY,
+          );
+          context.closePath();
+
+          context.fillStyle = 'rgba(12, 16, 34, 0.86)';
+          context.fill();
+          context.lineWidth = 4;
+          context.strokeStyle = palette.accent;
+          context.stroke();
+
+          context.fillStyle = palette.accent;
+          context.textAlign = 'center';
+          context.textBaseline = 'middle';
+          context.font = '700 58px "Segoe UI", sans-serif';
+          context.fillText(header, canvas.width / 2, paddingY + 70);
+
+          context.fillStyle = palette.text;
+          context.font = '46px "Segoe UI", sans-serif';
+          const startY = paddingY + 142;
+          const spacing = 58;
+          detailLines.forEach((line, index) => {
+            context.fillText(line, canvas.width / 2, startY + index * spacing);
+          });
+
+          context.restore();
+          texture.needsUpdate = true;
+        }
+
+        function normalizeDetail(detail) {
+          if (Array.isArray(detail)) {
+            return detail.map((line) => String(line));
+          }
+          return [String(detail ?? '')];
+        }
+
+        function updatePanel({ header, detail, tone }) {
+          const effectiveHeader = header ?? 'Yarn Feed';
+          const detailLines = normalizeDetail(
+            detail ?? 'Awaiting planner preview…',
+          );
+          const detailKey = detailLines.join('\n');
+          const effectiveTone = tone ?? 'neutral';
+
+          if (
+            effectiveHeader === lastHeader &&
+            detailKey === lastDetailKey &&
+            effectiveTone === lastTone
+          ) {
+            return;
+          }
+
+          drawPanel(effectiveHeader, detailLines, effectiveTone);
+          lastHeader = effectiveHeader;
+          lastDetailKey = detailKey;
+          lastTone = effectiveTone;
+        }
+
+        updatePanel({ detail: 'Awaiting planner preview…', tone: 'neutral' });
+
+        return {
+          sprite,
+          update: updatePanel,
+        };
       }
 
       function addHoverInfo(mesh, text, options = {}) {
@@ -1172,6 +1312,13 @@
           setTone(yarnFlowPositionElement, 'neutral');
         }
         spoolProgressRatio = 0;
+        if (spoolProgressLabelController) {
+          spoolProgressLabelController.update({
+            header: 'Yarn Feed',
+            detail: 'Awaiting planner preview…',
+            tone: 'neutral',
+          });
+        }
       }
 
       function updateYarnFlowPanel(event, stepIndex, totalSteps, progressRatio) {
@@ -1228,29 +1375,48 @@
           setTone(yarnFlowTotalElement, yarnExtrusionActive ? 'ready' : 'info');
         }
 
-        let progressRatio;
+        let derivedProgressRatio;
         let progressText;
         let progressTone;
+        let billboardDetail;
         if (plannedAmount > 0.0001) {
-          progressRatio = THREE.MathUtils.clamp(fedAmount / plannedAmount, 0, 1);
-          const percent = Math.round(progressRatio * 100);
+          derivedProgressRatio = THREE.MathUtils.clamp(fedAmount / plannedAmount, 0, 1);
+          const percent = Math.round(derivedProgressRatio * 100);
           progressText = `Spool progress: ${percent}% of planned yarn fed.`;
           progressTone = percent >= 100 ? 'ready' : yarnExtrusionActive ? 'ready' : 'info';
+          billboardDetail = [
+            `Fed ${fedAmount.toFixed(1)} mm`,
+            `Target ${plannedAmount.toFixed(1)} mm`,
+            `${percent}% complete`,
+          ];
         } else if (fedAmount > 0.0001) {
-          progressRatio = 1;
+          derivedProgressRatio = 1;
           progressText = 'Spool progress: Feeding yarn without a declared target.';
           progressTone = 'warning';
+          billboardDetail = [`Fed ${fedAmount.toFixed(1)} mm`, 'Target not declared'];
         } else {
-          progressRatio = 0;
+          derivedProgressRatio = 0;
           progressText = yarnFlowProgressFallbackMessage;
           progressTone = 'neutral';
+          billboardDetail = 'Awaiting planner preview…';
         }
 
         if (yarnFlowProgressElement) {
           yarnFlowProgressElement.textContent = progressText;
           setTone(yarnFlowProgressElement, progressTone);
         }
-        spoolProgressRatio = progressRatio;
+        const overrideRatio = Number.isFinite(progressRatio)
+          ? THREE.MathUtils.clamp(progressRatio, 0, 1)
+          : null;
+        spoolProgressRatio = overrideRatio ?? derivedProgressRatio;
+        if (spoolProgressLabelController) {
+          const headerText = yarnExtrusionActive ? 'Yarn Feed Active' : 'Yarn Feed Idle';
+          spoolProgressLabelController.update({
+            header: headerText,
+            detail: billboardDetail,
+            tone: progressTone,
+          });
+        }
 
         if (yarnFlowQueueElement) {
           const totalFeedSteps = Array.isArray(yarnFeedStepIndices)
@@ -3791,6 +3957,17 @@
         spoolProgressGroup.name = 'spool-progress-ring';
         spoolProgressGroup.position.set(-2.4, 2.12, -1.6);
         group.add(spoolProgressGroup);
+        const spoolProgressBillboard = createSpoolProgressBillboard();
+        if (spoolProgressBillboard) {
+          spoolProgressLabelController = spoolProgressBillboard;
+          const { sprite } = spoolProgressBillboard;
+          sprite.position.set(0, 1.62, 0);
+          spoolProgressGroup.add(sprite);
+          addHoverInfo(
+            sprite,
+            'Yarn feed progress display — projects live feed vs planned yarn totals.',
+          );
+        }
         addHoverInfo(
           spoolProgressGroup,
           'Spool progress ring — fills as the planner feeds yarn around the supply reel.',
