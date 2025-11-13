@@ -252,6 +252,18 @@ def test_viewer_builds_spool_progress_ring() -> None:
     assert progress_copy in html
 
 
+def test_viewer_attaches_yarn_feed_billboard() -> None:
+    """The spool should host the yarn feed progress billboard."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert (
+        "Yarn feed progress display — projects live feed vs planned yarn totals."
+        in html
+    )
+    assert "spoolProgressLabelController = spoolProgressBillboard" in html
+
+
 def test_viewer_mentions_z_axis_leadscrew() -> None:
     """The scene should describe the Z-axis leadscrew lift assembly."""
 
