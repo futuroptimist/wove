@@ -150,7 +150,9 @@ yarn draws will occur during the planner loop, and it streams the live
 `X`, `Y`, `Z`, and yarn-feed coordinates alongside those cues so crews can log
 the precise motion snapshot in sync with the animation. Countdown timers now
 quantify the seconds until the next yarn feed and highlight the following
-events, translating the planner preview into a realtime pacing guide.
+events, translating the planner preview into a realtime pacing guide. Cycle
+timers now surface how many seconds have elapsed and remain in the preview loop
+so crews can gauge overall progress at a glance.
 
 A translucent planner bounds frame now wraps the hologram while the overlay
 lists the X/Y/Z/E limits emitted by the planner payload so teams can confirm the

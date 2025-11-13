@@ -292,7 +292,9 @@ overview.
   contributors can note the precise motion snapshot as the hologram advances.
   Countdown timers quantify the seconds until the next yarn feed and highlight
   the following pulses so dry runs stay paced to the planner timeline rather
-  than the raw step indices.
+  than the raw step indices. Cycle timers now display how many seconds have
+  elapsed and remain in the preview loop so crews can gauge overall progress
+  without pausing the walkthrough.
 
 ## Bill of Materials (Initial Release)
 | Subsystem | Component | Qty | Notes |

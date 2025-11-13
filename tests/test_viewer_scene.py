@@ -222,6 +222,19 @@ def test_yarn_flow_panel_mentions_spool_progress() -> None:
     assert "Spool progress: Awaiting planner preview…" in html
 
 
+def test_yarn_flow_panel_reports_cycle_timing() -> None:
+    """Ensure the Yarn Flow overlay surfaces cycle timing cues."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "yarn-flow-cycle" in html
+    assert "Cycle timing: Awaiting planner preview…" in html
+    assert (
+        "Cycle timing: ${elapsedSeconds.toFixed(1)} s elapsed · "
+        "${remainingSeconds.toFixed(1)} s remaining." in html
+    )
+
+
 def test_viewer_builds_spool_progress_ring() -> None:
     """The 3D scene should describe the spool progress indicator."""
 
