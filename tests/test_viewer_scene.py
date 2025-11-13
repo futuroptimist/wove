@@ -230,7 +230,8 @@ def test_viewer_mentions_spool_feed_marker() -> None:
     html = VIEWER_HTML.read_text(encoding="utf-8")
 
     assert (
-        "Next feed marker — pulses where the upcoming yarn feed lands on the spool." in html
+        "Next feed marker — pulses where the upcoming yarn feed lands on the spool."
+        in html
     )
 
 
