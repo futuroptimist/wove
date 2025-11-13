@@ -503,6 +503,7 @@
       const yarnBeadControllers = [];
       const spoolControllers = [];
       const spoolProgressSegments = [];
+      let spoolProgressPointerController = null;
       const fanControllers = [];
       const servoActuatorControllers = [];
       const servoSignalControllers = [];
@@ -1172,6 +1173,9 @@
           setTone(yarnFlowPositionElement, 'neutral');
         }
         spoolProgressRatio = 0;
+        if (spoolProgressPointerController) {
+          spoolProgressPointerController.targetAngle = null;
+        }
       }
 
       function updateYarnFlowPanel(event, stepIndex, totalSteps, progressRatio) {
@@ -1251,6 +1255,49 @@
           setTone(yarnFlowProgressElement, progressTone);
         }
         spoolProgressRatio = progressRatio;
+        if (spoolProgressPointerController) {
+          const pointerController = spoolProgressPointerController;
+          const totalFeedSteps = Array.isArray(yarnFeedStepIndices)
+            ? yarnFeedStepIndices.length
+            : 0;
+          if (plannedAmount > 0.0001 && totalFeedSteps > 0) {
+            let nextRatio = null;
+            let bestDelta = Infinity;
+            yarnFeedStepIndices.forEach((feedStep) => {
+              if (
+                typeof feedStep !== 'number' ||
+                feedStep < 0 ||
+                feedStep >= patternPlannerEvents.length
+              ) {
+                return;
+              }
+              const feedEvent = patternPlannerEvents[feedStep];
+              if (!feedEvent) {
+                return;
+              }
+              const feedExtrusion = Number.isFinite(feedEvent.extrusion)
+                ? feedEvent.extrusion
+                : null;
+              if (feedExtrusion === null) {
+                return;
+              }
+              const feedAmount = Math.max(feedExtrusion - baseline, 0);
+              const ratio = THREE.MathUtils.clamp(feedAmount / plannedAmount, 0, 1);
+              let delta = ratio - progressRatio;
+              if (delta < 0) {
+                delta += 1;
+              }
+              if (delta < bestDelta) {
+                bestDelta = delta;
+                nextRatio = ratio;
+              }
+            });
+            pointerController.targetAngle =
+              nextRatio === null ? null : nextRatio * Math.PI * 2;
+          } else {
+            pointerController.targetAngle = null;
+          }
+        }
 
         if (yarnFlowQueueElement) {
           const totalFeedSteps = Array.isArray(yarnFeedStepIndices)
@@ -1517,6 +1564,12 @@
         patternExtrusionBaseline = extrusionBaseline;
         patternExtrusionTarget = extrusionTarget;
         spoolProgressRatio = 0;
+        if (spoolProgressPointerController) {
+          spoolProgressPointerController.targetAngle = null;
+          spoolProgressPointerController.currentAngle = 0;
+          spoolProgressPointerController.currentIntensity = 0;
+          spoolProgressPointerController.currentOpacity = 0;
+        }
         if (patternPlannerEvents.length > 0) {
           patternPlannerEvents.forEach((event, index) => {
             const comment =
@@ -3829,6 +3882,44 @@
             currentOpacity: 0.2,
           });
         }
+        const spoolPointerMaterial = new THREE.MeshStandardMaterial({
+          color: 0xfff2c2,
+          emissive: 0xffb45c,
+          emissiveIntensity: 0.0,
+          metalness: 0.28,
+          roughness: 0.32,
+          transparent: true,
+          opacity: 0.0,
+          depthWrite: false,
+        });
+        const spoolPointer = new THREE.Mesh(
+          new THREE.SphereGeometry(0.09, 18, 18),
+          spoolPointerMaterial,
+        );
+        spoolPointer.visible = false;
+        spoolProgressGroup.add(spoolPointer);
+        const spoolPointerLight = new THREE.PointLight(0xffbf70, 0.0, 1.8);
+        spoolPointer.add(spoolPointerLight);
+        addHoverInfo(
+          spoolPointer,
+          'Next feed marker — pulses where the upcoming yarn feed lands on the spool.',
+          { passthrough: true },
+        );
+        spoolProgressPointerController = {
+          mesh: spoolPointer,
+          material: spoolPointerMaterial,
+          light: spoolPointerLight,
+          radius: 1.04,
+          currentAngle: 0,
+          targetAngle: null,
+          damping: 6.0,
+          restIntensity: 0.0,
+          activeIntensity: 1.2,
+          restOpacity: 0.0,
+          activeOpacity: 1.0,
+          currentIntensity: 0.0,
+          currentOpacity: 0.0,
+        };
         spoolControllers.push({
           mesh: spool,
           axis: 'x',
@@ -5637,6 +5728,59 @@
             );
             material.opacity = controller.currentOpacity;
           });
+        }
+        if (spoolProgressPointerController) {
+          const {
+            mesh,
+            material,
+            light,
+            radius = 1.0,
+            damping = 5.0,
+            restIntensity = 0.0,
+            activeIntensity = restIntensity,
+            restOpacity = 0.0,
+            activeOpacity = restOpacity,
+          } = spoolProgressPointerController;
+          if (mesh && material) {
+            const hasTarget = Number.isFinite(
+              spoolProgressPointerController.targetAngle,
+            );
+            const targetAngle = hasTarget
+              ? spoolProgressPointerController.targetAngle
+              : spoolProgressPointerController.currentAngle ?? 0;
+            const currentAngle = THREE.MathUtils.damp(
+              spoolProgressPointerController.currentAngle ?? targetAngle,
+              targetAngle,
+              damping,
+              delta,
+            );
+            spoolProgressPointerController.currentAngle = currentAngle;
+            const y = Math.cos(currentAngle) * radius;
+            const z = Math.sin(currentAngle) * radius;
+            mesh.position.set(0, y, z);
+            const targetIntensity = hasTarget ? activeIntensity : restIntensity;
+            spoolProgressPointerController.currentIntensity = THREE.MathUtils.damp(
+              spoolProgressPointerController.currentIntensity ?? restIntensity,
+              targetIntensity,
+              damping,
+              delta,
+            );
+            material.emissiveIntensity = spoolProgressPointerController.currentIntensity;
+            const targetOpacity = hasTarget ? activeOpacity : restOpacity;
+            spoolProgressPointerController.currentOpacity = THREE.MathUtils.damp(
+              spoolProgressPointerController.currentOpacity ?? restOpacity,
+              targetOpacity,
+              damping,
+              delta,
+            );
+            material.opacity = spoolProgressPointerController.currentOpacity;
+            material.transparent = true;
+            mesh.visible = material.opacity > 0.02;
+            if (light) {
+              light.intensity =
+                spoolProgressPointerController.currentIntensity * 1.1;
+            }
+          }
         }
         spoolControllers.forEach((controller) => {
           const {

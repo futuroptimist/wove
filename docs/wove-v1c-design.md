@@ -62,6 +62,8 @@ A progress ring now wraps that spool, filling around the reel as the hologram pu
 technicians can gauge completion without staring at the overlay. The Yarn Flow panel mirrors the
 same percentage, highlighting when the preview reaches its planned payout and flagging runs that
 feed fiber without a declared target.
+A glowing marker now orbits the spool and pulses at the next feed location so operators know
+exactly where the upcoming yarn draw will land without leaving the hologram.
 
 #### Tension Profiles and Bench Tests
 

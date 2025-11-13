@@ -108,6 +108,8 @@ A golden progress ring now wraps that spool, filling around the reel as the
 planner feeds yarn so crews can read completion from across the plaza. The Yarn
 Flow monitor echoes the same percentage so the overlay and hologram agree on
 how much of the planned payout has completed.
+A glowing marker now sweeps around the spool to flag the next yarn feed location
+so teams can anticipate the upcoming pulse without leaving the hologram.
 A pair of cooling fans—the electronics bay exhaust and the hook-carriage
 mount—idle with a gentle spin and ramp up whenever the yarn feed engages, so the
 viewer keeps thermal cues in step with spool choreography.

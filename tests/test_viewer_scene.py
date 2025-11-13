@@ -220,6 +220,18 @@ def test_yarn_flow_panel_mentions_spool_progress() -> None:
 
     assert "yarn-flow-progress" in html
     assert "Spool progress: Awaiting planner preview…" in html
+    assert "yarnFlowProgressFallbackMessage" in html
+    assert "Spool progress:" in html
+
+
+def test_viewer_mentions_spool_feed_marker() -> None:
+    """The viewer should describe the upcoming yarn feed marker."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert (
+        "Next feed marker — pulses where the upcoming yarn feed lands on the spool." in html
+    )
 
 
 def test_viewer_builds_spool_progress_ring() -> None:
