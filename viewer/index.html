@@ -1287,6 +1287,10 @@
               if (delta < 0) {
                 delta += 1;
               }
+              // Skip feeds that are at or very close to the current position
+              if (delta < 0.001) {
+                return;
+              }
               if (delta < bestDelta) {
                 bestDelta = delta;
                 nextRatio = ratio;
