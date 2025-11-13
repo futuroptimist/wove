@@ -383,6 +383,9 @@
         <p id="yarn-flow-timing" data-tone="neutral">
           Feed timing: Awaiting planner preview…
         </p>
+        <p id="yarn-flow-cycle" data-tone="neutral">
+          Cycle timing: Awaiting planner preview…
+        </p>
         <p id="yarn-flow-position" data-tone="neutral">
           Coordinates: Awaiting yarn flow coordinates…
         </p>
@@ -449,6 +452,7 @@
       const yarnFlowQueueElement = document.getElementById('yarn-flow-queue');
       const yarnFlowUpcomingElement = document.getElementById('yarn-flow-upcoming');
       const yarnFlowTimingElement = document.getElementById('yarn-flow-timing');
+      const yarnFlowCycleElement = document.getElementById('yarn-flow-cycle');
       const yarnFlowPositionElement = document.getElementById('yarn-flow-position');
 
       const pointer = new THREE.Vector2();
@@ -541,6 +545,8 @@
         'Next feed pulses: Awaiting planner preview…';
       const yarnFlowTimingFallbackMessage =
         'Feed timing: Awaiting planner preview…';
+      const yarnFlowCycleFallbackMessage =
+        'Cycle timing: Awaiting planner preview…';
       const yarnFlowPositionFallbackMessage =
         'Coordinates: Awaiting yarn flow coordinates…';
 
@@ -1167,6 +1173,10 @@
           yarnFlowTimingElement.textContent = yarnFlowTimingFallbackMessage;
           setTone(yarnFlowTimingElement, 'neutral');
         }
+        if (yarnFlowCycleElement) {
+          yarnFlowCycleElement.textContent = yarnFlowCycleFallbackMessage;
+          setTone(yarnFlowCycleElement, 'neutral');
+        }
         if (yarnFlowPositionElement) {
           yarnFlowPositionElement.textContent = yarnFlowPositionFallbackMessage;
           setTone(yarnFlowPositionElement, 'neutral');
@@ -1228,20 +1238,24 @@
           setTone(yarnFlowTotalElement, yarnExtrusionActive ? 'ready' : 'info');
         }
 
-        let progressRatio;
+        const previewProgressRatio = Number.isFinite(progressRatio)
+          ? THREE.MathUtils.clamp(progressRatio, 0, 1)
+          : null;
+
+        let spoolProgress;
         let progressText;
         let progressTone;
         if (plannedAmount > 0.0001) {
-          progressRatio = THREE.MathUtils.clamp(fedAmount / plannedAmount, 0, 1);
-          const percent = Math.round(progressRatio * 100);
+          spoolProgress = THREE.MathUtils.clamp(fedAmount / plannedAmount, 0, 1);
+          const percent = Math.round(spoolProgress * 100);
           progressText = `Spool progress: ${percent}% of planned yarn fed.`;
           progressTone = percent >= 100 ? 'ready' : yarnExtrusionActive ? 'ready' : 'info';
         } else if (fedAmount > 0.0001) {
-          progressRatio = 1;
+          spoolProgress = 1;
           progressText = 'Spool progress: Feeding yarn without a declared target.';
           progressTone = 'warning';
         } else {
-          progressRatio = 0;
+          spoolProgress = 0;
           progressText = yarnFlowProgressFallbackMessage;
           progressTone = 'neutral';
         }
@@ -1250,7 +1264,31 @@
           yarnFlowProgressElement.textContent = progressText;
           setTone(yarnFlowProgressElement, progressTone);
         }
-        spoolProgressRatio = progressRatio;
+        spoolProgressRatio = spoolProgress;
+
+        const previewDuration =
+          Number.isFinite(patternPreviewDurationSeconds) && patternPreviewDurationSeconds > 0
+            ? patternPreviewDurationSeconds
+            : null;
+
+        if (yarnFlowCycleElement) {
+          if (previewDuration !== null && previewProgressRatio !== null) {
+            const elapsedSeconds = previewProgressRatio * previewDuration;
+            const remainingSeconds = Math.max(previewDuration - elapsedSeconds, 0);
+            yarnFlowCycleElement.textContent =
+              `Cycle timing: ${elapsedSeconds.toFixed(1)} s elapsed · ${remainingSeconds.toFixed(1)} s remaining.`;
+            const cycleTone =
+              previewProgressRatio >= 0.999
+                ? 'ready'
+                : yarnExtrusionActive
+                  ? 'ready'
+                  : 'info';
+            setTone(yarnFlowCycleElement, cycleTone);
+          } else {
+            yarnFlowCycleElement.textContent = yarnFlowCycleFallbackMessage;
+            setTone(yarnFlowCycleElement, 'neutral');
+          }
+        }
 
         if (yarnFlowQueueElement) {
           const totalFeedSteps = Array.isArray(yarnFeedStepIndices)
@@ -1324,9 +1362,7 @@
             preview && Number.isFinite(preview.totalDistance)
               ? preview.totalDistance
               : null;
-          const totalDuration = Number.isFinite(patternPreviewDurationSeconds)
-            ? patternPreviewDurationSeconds
-            : null;
+          const totalDuration = previewDuration;
           const hasProgress = Number.isFinite(progressRatio);
           const hasFeedSteps =
             Array.isArray(yarnFeedStepIndices) && yarnFeedStepIndices.length > 0;
