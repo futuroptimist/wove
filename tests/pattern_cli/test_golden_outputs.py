@@ -22,9 +22,10 @@ def _load_pattern(name: str) -> str:
 def _golden_machine_profile() -> MachineProfile:
     return MachineProfile(
         axes={
-            "X": AxisProfile("X", 16, 80.0, 0.0, 120.0),
-            "Y": AxisProfile("Y", 16, 80.0, 0.0, 120.0),
-            "Z": AxisProfile("Z", 16, 400.0, -10.0, 15.0),
+            "X": AxisProfile("X", 16, 80.0, 0.0, 220.0),
+            "Y": AxisProfile("Y", 16, 80.0, 0.0, 220.0),
+            "Z": AxisProfile("Z", 16, 400.0, -10.0, 120.0),
+            "E": AxisProfile("E", 16, 95.0, 0.0, 1200.0),
         }
     )
 

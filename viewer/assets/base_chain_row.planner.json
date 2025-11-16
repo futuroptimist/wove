@@ -279,19 +279,25 @@
         "microstepping": 16,
         "steps_per_mm": 80.0,
         "travel_min_mm": 0.0,
-        "travel_max_mm": 120.0
+        "travel_max_mm": 220.0
       },
       "Y": {
         "microstepping": 16,
         "steps_per_mm": 80.0,
         "travel_min_mm": 0.0,
-        "travel_max_mm": 120.0
+        "travel_max_mm": 220.0
       },
       "Z": {
         "microstepping": 16,
         "steps_per_mm": 400.0,
         "travel_min_mm": -10.0,
-        "travel_max_mm": 15.0
+        "travel_max_mm": 120.0
+      },
+      "E": {
+        "microstepping": 16,
+        "steps_per_mm": 95.0,
+        "travel_min_mm": 0.0,
+        "travel_max_mm": 1200.0
       }
     }
   }
