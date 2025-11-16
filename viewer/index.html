@@ -1421,6 +1421,13 @@
         }
 
         spoolProgressRatio = spoolProgress;
+        if (spoolProgressLabelController) {
+          spoolProgressLabelController.update({
+            header: plannedAmount > 0.0001 ? 'Yarn Feed Progress' : 'Yarn Feed',
+            detail: billboardDetail,
+            tone: progressTone,
+          });
+        }
 
         const previewDuration =
           Number.isFinite(patternPreviewDurationSeconds) && patternPreviewDurationSeconds > 0
