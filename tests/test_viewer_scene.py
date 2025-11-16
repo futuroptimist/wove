@@ -177,7 +177,8 @@ def test_viewer_highlights_machine_profile_panel() -> None:
 
     assert "Machine Profile" in html
     assert (
-        "Machine Profile panel mirrors axis steps/mm, microstepping, and travel bounds from"
+        "Machine Profile panel mirrors axis steps/mm, microstepping, and travel bounds "
+        "from"
         in html
     )
 
