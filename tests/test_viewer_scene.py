@@ -1,8 +1,15 @@
 """Tests for the Three.js assembly viewer scene."""
 
+import json
 from pathlib import Path
 
 VIEWER_HTML = Path(__file__).resolve().parents[1] / "viewer" / "index.html"
+PLANNER_ASSET = (
+    Path(__file__).resolve().parents[1]
+    / "viewer"
+    / "assets"
+    / "base_chain_row.planner.json"
+)
 
 
 def test_workpiece_support_bed_is_documented() -> None:
@@ -36,6 +43,25 @@ def test_pattern_preview_overlay_panel_present() -> None:
     assert "Pattern Studio Preview" in html
     assert "pattern-step-index" in html
     assert "Planner preview warming up." in html
+
+
+def test_base_chain_row_embeds_machine_profile_axes() -> None:
+    """The sample planner asset should include machine profile metadata."""
+
+    payload = json.loads(PLANNER_ASSET.read_text(encoding="utf-8"))
+
+    machine_profile = payload.get("machine_profile")
+    assert machine_profile is not None
+    assert "axes" in machine_profile
+
+    axes = {name.lower(): axis for name, axis in machine_profile["axes"].items()}
+    for axis in ("x", "y", "z", "e"):
+        assert axis in axes
+
+    assert axes["x"]["steps_per_mm"] == 80.0
+    assert axes["x"]["travel_max_mm"] == 220.0
+    assert axes["z"]["steps_per_mm"] == 400.0
+    assert axes["e"]["steps_per_mm"] == 95.0
 
 
 def test_viewer_documents_planner_bounds_overlay() -> None:
@@ -142,6 +168,18 @@ def test_viewer_glides_camera_to_selected_cluster() -> None:
     assert "watch the camera glide to frame it" in html
     assert "const desiredCameraTarget" in html
     assert "cameraMoveDamping" in html
+
+
+def test_viewer_highlights_machine_profile_panel() -> None:
+    """The Machine Profile overlay should document axis metadata."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "Machine Profile" in html
+    assert (
+        "Machine Profile panel mirrors axis steps/mm, microstepping, and travel bounds "
+        "from" in html
+    )
 
 
 def test_viewer_supports_keyboard_cluster_navigation() -> None:

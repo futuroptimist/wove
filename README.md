@@ -143,6 +143,10 @@ row height, and feed-rate defaults from the planner export so operators can
 validate the viewer preview against CLI settings before rehearsing motion. It
 also repeats the `require_home` guard and recorded `home_state` so the safety
 expectations stay in view alongside the feed-rate metadata.
+The Machine Profile overlay now pulls the embedded axis microstepping,
+steps-per-millimeter, and travel limits whenever planner exports include a
+machine profile. The bundled base chain row sample ships with that metadata so
+the viewer lists the calibrated travel envelope without extra setup.
 
 A Yarn Flow monitor in the overlay mirrors the hologram's yarn feed state,
 calling out when the planner is actively pulling fiber and when the spool is
