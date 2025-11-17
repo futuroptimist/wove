@@ -251,6 +251,16 @@ def test_yarn_flow_panel_includes_totals() -> None:
     assert "Next in ${next.delta.toFixed(1)} s (#${next.step + 1})" in html
 
 
+def test_yarn_flow_panel_interpolates_coordinates() -> None:
+    """Live yarn flow coordinates should interpolate between planner points."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "function interpolatePlannerEventCoordinates" in html
+    assert "interpolatedPosition?.x ?? event.x" in html
+    assert "interpolatedPosition?.extrusion ?? event.extrusion" in html
+
+
 def test_yarn_flow_panel_mentions_spool_progress() -> None:
     """Ensure the Yarn Flow overlay calls out spool progress guidance."""
 
