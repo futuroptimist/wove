@@ -209,9 +209,13 @@ overview.
   now swings the camera toward that work cell so crews immediately focus on the
   selected milestone. Keyboard shortcuts (←/→) cycle the same pedestals so
   technicians can tour the roadmap without leaving the keyboard. The material
-  prep pod pedestal now highlights the
-  cone tree, staging bins, inspection scale, and traceability cards that feed
-  yarn into the crochet cell. The Pattern Studio hologram loops a base chain
+  prep pod pedestal now highlights the cone tree, staging bins, inspection
+  scale, and traceability cards that feed yarn into the crochet cell. The new
+  calibration lab pedestal stages a sensor bench with load-cell mockups and a
+  glowing console so crews can visualize how hall sensors and force probes are
+  validated before production runs. Reference cards beside the bench capture
+  target pull force and offset data so calibration workflows stay obvious in
+  the walkthrough. The Pattern Studio hologram loops a base chain
   row exported from `wove.pattern_cli --format planner`, previewing how planner
   payloads animate across the workspace before firmware executes them. The
   viewer streams that sample directly from

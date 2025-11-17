@@ -278,6 +278,18 @@ def test_yarn_flow_panel_mentions_spool_progress() -> None:
     assert "Spool progress: Awaiting planner preview…" in html
 
 
+def test_calibration_lab_pedestal_documented() -> None:
+    """The roadmap should include a calibration lab pedestal."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "Calibration Lab" in html
+    assert (
+        "Calibration lab pedestal — validates hall sensors and load-cell fixtures."
+        in html
+    )
+
+
 def test_yarn_flow_panel_reports_cycle_timing() -> None:
     """Ensure the Yarn Flow overlay surfaces cycle timing cues."""
 

@@ -5096,6 +5096,134 @@
         return group;
       }
 
+      function createCalibrationLabDisplay() {
+        const group = new THREE.Group();
+        group.name = 'calibration-lab-display';
+
+        const deck = new THREE.Mesh(
+          new THREE.BoxGeometry(2.0, 0.16, 1.2),
+          new THREE.MeshStandardMaterial({
+            color: 0x2b2f3f,
+            metalness: 0.42,
+            roughness: 0.4,
+          }),
+        );
+        deck.position.y = 0.18;
+        deck.castShadow = true;
+        group.add(deck);
+        addHoverInfo(deck, 'Calibration bench — tunes sensors before production runs.');
+
+        const riserMaterial = new THREE.MeshStandardMaterial({
+          color: 0x324a63,
+          metalness: 0.35,
+          roughness: 0.32,
+          emissive: 0x122337,
+          emissiveIntensity: 0.55,
+        });
+        const riser = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.32, 0.8), riserMaterial);
+        riser.position.set(-0.16, 0.42, 0);
+        riser.castShadow = true;
+        group.add(riser);
+        addHoverInfo(
+          riser,
+          'Sensor staging block — seats hall sensors and wiring harnesses for tuning.',
+        );
+
+        const loadCell = new THREE.Mesh(
+          new THREE.BoxGeometry(0.48, 0.12, 0.32),
+          new THREE.MeshStandardMaterial({
+            color: 0xffd9a3,
+            emissive: 0x8c5b15,
+            emissiveIntensity: 0.7,
+            metalness: 0.35,
+            roughness: 0.25,
+          }),
+        );
+        loadCell.position.set(0.6, 0.46, 0.12);
+        loadCell.castShadow = true;
+        group.add(loadCell);
+        addHoverInfo(loadCell, 'Load cell mock — anchors pull-force probes for calibration.');
+
+        const gauge = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.12, 0.12, 0.5, 20),
+          new THREE.MeshStandardMaterial({
+            color: 0x97e5ff,
+            emissive: 0x2c7a9d,
+            emissiveIntensity: 0.65,
+            metalness: 0.4,
+            roughness: 0.3,
+          }),
+        );
+        gauge.position.set(0.6, 0.8, 0.12);
+        gauge.castShadow = true;
+        group.add(gauge);
+
+        const probe = new THREE.Mesh(
+          new THREE.ConeGeometry(0.08, 0.32, 20),
+          new THREE.MeshStandardMaterial({
+            color: 0xfff7de,
+            emissive: 0x8a7844,
+            emissiveIntensity: 0.5,
+            metalness: 0.25,
+            roughness: 0.35,
+          }),
+        );
+        probe.position.set(0.6, 1.06, 0.12);
+        probe.rotation.x = Math.PI;
+        probe.castShadow = true;
+        group.add(probe);
+
+        const sensorScreen = new THREE.Mesh(
+          new THREE.PlaneGeometry(0.62, 0.38),
+          new THREE.MeshStandardMaterial({
+            color: 0x1d2338,
+            emissive: 0x6fc7ff,
+            emissiveIntensity: 0.85,
+            metalness: 0.32,
+            roughness: 0.28,
+          }),
+        );
+        sensorScreen.position.set(-0.6, 0.82, 0.06);
+        sensorScreen.rotation.y = Math.PI / 12;
+        sensorScreen.castShadow = true;
+        group.add(sensorScreen);
+        addHoverInfo(
+          sensorScreen,
+          'Calibration console — visualizes live sensor readings and tuning targets.',
+        );
+
+        const referenceCard = new THREE.Mesh(
+          new THREE.PlaneGeometry(0.42, 0.3),
+          new THREE.MeshStandardMaterial({
+            color: 0xd9ffe8,
+            emissive: 0x5db38a,
+            emissiveIntensity: 0.65,
+            transparent: true,
+            opacity: 0.82,
+            side: THREE.DoubleSide,
+          }),
+        );
+        referenceCard.position.set(-0.68, 0.56, -0.26);
+        referenceCard.rotation.y = Math.PI / 8;
+        referenceCard.castShadow = true;
+        group.add(referenceCard);
+        addHoverInfo(
+          referenceCard,
+          'Calibration cards — document target pull force and sensor offsets.',
+        );
+
+        const lamp = new THREE.PointLight(0x8be3ff, 1.0, 3.6);
+        lamp.position.set(0, 1.28, 0.12);
+        group.add(lamp);
+
+        const label = buildLabel('Calibration Lab', '#c7e7ff');
+        label.position.set(0, 1.2, 0);
+        label.scale.multiplyScalar(0.36);
+        group.add(label);
+
+        return group;
+      }
+
       function createPatternStudioDisplay() {
         const group = new THREE.Group();
         group.name = 'pattern-studio-display';
@@ -5472,6 +5600,18 @@
             accentColor: 0x82ffb2,
             hoverColor: 0x1a3525,
             buildDisplay: createMaterialPrepDisplay,
+          },
+          {
+            name: 'Calibration Lab',
+            roadmap:
+              'Verifies sensors, probes load cells, and trims offsets before production runs.',
+            hoverText:
+              'Calibration lab pedestal — validates hall sensors and load-cell fixtures.',
+            position: new THREE.Vector3(2.6, 0, 6.8),
+            accentColor: 0x92d6ff,
+            hoverColor: 0x1b2d3f,
+            buildDisplay: createCalibrationLabDisplay,
+            displayOffset: 0.02,
           },
           {
             name: 'Pattern Studio',
