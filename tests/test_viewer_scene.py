@@ -215,6 +215,14 @@ def test_viewer_highlights_cable_chain() -> None:
     )
 
 
+def test_viewer_highlights_status_led_behavior() -> None:
+    """The electronics bay status LED should advertise its pulsing behavior."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "Status LED — breathes at idle and brightens with yarn feed pulses." in html
+
+
 def test_viewer_uses_trio_of_yarn_pulses() -> None:
     """The yarn pulse animation should emit three glowing trails."""
 

@@ -513,6 +513,7 @@
       const spoolProgressSegments = [];
       let spoolProgressLabelController = null;
       const fanControllers = [];
+      const statusIndicatorControllers = [];
       const servoActuatorControllers = [];
       const servoSignalControllers = [];
       let yarnExtrusionActive = false;
@@ -3116,7 +3117,7 @@
           new THREE.MeshStandardMaterial({
             color: 0x7dffbe,
             emissive: 0x33d18a,
-            emissiveIntensity: 1.0,
+            emissiveIntensity: 0.85,
             metalness: 0.2,
             roughness: 0.25,
           }),
@@ -3125,10 +3126,27 @@
         statusLed.castShadow = true;
         group.add(statusLed);
 
-        const statusLight = new THREE.PointLight(0x66ffc2, 1.2, 2.2);
+        const statusLight = new THREE.PointLight(0x66ffc2, 1.0, 2.2);
         statusLight.position.copy(statusLed.position);
         statusLight.position.y += 0.2;
         group.add(statusLight);
+
+        addHoverInfo(
+          statusLed,
+          'Status LED — breathes at idle and brightens with yarn feed pulses.',
+          { passthrough: true },
+        );
+        statusIndicatorControllers.push({
+          material: statusLed.material,
+          light: statusLight,
+          idleIntensity: 0.85,
+          activeIntensity: 1.6,
+          idleLight: 1.0,
+          activeLight: 2.2,
+          pulseAmplitude: 0.12,
+          pulseSpeed: 1.8,
+          damping: 5.5,
+        });
 
         const label = buildLabel('Electronics Bay', '#a9c8ff');
         label.position.set(0, 1.02, 0.62);
@@ -5966,6 +5984,44 @@
             );
             material.opacity = controller.currentOpacity;
             material.transparent = true;
+          }
+        });
+        statusIndicatorControllers.forEach((controller) => {
+          const {
+            material,
+            light,
+            idleIntensity = 0,
+            activeIntensity = idleIntensity,
+            idleLight = 0,
+            activeLight = idleLight,
+            pulseAmplitude = 0,
+            pulseSpeed = 1,
+            damping = 5.0,
+          } = controller;
+
+          const pulse = Math.sin(elapsed * pulseSpeed) * pulseAmplitude;
+          const targetIntensity =
+            (yarnExtrusionActive ? activeIntensity : idleIntensity) + pulse;
+          const targetLight = (yarnExtrusionActive ? activeLight : idleLight) + pulse;
+
+          if (material) {
+            controller.currentIntensity = THREE.MathUtils.damp(
+              controller.currentIntensity ?? targetIntensity,
+              targetIntensity,
+              damping,
+              delta,
+            );
+            material.emissiveIntensity = Math.max(0, controller.currentIntensity);
+          }
+
+          if (light) {
+            controller.currentLight = THREE.MathUtils.damp(
+              controller.currentLight ?? targetLight,
+              targetLight,
+              damping,
+              delta,
+            );
+            light.intensity = Math.max(0, controller.currentLight);
           }
         });
         if (selectionRingGroup.visible && selectionSweep) {
