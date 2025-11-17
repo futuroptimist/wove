@@ -6,4 +6,3 @@ def test_viewer_includes_planner_upload_control() -> None:
 
     assert 'id="planner-upload"' in viewer_html
     assert "Upload planner JSON" in viewer_html
-
