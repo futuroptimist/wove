@@ -133,7 +133,9 @@ fields so the homing expectations appear next to the feed-rate metadata while
 operators review the preview. The browser assembly viewer uses those bounds to
 render a
 translucent frame and overlay summary so builders can verify the envelope before
-running hardware. When a machine profile was provided, the `machine_profile.axes`
+running hardware. Load the JSON into `viewer/index.html` with the **Upload planner JSON**
+control to rehearse your own pattern_cli exports inside the Pattern Studio hologram.
+When a machine profile was provided, the `machine_profile.axes`
 mapping mirrors the JSON/YAML schema
 loaded by `--machine-profile` so downstream planners can respect the same
 travel envelope without re-reading the original file.

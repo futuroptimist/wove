@@ -96,6 +96,26 @@
         color: #ffe7c9;
       }
 
+      #planner-upload-label {
+        display: inline-block;
+        margin: 0.2rem 0 0.2rem;
+        padding: 0.35rem 0.7rem;
+        border-radius: 0.4rem;
+        background: linear-gradient(135deg, rgba(255, 194, 125, 0.24), rgba(255, 226, 182, 0.22));
+        border: 1px solid rgba(255, 194, 125, 0.5);
+        color: #ffe7c9;
+        font-size: 0.86rem;
+        letter-spacing: 0.02em;
+        cursor: pointer;
+      }
+
+      #planner-upload {
+        display: block;
+        margin: 0 0 0.5rem;
+        color: #0b0c13;
+        font-size: 0.84rem;
+      }
+
       #pattern-position {
         margin: 0.6rem 0 0;
         font-size: 0.86rem;
@@ -325,6 +345,10 @@
           planner exports that include machine profiles.
         </li>
         <li>
+          Upload a planner export from <code>wove.pattern_cli</code> to rehearse your own motion
+          envelope inside the Pattern Studio hologram.
+        </li>
+        <li>
           Click a pedestal to spotlight its roadmap milestone and watch the camera glide to frame it.
         </li>
         <li>
@@ -341,6 +365,8 @@
         <h2>Pattern Studio Preview</h2>
         <p id="pattern-step-index">Loading planner steps…</p>
         <p id="pattern-step">Planner preview warming up.</p>
+        <label id="planner-upload-label" for="planner-upload">Upload planner JSON</label>
+        <input id="planner-upload" type="file" accept="application/json" />
         <div id="pattern-progress">
           <div id="pattern-progress-bar"></div>
         </div>
@@ -432,6 +458,7 @@
       const patternStepElement = document.getElementById('pattern-step');
       const patternStepIndexElement = document.getElementById('pattern-step-index');
       const patternProgressBarElement = document.getElementById('pattern-progress-bar');
+      const plannerUploadElement = document.getElementById('planner-upload');
       const patternPositionElement = document.getElementById('pattern-position');
       const patternBoundsElement = document.getElementById('pattern-bounds');
       const patternDefaultsStatusElement = document.getElementById(
@@ -515,6 +542,7 @@
       const fanControllers = [];
       const servoActuatorControllers = [];
       const servoSignalControllers = [];
+      let plannerUploadResetTimer = null;
       let yarnExtrusionActive = false;
       let patternPlannerEvents = [];
       let patternPreviewGroup = null;
@@ -6066,6 +6094,63 @@
 
       window.addEventListener('pointerdown', onPointerDown);
       window.addEventListener('keydown', onKeyDown);
+
+      function handlePlannerUpload(event) {
+        const file = event?.target?.files?.[0];
+        if (!file) {
+          return;
+        }
+
+        const resetUpload = () => {
+          if (plannerUploadElement) {
+            plannerUploadElement.value = '';
+          }
+        };
+
+        if (plannerUploadResetTimer) {
+          clearTimeout(plannerUploadResetTimer);
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const payload = JSON.parse(reader.result);
+            const events = eventsFromPlannerPayload(payload);
+            if (!events.length) {
+              throw new Error('No planner commands found');
+            }
+
+            const defaults = payload?.defaults ?? null;
+            const bounds = payload?.bounds ?? null;
+            const metadata = {
+              version: payload?.version ?? null,
+              units: typeof payload?.units === 'string' ? payload.units : null,
+              source: `Upload: ${file.name}`,
+            };
+
+            applyPatternPlannerEvents(events, { defaults, bounds, metadata });
+            updateMachineProfilePanel(payload?.machine_profile ?? null);
+            updateStatus(`Planner upload loaded: ${file.name}`);
+          } catch (error) {
+            console.warn('Unable to load uploaded planner', error);
+            updateStatus('Planner upload failed — see console for details.');
+          } finally {
+            plannerUploadResetTimer = window.setTimeout(resetUpload, 750);
+          }
+        };
+
+        reader.onerror = () => {
+          console.warn('Unable to read uploaded planner');
+          updateStatus('Planner upload failed — see console for details.');
+          plannerUploadResetTimer = window.setTimeout(resetUpload, 750);
+        };
+
+        reader.readAsText(file);
+      }
+
+      if (plannerUploadElement) {
+        plannerUploadElement.addEventListener('change', handlePlannerUpload);
+      }
 
       window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
