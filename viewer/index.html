@@ -3117,7 +3117,7 @@
           new THREE.MeshStandardMaterial({
             color: 0x7dffbe,
             emissive: 0x33d18a,
-            emissiveIntensity: 0.8,
+            emissiveIntensity: 0.85,
             metalness: 0.2,
             roughness: 0.25,
           }),
@@ -6002,7 +6002,7 @@
           const pulse = Math.sin(elapsed * pulseSpeed) * pulseAmplitude;
           const targetIntensity =
             (yarnExtrusionActive ? activeIntensity : idleIntensity) + pulse;
-          const targetLight = (yarnExtrusionActive ? activeLight : idleLight) + pulse * 2;
+          const targetLight = (yarnExtrusionActive ? activeLight : idleLight) + pulse;
 
           if (material) {
             controller.currentIntensity = THREE.MathUtils.damp(
