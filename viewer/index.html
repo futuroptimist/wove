@@ -2244,19 +2244,21 @@
           }
           yarnExtrusionActive =
             typeof comment === 'string' && comment.toLowerCase().includes('feed yarn');
-          const positionSegments = [
-            `X ${formatCoordinate(interpolatedPosition.x)} mm`,
-            `Y ${formatCoordinate(interpolatedPosition.y)} mm`,
-            `Z ${formatCoordinate(interpolatedPosition.z)} mm`,
-            `E ${formatCoordinate(interpolatedPosition.extrusion)} mm`,
-          ];
-          if (patternPositionElement) {
-            patternPositionElement.textContent = `Position: ${positionSegments.join(' · ')}`;
-            setTone(patternPositionElement, yarnExtrusionActive ? 'ready' : 'info');
-          }
-          if (homingGuardPositionElement) {
-            homingGuardPositionElement.textContent = `Coordinates: ${positionSegments.join(' · ')}`;
-            setTone(homingGuardPositionElement, yarnExtrusionActive ? 'ready' : 'info');
+          if (patternPositionElement || homingGuardPositionElement) {
+            const positionSegments = [
+              `X ${formatCoordinate(interpolatedPosition.x)} mm`,
+              `Y ${formatCoordinate(interpolatedPosition.y)} mm`,
+              `Z ${formatCoordinate(interpolatedPosition.z)} mm`,
+              `E ${formatCoordinate(interpolatedPosition.extrusion)} mm`,
+            ];
+            if (patternPositionElement) {
+              patternPositionElement.textContent = `Position: ${positionSegments.join(' · ')}`;
+              setTone(patternPositionElement, yarnExtrusionActive ? 'ready' : 'info');
+            }
+            if (homingGuardPositionElement) {
+              homingGuardPositionElement.textContent = `Coordinates: ${positionSegments.join(' · ')}`;
+              setTone(homingGuardPositionElement, yarnExtrusionActive ? 'ready' : 'info');
+            }
           }
         }
 
