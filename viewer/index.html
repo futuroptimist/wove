@@ -1336,7 +1336,13 @@
         }
       }
 
-      function updateYarnFlowPanel(event, stepIndex, totalSteps, progressRatio) {
+      function updateYarnFlowPanel(
+        event,
+        stepIndex,
+        totalSteps,
+        progressRatio,
+        interpolatedPosition,
+      ) {
         if (!yarnFlowStatusElement || !yarnFlowSpoolElement) {
           return;
         }
@@ -1602,10 +1608,12 @@
 
         if (yarnFlowPositionElement) {
           const positionSegments = [
-            `X ${formatCoordinate(event.x)} mm`,
-            `Y ${formatCoordinate(event.y)} mm`,
-            `Z ${formatCoordinate(event.z)} mm`,
-            `E ${formatCoordinate(event.extrusion)} mm`,
+            `X ${formatCoordinate(interpolatedPosition?.x ?? event.x)} mm`,
+            `Y ${formatCoordinate(interpolatedPosition?.y ?? event.y)} mm`,
+            `Z ${formatCoordinate(interpolatedPosition?.z ?? event.z)} mm`,
+            `E ${formatCoordinate(
+              interpolatedPosition?.extrusion ?? event.extrusion,
+            )} mm`,
           ];
           yarnFlowPositionElement.textContent = `Coordinates: ${positionSegments.join(' · ')}`;
           setTone(yarnFlowPositionElement, yarnExtrusionActive ? 'ready' : 'info');
@@ -1746,7 +1754,7 @@
         if (patternPlannerEvents.length > 0) {
           lastPatternStepIndex = -1;
           lastPatternProgress = -1;
-          updatePatternOverlay(0, 0);
+          updatePatternOverlay(0, 0, { segmentProgress: 0 });
         } else if (options.resetOverlay !== false) {
           lastPatternStepIndex = -1;
           lastPatternProgress = -1;
@@ -2149,7 +2157,45 @@
         });
       }
 
-      function updatePatternOverlay(stepIndex, progressRatio) {
+      function interpolatePlannerEventCoordinates(events, index, progress) {
+        const safeIndex = Number.isFinite(index) ? index : 0;
+        const start = events?.[safeIndex] ?? {};
+        const end = events?.[Math.min(safeIndex + 1, (events?.length ?? 1) - 1)] ?? start;
+
+        const t = THREE.MathUtils.clamp(
+          Number.isFinite(progress) ? progress : 0,
+          0,
+          1,
+        );
+
+        const blend = (a, b) => {
+          const startValue = Number.isFinite(a) ? a : null;
+          const endValue = Number.isFinite(b) ? b : null;
+
+          if (startValue === null && endValue === null) {
+            return null;
+          }
+
+          if (startValue === null) {
+            return endValue;
+          }
+
+          if (endValue === null) {
+            return startValue;
+          }
+
+          return THREE.MathUtils.lerp(startValue, endValue, t);
+        };
+
+        return {
+          x: blend(start.x, end.x),
+          y: blend(start.y, end.y),
+          z: blend(start.z, end.z),
+          extrusion: blend(start.extrusion, end.extrusion),
+        };
+      }
+
+      function updatePatternOverlay(stepIndex, progressRatio, options = {}) {
         if (!patternStepElement) {
           return;
         }
@@ -2179,6 +2225,11 @@
         const clampedIndex = Math.min(Math.max(stepIndex, 0), totalSteps - 1);
         const clampedProgress = Math.min(Math.max(progressRatio, 0), 1);
         const event = patternPlannerEvents[clampedIndex] ?? {};
+        const interpolatedPosition = interpolatePlannerEventCoordinates(
+          patternPlannerEvents,
+          clampedIndex,
+          options.segmentProgress ?? 0,
+        );
         const progressDelta = Math.abs(clampedProgress - lastPatternProgress);
         const progressChanged = progressDelta > 1e-4;
         const progressBarNeedsUpdate = progressDelta > 0.01;
@@ -2194,15 +2245,17 @@
           }
           yarnExtrusionActive =
             typeof comment === 'string' && comment.toLowerCase().includes('feed yarn');
-          if (patternPositionElement) {
+          if (patternPositionElement || homingGuardPositionElement) {
             const positionSegments = [
-              `X ${formatCoordinate(event.x)} mm`,
-              `Y ${formatCoordinate(event.y)} mm`,
-              `Z ${formatCoordinate(event.z)} mm`,
-              `E ${formatCoordinate(event.extrusion)} mm`,
+              `X ${formatCoordinate(interpolatedPosition.x)} mm`,
+              `Y ${formatCoordinate(interpolatedPosition.y)} mm`,
+              `Z ${formatCoordinate(interpolatedPosition.z)} mm`,
+              `E ${formatCoordinate(interpolatedPosition.extrusion)} mm`,
             ];
-            patternPositionElement.textContent = `Position: ${positionSegments.join(' · ')}`;
-            setTone(patternPositionElement, yarnExtrusionActive ? 'ready' : 'info');
+            if (patternPositionElement) {
+              patternPositionElement.textContent = `Position: ${positionSegments.join(' · ')}`;
+              setTone(patternPositionElement, yarnExtrusionActive ? 'ready' : 'info');
+            }
             if (homingGuardPositionElement) {
               homingGuardPositionElement.textContent = `Coordinates: ${positionSegments.join(' · ')}`;
               setTone(homingGuardPositionElement, yarnExtrusionActive ? 'ready' : 'info');
@@ -2215,7 +2268,13 @@
         }
 
         if (clampedIndex !== lastPatternStepIndex || progressChanged) {
-          updateYarnFlowPanel(event, clampedIndex, totalSteps, clampedProgress);
+          updateYarnFlowPanel(
+            event,
+            clampedIndex,
+            totalSteps,
+            clampedProgress,
+            interpolatedPosition,
+          );
         }
 
         if (clampedIndex !== lastPatternStepIndex) {
@@ -2266,7 +2325,7 @@
           preview.haloMaterial.opacity = haloPulse;
         }
 
-        updatePatternOverlay(index, progress);
+        updatePatternOverlay(index, progress, { segmentProgress });
       }
 
       function createSafetyShield() {
