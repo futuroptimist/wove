@@ -112,7 +112,7 @@
       #planner-upload {
         display: block;
         margin: 0 0 0.5rem;
-        color: #0b0c13;
+        color: #ffe7c9;
         font-size: 0.84rem;
       }
 
@@ -6111,6 +6111,13 @@
           clearTimeout(plannerUploadResetTimer);
         }
 
+        // File size validation: limit to 10MB
+        if (file.size > 10 * 1024 * 1024) {
+          updateStatus('Planner upload too large — please use files under 10MB.');
+          plannerUploadResetTimer = window.setTimeout(resetUpload, 750);
+          return;
+        }
+
         const reader = new FileReader();
         reader.onload = () => {
           try {
@@ -6140,6 +6147,9 @@
         };
 
         reader.onerror = () => {
+          if (plannerUploadResetTimer) {
+            clearTimeout(plannerUploadResetTimer);
+          }
           console.warn('Unable to read uploaded planner');
           updateStatus('Planner upload failed — see console for details.');
           plannerUploadResetTimer = window.setTimeout(resetUpload, 750);
