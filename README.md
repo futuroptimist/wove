@@ -103,6 +103,10 @@ the planner preview runs. Three glowing beads now chase along the same guide,
 staggering their pace whenever the preview feeds yarn so the flow direction
 stays obvious at a glance—even in still frames.
 
+The Yarn Flow overlay now mirrors that hall-effect telemetry, translating feed
+bursts into estimated grams so operators can read tension directly from the
+planner preview without juggling calculator scripts.
+
 The source spool now spins in sync with yarn feed events so the hologram shows
 fiber unwinding from the supply while the PTFE tube glows. When extrusion
 pauses, the reel now coasts to a stop so idle previews keep the spool parked.

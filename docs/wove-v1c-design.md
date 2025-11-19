@@ -301,7 +301,9 @@ overview.
   the following pulses so dry runs stay paced to the planner timeline rather
   than the raw step indices. Cycle timers now display how many seconds have
   elapsed and remain in the preview loop so crews can gauge overall progress
-  without pausing the walkthrough.
+  without pausing the walkthrough. Hall-effect telemetry now appears in the
+  Yarn Flow overlay as estimated grams so technicians can sanity-check tension
+  during planner rehearsals.
 
 ## Bill of Materials (Initial Release)
 | Subsystem | Component | Qty | Notes |
