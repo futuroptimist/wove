@@ -288,6 +288,16 @@ def test_yarn_flow_panel_mentions_spool_progress() -> None:
     assert "Spool progress: Awaiting planner preview…" in html
 
 
+def test_yarn_flow_panel_reports_tension_telemetry() -> None:
+    """The Yarn Flow overlay should surface estimated hall-sensor grams."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "yarn-flow-tension" in html
+    assert "Tension telemetry: Awaiting planner preview…" in html
+    assert "hall sensor est." in html
+
+
 def test_calibration_lab_pedestal_documented() -> None:
     """The roadmap should include a calibration lab pedestal."""
 

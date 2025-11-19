@@ -416,6 +416,9 @@
         <p id="yarn-flow-cycle" data-tone="neutral">
           Cycle timing: Awaiting planner preview…
         </p>
+        <p id="yarn-flow-tension" data-tone="neutral">
+          Tension telemetry: Awaiting planner preview…
+        </p>
         <p id="yarn-flow-position" data-tone="neutral">
           Coordinates: Awaiting yarn flow coordinates…
         </p>
@@ -484,6 +487,7 @@
       const yarnFlowUpcomingElement = document.getElementById('yarn-flow-upcoming');
       const yarnFlowTimingElement = document.getElementById('yarn-flow-timing');
       const yarnFlowCycleElement = document.getElementById('yarn-flow-cycle');
+      const yarnFlowTensionElement = document.getElementById('yarn-flow-tension');
       const yarnFlowPositionElement = document.getElementById('yarn-flow-position');
 
       const pointer = new THREE.Vector2();
@@ -582,6 +586,8 @@
         'Feed timing: Awaiting planner preview…';
       const yarnFlowCycleFallbackMessage =
         'Cycle timing: Awaiting planner preview…';
+      const yarnFlowTensionFallbackMessage =
+        'Tension telemetry: Awaiting planner preview…';
       const yarnFlowPositionFallbackMessage =
         'Coordinates: Awaiting yarn flow coordinates…';
 
@@ -1351,6 +1357,10 @@
           yarnFlowCycleElement.textContent = yarnFlowCycleFallbackMessage;
           setTone(yarnFlowCycleElement, 'neutral');
         }
+        if (yarnFlowTensionElement) {
+          yarnFlowTensionElement.textContent = yarnFlowTensionFallbackMessage;
+          setTone(yarnFlowTensionElement, 'neutral');
+        }
         if (yarnFlowPositionElement) {
           yarnFlowPositionElement.textContent = yarnFlowPositionFallbackMessage;
           setTone(yarnFlowPositionElement, 'neutral');
@@ -1632,6 +1642,60 @@
                 yarnExtrusionActive ? 'ready' : 'info',
               );
             }
+          }
+        }
+
+        if (yarnFlowTensionElement) {
+          const previousEvent =
+            Number.isFinite(stepIndex) &&
+            stepIndex > 0 &&
+            Array.isArray(patternPlannerEvents) &&
+            patternPlannerEvents.length > 0
+              ? patternPlannerEvents[Math.min(stepIndex - 1, patternPlannerEvents.length - 1)]
+              : null;
+
+          const previousExtrusion = coerceFiniteNumber(previousEvent?.extrusion);
+          const currentExtrusion = coerceFiniteNumber(event.extrusion);
+          const stepDurationSeconds =
+            Number.isFinite(patternPreviewDurationSeconds) &&
+            Number.isFinite(totalSteps) &&
+            totalSteps > 0
+              ? patternPreviewDurationSeconds / totalSteps
+              : null;
+
+          if (currentExtrusion === null || stepDurationSeconds === null) {
+            yarnFlowTensionElement.textContent = yarnFlowTensionFallbackMessage;
+            setTone(yarnFlowTensionElement, 'neutral');
+          } else {
+            const baselineExtrusion = Number.isFinite(patternExtrusionBaseline)
+              ? patternExtrusionBaseline
+              : 0;
+            const previousSample =
+              previousExtrusion !== null ? previousExtrusion : baselineExtrusion;
+            const extrusionDelta = Math.max(currentExtrusion - previousSample, 0);
+            const feedRateMmPerSec = extrusionDelta / stepDurationSeconds;
+            // Tension estimation calibrated to documented profiles:
+            // - Lace: 20g @ 45mm/s
+            // - Super Bulky: 95g @ 28mm/s
+            // Linear interpolation between these points:
+            const MIN_FEED_RATE = 45; // mm/s (lace)
+            const MAX_FEED_RATE = 28; // mm/s (super bulky)
+            const MIN_TENSION = 20; // g
+            const MAX_TENSION = 95; // g
+            // Clamp feed rate to expected range
+            const clampedFeedRate = Math.max(
+              Math.min(feedRateMmPerSec, MIN_FEED_RATE),
+              MAX_FEED_RATE,
+            );
+            // Interpolate tension: higher feed rate = lower tension
+            const estimatedGrams =
+              MIN_TENSION +
+              ((MAX_TENSION - MIN_TENSION) * (MIN_FEED_RATE - clampedFeedRate)) /
+                (MIN_FEED_RATE - MAX_FEED_RATE);
+
+            yarnFlowTensionElement.textContent =
+              `Tension telemetry: ${estimatedGrams.toFixed(1)} g (hall sensor est.)`;
+            setTone(yarnFlowTensionElement, yarnExtrusionActive ? 'ready' : 'info');
           }
         }
 
