@@ -5938,7 +5938,7 @@
               damping,
               delta,
             );
-            material.opacity = controller.currentOpacity;
+            material.opacity = THREE.MathUtils.clamp(controller.currentOpacity, 0, 1);
           }
         });
         anchorPulseControllers.forEach((controller) => {
