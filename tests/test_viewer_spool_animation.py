@@ -25,5 +25,5 @@ def test_spool_progress_billboard_tracks_planner_totals() -> None:
     html = VIEWER_HTML.read_text(encoding="utf-8")
 
     assert "spoolProgressLabelController.update" in html
-    assert "header: plannedAmount > 0.0001 ? 'Yarn Feed Progress'" in html
-    assert "detail: billboardDetail" in html
+    assert "header: spoolProgressHeader" in html
+    assert "detailLines.push('Next feed: Awaiting planner preview…')" in html

@@ -352,6 +352,15 @@ def test_viewer_attaches_yarn_feed_billboard() -> None:
     assert "spoolProgressLabelController = spoolProgressBillboard" in html
 
 
+def test_billboard_highlights_next_feed_countdown() -> None:
+    """The spool billboard should surface the next yarn feed countdown copy."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "Next feed: Awaiting planner preview…" in html
+    assert "Next feed: Queue clear." in html
+
+
 def test_viewer_mentions_z_axis_leadscrew() -> None:
     """The scene should describe the Z-axis leadscrew lift assembly."""
 
