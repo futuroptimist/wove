@@ -1996,7 +1996,7 @@
             defaults,
             bounds,
             metadata,
-            machineProfileBounds: normalizedMachineProfileBounds,
+            machineProfileBounds: machineProfile,
           });
           updateMachineProfilePanel(machineProfile);
           if (statusElement) {
@@ -2196,7 +2196,7 @@
         boundsGroup.add(fill);
         addHoverInfo(fill, buildBoundsHoverText(hoverBounds), { passthrough: true });
 
-        const profileBounds = normalizeBounds(options.machineProfileBounds);
+        const profileBounds = options.machineProfileBounds;
         if (profileBounds?.x && profileBounds?.y) {
           const profileXSpan = Math.max(profileBounds.x.max - profileBounds.x.min, 0.0001);
           const profileYSpan = Math.max(profileBounds.y.max - profileBounds.y.min, 0.0001);
@@ -6554,7 +6554,7 @@
               defaults,
               bounds,
               metadata,
-              machineProfileBounds: normalizedMachineProfileBounds,
+              machineProfileBounds: machineProfile,
             });
             updateMachineProfilePanel(machineProfile);
             updateStatus(`Planner upload loaded: ${file.name}`);
