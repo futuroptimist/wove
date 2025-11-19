@@ -345,6 +345,10 @@
           planner exports that include machine profiles.
         </li>
         <li>
+          The spool progress billboard now echoes the Yarn Flow countdowns so you can spot the next
+          feed pulse directly from the hologram.
+        </li>
+        <li>
           Upload a planner export from <code>wove.pattern_cli</code> to rehearse your own motion
           envelope inside the Pattern Studio hologram.
         </li>
@@ -1314,6 +1318,63 @@
         }
       }
 
+      function computeFeedCountdowns(preview, feedStepIndices, progressRatio, durationSeconds) {
+        const cumulativeDistances =
+          preview && Array.isArray(preview.cumulativeDistances)
+            ? preview.cumulativeDistances
+            : null;
+        const totalDistance =
+          preview && Number.isFinite(preview.totalDistance) ? preview.totalDistance : null;
+        const totalDuration = Number.isFinite(durationSeconds) ? durationSeconds : null;
+
+        if (
+          !cumulativeDistances ||
+          !Number.isFinite(totalDistance) ||
+          totalDistance <= 0 ||
+          !Array.isArray(feedStepIndices) ||
+          feedStepIndices.length === 0 ||
+          !Number.isFinite(progressRatio) ||
+          totalDuration === null ||
+          totalDuration <= 0
+        ) {
+          return null;
+        }
+
+        const clampedProgress = Math.min(Math.max(progressRatio, 0), 1);
+        const currentTime = clampedProgress * totalDuration;
+        const countdowns = [];
+
+        feedStepIndices.forEach((feedStep) => {
+          if (typeof feedStep !== 'number') {
+            return;
+          }
+
+          const clampedIndex = Math.min(
+            Math.max(Math.round(feedStep), 0),
+            cumulativeDistances.length - 1,
+          );
+          const distance = cumulativeDistances[clampedIndex];
+          if (!Number.isFinite(distance)) {
+            return;
+          }
+
+          const progress = Math.min(Math.max(distance / totalDistance, 0), 1);
+          const eventTime = progress * totalDuration;
+          let delta = eventTime - currentTime;
+          if (delta < 0) {
+            delta += totalDuration;
+          }
+          countdowns.push({ step: feedStep, delta });
+        });
+
+        countdowns.sort((a, b) => a.delta - b.delta);
+        return {
+          countdowns,
+          next: countdowns[0] ?? null,
+          following: countdowns[1] ?? null,
+        };
+      }
+
       function resetYarnFlowPanel() {
         if (!yarnFlowStatusElement || !yarnFlowSpoolElement) {
           return;
@@ -1414,6 +1475,11 @@
           : baseline;
         const fedAmount = Math.max(rawExtrusion - baseline, 0);
         const plannedAmount = Math.max(target - baseline, 0);
+        let spoolProgressHeader = 'Yarn Feed Progress';
+        let spoolProgressTone = 'neutral';
+        let spoolProgress = 0;
+        let nextFeedCountdown = null;
+        let remainingFeedCount = null;
         if (yarnFlowTotalElement) {
           const fedLabel = fedAmount.toFixed(2);
           let summary = `Total yarn fed: ${fedLabel} mm`;
@@ -1428,30 +1494,27 @@
           ? THREE.MathUtils.clamp(progressRatio, 0, 1)
           : null;
 
-        let spoolProgress;
         let progressText;
         let progressTone;
-        let billboardDetail;
         if (plannedAmount > 0.0001) {
           spoolProgress = THREE.MathUtils.clamp(fedAmount / plannedAmount, 0, 1);
           const percent = Math.round(spoolProgress * 100);
           progressText = `Spool progress: ${percent}% of planned yarn fed.`;
           progressTone = percent >= 100 ? 'ready' : yarnExtrusionActive ? 'ready' : 'info';
-          billboardDetail = [
-            `Fed ${fedAmount.toFixed(1)} mm`,
-            `Target ${plannedAmount.toFixed(1)} mm`,
-            `${percent}% complete`,
-          ];
+          spoolProgressHeader = 'Yarn Feed Progress';
+          spoolProgressTone = progressTone;
         } else if (fedAmount > 0.0001) {
           spoolProgress = 1;
           progressText = 'Spool progress: Feeding yarn without a declared target.';
           progressTone = 'warning';
-          billboardDetail = [`Fed ${fedAmount.toFixed(1)} mm`, 'Target not declared'];
+          spoolProgressHeader = 'Yarn Feed';
+          spoolProgressTone = progressTone;
         } else {
           spoolProgress = 0;
           progressText = yarnFlowProgressFallbackMessage;
           progressTone = 'neutral';
-          billboardDetail = 'Awaiting planner preview…';
+          spoolProgressHeader = 'Yarn Feed';
+          spoolProgressTone = progressTone;
         }
 
         if (yarnFlowProgressElement) {
@@ -1460,13 +1523,6 @@
         }
 
         spoolProgressRatio = spoolProgress;
-        if (spoolProgressLabelController) {
-          spoolProgressLabelController.update({
-            header: plannedAmount > 0.0001 ? 'Yarn Feed Progress' : 'Yarn Feed',
-            detail: billboardDetail,
-            tone: progressTone,
-          });
-        }
 
         const previewDuration =
           Number.isFinite(patternPreviewDurationSeconds) && patternPreviewDurationSeconds > 0
@@ -1504,6 +1560,7 @@
                 remainingFeeds += 1;
               }
             }
+            remainingFeedCount = remainingFeeds;
             const summary = `Remaining feed pulses: ${remainingFeeds} of ${totalFeedSteps}.`;
             yarnFlowQueueElement.textContent = summary;
             setTone(yarnFlowQueueElement, remainingFeeds === 0 ? 'ready' : 'info');
@@ -1511,6 +1568,7 @@
             yarnFlowQueueElement.textContent =
               'Remaining feed pulses: None in this preview.';
             setTone(yarnFlowQueueElement, 'neutral');
+            remainingFeedCount = 0;
           }
         }
 
@@ -1556,76 +1614,31 @@
             typeof patternPreviewGroup.userData === 'object'
               ? patternPreviewGroup.userData.preview || null
               : null;
-          const cumulativeDistances =
-            preview && Array.isArray(preview.cumulativeDistances)
-              ? preview.cumulativeDistances
-              : null;
-          const totalDistance =
-            preview && Number.isFinite(preview.totalDistance)
-              ? preview.totalDistance
-              : null;
-          const totalDuration = previewDuration;
-          const hasProgress = Number.isFinite(progressRatio);
-          const hasFeedSteps =
-            Array.isArray(yarnFeedStepIndices) && yarnFeedStepIndices.length > 0;
+          const countdowns = computeFeedCountdowns(
+            preview,
+            yarnFeedStepIndices,
+            progressRatio,
+            previewDuration,
+          );
 
-          if (
-            !hasProgress ||
-            !hasFeedSteps ||
-            !cumulativeDistances ||
-            !Number.isFinite(totalDistance) ||
-            !totalDuration ||
-            totalDuration <= 0 ||
-            totalDistance <= 0
-          ) {
+          if (!countdowns) {
             yarnFlowTimingElement.textContent = yarnFlowTimingFallbackMessage;
             setTone(yarnFlowTimingElement, 'neutral');
           } else {
-            const clampedProgress = Math.min(Math.max(progressRatio, 0), 1);
-            const currentTime = clampedProgress * totalDuration;
-            const countdowns = [];
-
-            yarnFeedStepIndices.forEach((feedStep) => {
-              if (typeof feedStep !== 'number') {
-                return;
-              }
-              const clampedIndex = Math.min(
-                Math.max(Math.round(feedStep), 0),
-                cumulativeDistances.length - 1,
-              );
-              const distance = cumulativeDistances[clampedIndex];
-              if (!Number.isFinite(distance)) {
-                return;
-              }
-              const progress = Math.min(
-                Math.max(distance / totalDistance, 0),
-                1,
-              );
-              const eventTime = progress * totalDuration;
-              let delta = eventTime - currentTime;
-              if (delta < 0) {
-                delta += totalDuration;
-              }
-              countdowns.push({ step: feedStep, delta });
-            });
-
-            if (countdowns.length === 0) {
+            const { countdowns: entries, next, following } = countdowns;
+            nextFeedCountdown = next;
+            if (!entries || entries.length === 0) {
               yarnFlowTimingElement.textContent =
                 'Feed timing: No additional feed pulses in this preview.';
               setTone(yarnFlowTimingElement, 'ready');
             } else {
-              countdowns.sort((a, b) => a.delta - b.delta);
-              const next = countdowns[0];
               const segments = [`Next in ${next.delta.toFixed(1)} s (#${next.step + 1})`];
-              if (countdowns.length > 1) {
-                const second = countdowns[1];
+              if (following) {
                 segments.push(
-                  `Following: #${second.step + 1} in ${second.delta.toFixed(1)} s`,
+                  `Following: #${following.step + 1} in ${following.delta.toFixed(1)} s`,
                 );
               }
-              yarnFlowTimingElement.textContent = `Feed timing: ${segments.join(
-                '; ',
-              )}.`;
+              yarnFlowTimingElement.textContent = `Feed timing: ${segments.join('; ')}.`;
               setTone(
                 yarnFlowTimingElement,
                 yarnExtrusionActive ? 'ready' : 'info',
@@ -1645,6 +1658,38 @@
           ];
           yarnFlowPositionElement.textContent = `Coordinates: ${positionSegments.join(' · ')}`;
           setTone(yarnFlowPositionElement, yarnExtrusionActive ? 'ready' : 'info');
+        }
+
+        if (spoolProgressLabelController) {
+          const detailLines = [];
+          if (plannedAmount > 0.0001) {
+            detailLines.push(`Fed ${fedAmount.toFixed(1)} mm`);
+            const percent = Math.round(spoolProgress * 100);
+            detailLines.push(`Target ${plannedAmount.toFixed(1)} mm (${percent}% complete)`);
+          } else if (fedAmount > 0.0001) {
+            detailLines.push(`Fed ${fedAmount.toFixed(1)} mm`);
+            detailLines.push('Target not declared');
+          } else {
+            detailLines.push('Awaiting planner preview…');
+          }
+
+          if (nextFeedCountdown && (!remainingFeedCount || remainingFeedCount > 0)) {
+            detailLines.push(
+              `Next feed: #${nextFeedCountdown.step + 1} in ${nextFeedCountdown.delta.toFixed(
+                1,
+              )} s`,
+            );
+          } else if (remainingFeedCount === 0) {
+            detailLines.push('Next feed: Queue clear.');
+          } else {
+            detailLines.push('Next feed: Awaiting planner preview…');
+          }
+
+          spoolProgressLabelController.update({
+            header: spoolProgressHeader,
+            detail: detailLines,
+            tone: spoolProgressTone,
+          });
         }
       }
 

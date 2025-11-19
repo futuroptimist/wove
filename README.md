@@ -114,7 +114,8 @@ A floating yarn-feed progress billboard now hovers over the spool, broadcasting
 fed-versus-planned totals so contributors can grab the numbers without leaving
 the hologram. The billboard now mirrors the Yarn Flow panel in real time,
 flagging missing targets and keeping the fed-versus-planned totals in sync with
-the hologram and spool ring.
+the hologram and spool ring. It now calls out the next yarn feed countdown so
+crews can see the upcoming pulse without leaving the scene overlay.
 A pair of cooling fans—the electronics bay exhaust and the hook-carriage
 mount—idle with a gentle spin and ramp up whenever the yarn feed engages, so the
 viewer keeps thermal cues in step with spool choreography.
