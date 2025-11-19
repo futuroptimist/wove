@@ -93,9 +93,10 @@ planner preview feeds yarn so the control stack glows in lockstep with the
 hologram.
 
 Printed cable chains now snake from the electronics bay toward the hook carriage
-with sequential pulses so contributors can trace how wiring and PTFE guides ride
-the gantry. Hover the glowing links to rehearse how harnesses cross the work
-area without snagging tooling or yarn during maintenance walkthroughs.
+with sequential pulses that chase faster whenever yarn feed events fire so
+contributors can trace how wiring and PTFE guides ride the gantry. Hover the
+glowing links to rehearse how harnesses cross the work area without snagging
+tooling or yarn during maintenance walkthroughs.
 
 Amber pulses now race through the translucent PTFE tube so you can watch yarn
 flow from the spool, past the hall-effect sensor, and into the crochet hook as

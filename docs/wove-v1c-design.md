@@ -261,7 +261,8 @@ overview.
 - 24 V, 10 A supply for steppers; onboard 5 V regulator powers sensors and servos.
 - JST-XH harnesses for modular axis replacement; printed cable chains keep wiring tidy.
 - The Three.js viewer now threads a glowing cable chain from the electronics bay to the
-  gantry so crews can trace harness routing and avoid snag points during dry runs.
+  gantry and sweeps a chasing glow that accelerates during yarn feed events so crews can
+  trace harness routing and avoid snag points during dry runs.
 - Provide wiring schematics and harness length tables for standard build sizes.
 
 ### Firmware and Software
