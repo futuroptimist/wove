@@ -1673,7 +1673,7 @@
             detailLines.push('Awaiting planner preview…');
           }
 
-          if (nextFeedCountdown && (!remainingFeedCount || remainingFeedCount > 0)) {
+          if (nextFeedCountdown && remainingFeedCount !== 0) {
             detailLines.push(
               `Next feed: #${nextFeedCountdown.step + 1} in ${nextFeedCountdown.delta.toFixed(
                 1,
