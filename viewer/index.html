@@ -162,6 +162,15 @@
         color: #d9f4ff;
       }
 
+      #planner-panel ul {
+        margin: 0.15rem 0 0;
+        padding-left: 1.1rem;
+        list-style: disc;
+        font-size: 0.84rem;
+        line-height: 1.35;
+        color: #c7ecff;
+      }
+
       #planner-metadata-details {
         margin: 0;
         padding-left: 1.1rem;
@@ -389,6 +398,9 @@
           Loading planner metadata…
         </p>
         <ul id="planner-metadata-details"></ul>
+        <p id="machine-profile-envelope" data-tone="neutral">
+          Machine profile envelope warming up…
+        </p>
       </div>
       <div id="yarn-panel">
         <h2>Yarn Flow Monitor</h2>
@@ -469,6 +481,7 @@
         'planner-metadata-status',
       );
       const plannerMetadataListElement = document.getElementById('planner-metadata-details');
+      const machineProfileEnvelopeElement = document.getElementById('machine-profile-envelope');
       const machineProfileStatusElement = document.getElementById('machine-profile-status');
       const machineProfileAxesElement = document.getElementById('machine-profile-axes');
       const homingGuardStatusElement = document.getElementById('homing-guard-status');
@@ -549,12 +562,16 @@
       let patternPreviewGroup = null;
       let patternPreviewContainer = null;
       let plannerBounds = null;
+      let machineProfileBounds = null;
       const patternPreviewDurationSeconds = 14;
       let lastPatternStepIndex = -1;
       let lastPatternProgress = -1;
       let spoolProgressRatio = 0;
       const machineProfileFallbackMessage =
         'Machine profile metadata unavailable. Export with --machine-profile to surface axis settings.';
+      const machineProfileEnvelopeFallbackMessage =
+        'Machine profile envelope unavailable. Include travel_min_mm and '
+        + 'travel_max_mm for each axis.';
       const homingGuardFallbackMessage =
         'Homing guard metadata unavailable. Export planner defaults.require_home and defaults.home_state.';
       const homingGuardPositionFallbackMessage =
@@ -975,6 +992,37 @@
         return Object.keys(normalized).length > 0 ? normalized : null;
       }
 
+      function normalizeMachineProfileBounds(machineProfile) {
+        if (!machineProfile || typeof machineProfile !== 'object') {
+          return null;
+        }
+
+        const axes = machineProfile.axes && typeof machineProfile.axes === 'object'
+          ? machineProfile.axes
+          : null;
+        if (!axes) {
+          return null;
+        }
+
+        const normalized = {};
+        Object.entries(axes).forEach(([name, axis]) => {
+          if (!axis || typeof axis !== 'object') {
+            return;
+          }
+          const key = name.toString().toLowerCase();
+          const min = coerceFiniteNumber(axis.travel_min_mm ?? axis.min ?? axis.min_mm);
+          const max = coerceFiniteNumber(axis.travel_max_mm ?? axis.max ?? axis.max_mm);
+          if (min === null || max === null || max < min) {
+            return;
+          }
+          if (['x', 'y', 'z'].includes(key)) {
+            normalized[key] = { min, max };
+          }
+        });
+
+        return Object.keys(normalized).length > 0 ? normalized : null;
+      }
+
       function computeBoundsFromEvents(events) {
         if (!Array.isArray(events) || events.length === 0) {
           return null;
@@ -1094,6 +1142,40 @@
           return 'Planner bounds overlay — load a planner export with bounds metadata to preview the motion envelope.';
         }
         return `Planner bounds — ${segments.join(' · ')}`;
+      }
+
+      function buildMachineProfileEnvelopeText(bounds) {
+        if (!bounds) {
+          return machineProfileEnvelopeFallbackMessage;
+        }
+
+        const segments = [];
+        if (bounds.x) {
+          segments.push(`X ${bounds.x.min.toFixed(1)}–${bounds.x.max.toFixed(1)} mm`);
+        }
+        if (bounds.y) {
+          segments.push(`Y ${bounds.y.min.toFixed(1)}–${bounds.y.max.toFixed(1)} mm`);
+        }
+        if (bounds.z) {
+          segments.push(`Z ${bounds.z.min.toFixed(1)}–${bounds.z.max.toFixed(1)} mm`);
+        }
+
+        if (segments.length === 0) {
+          return machineProfileEnvelopeFallbackMessage;
+        }
+
+        return `Machine profile envelope: ${segments.join(' · ')}`;
+      }
+
+      function updateMachineProfileEnvelope(bounds) {
+        if (!machineProfileEnvelopeElement) {
+          return;
+        }
+
+        const text = buildMachineProfileEnvelopeText(bounds);
+        machineProfileEnvelopeElement.textContent = text;
+        const tone = bounds ? 'info' : 'warning';
+        setTone(machineProfileEnvelopeElement, tone);
       }
 
       function updatePatternBoundsOverlay(bounds) {
@@ -1730,6 +1812,10 @@
               ? options.defaults
               : null;
         }
+        if (Object.prototype.hasOwnProperty.call(options, 'machineProfileBounds')) {
+          machineProfileBounds = normalizeMachineProfileBounds(options.machineProfileBounds);
+          updateMachineProfileEnvelope(machineProfileBounds);
+        }
         updateHomingGuardPanel(plannerDefaults);
         updatePlannerDefaultsPanel(plannerDefaults);
 
@@ -1774,6 +1860,7 @@
           }
           patternPreviewGroup = buildPlannerPreview(patternPlannerEvents, {
             bounds: plannerBounds,
+            machineProfileBounds,
           });
           patternPreviewGroup.position.set(0, 0, 0.01);
           patternPreviewContainer.add(patternPreviewGroup);
@@ -1816,6 +1903,9 @@
           machineProfileAxesElement.removeChild(machineProfileAxesElement.firstChild);
         }
 
+        machineProfileBounds = normalizeMachineProfileBounds(machineProfile);
+        updateMachineProfileEnvelope(machineProfileBounds);
+
         const axes =
           machineProfile && typeof machineProfile === 'object'
             ? machineProfile.axes || null
@@ -1825,10 +1915,12 @@
 
         if (!entries || entries.length === 0) {
           machineProfileStatusElement.textContent = machineProfileFallbackMessage;
+          setTone(machineProfileStatusElement, 'warning');
           return;
         }
 
         machineProfileStatusElement.textContent = 'Planner-aligned axis settings:';
+        setTone(machineProfileStatusElement, 'info');
 
         entries
           .sort((a, b) => a[0].localeCompare(b[0]))
@@ -1891,13 +1983,22 @@
           }
           const defaults = payload?.defaults ?? null;
           const bounds = payload?.bounds ?? null;
+          const machineProfile = payload?.machine_profile ?? null;
+          const normalizedMachineProfileBounds =
+            normalizeMachineProfileBounds(machineProfile);
+          machineProfileBounds = normalizedMachineProfileBounds;
           const metadata = {
             version: payload?.version ?? null,
             units: typeof payload?.units === 'string' ? payload.units : null,
             source: 'Base chain row asset',
           };
-          applyPatternPlannerEvents(events, { defaults, bounds, metadata });
-          updateMachineProfilePanel(payload?.machine_profile ?? null);
+          applyPatternPlannerEvents(events, {
+            defaults,
+            bounds,
+            metadata,
+            machineProfileBounds: normalizedMachineProfileBounds,
+          });
+          updateMachineProfilePanel(machineProfile);
           if (statusElement) {
             updateStatus('Pattern Studio preview synced with base chain row.');
           }
@@ -1911,6 +2012,7 @@
               source: 'Fallback preview',
             },
           });
+          machineProfileBounds = null;
           updateMachineProfilePanel(null);
           if (statusElement) {
             updateStatus('Using fallback planner preview.');
@@ -2093,6 +2195,60 @@
         fill.renderOrder = 1;
         boundsGroup.add(fill);
         addHoverInfo(fill, buildBoundsHoverText(hoverBounds), { passthrough: true });
+
+        const profileBounds = normalizeBounds(options.machineProfileBounds);
+        if (profileBounds?.x && profileBounds?.y) {
+          const profileXSpan = Math.max(profileBounds.x.max - profileBounds.x.min, 0.0001);
+          const profileYSpan = Math.max(profileBounds.y.max - profileBounds.y.min, 0.0001);
+          const profileWidth = THREE.MathUtils.clamp(profileXSpan / xSpan, 0, 1) * usableWidth;
+          const profileHeight = THREE.MathUtils.clamp(profileYSpan / ySpan, 0, 1) * usableHeight;
+
+          const centerXRatio =
+            ((profileBounds.x.min + profileBounds.x.max) / 2 - displayXMin) / xSpan - 0.5;
+          const centerYRatio =
+            ((profileBounds.y.min + profileBounds.y.max) / 2 - displayYMin) / ySpan - 0.5;
+          const offsetX = THREE.MathUtils.clamp(centerXRatio, -0.75, 0.75) * usableWidth;
+          const offsetY = THREE.MathUtils.clamp(centerYRatio, -0.75, 0.75) * usableHeight;
+
+          const profileGeometry = new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(-profileWidth / 2, -profileHeight / 2, 0),
+            new THREE.Vector3(profileWidth / 2, -profileHeight / 2, 0),
+            new THREE.Vector3(profileWidth / 2, profileHeight / 2, 0),
+            new THREE.Vector3(-profileWidth / 2, profileHeight / 2, 0),
+          ]);
+          const profileMaterial = new THREE.LineDashedMaterial({
+            color: 0x5fffd2,
+            linewidth: 1,
+            scale: 1,
+            dashSize: 0.05,
+            gapSize: 0.03,
+            transparent: true,
+            opacity: 0.85,
+            depthTest: false,
+          });
+          const profileOutline = new THREE.LineLoop(profileGeometry, profileMaterial);
+          profileOutline.computeLineDistances();
+          profileOutline.position.set(offsetX, offsetY, -0.001);
+          profileOutline.renderOrder = 3;
+
+          const profileFill = new THREE.Mesh(
+            new THREE.PlaneGeometry(profileWidth, profileHeight),
+            new THREE.MeshBasicMaterial({
+              color: 0x2cf9c5,
+              transparent: true,
+              opacity: 0.08,
+              depthWrite: false,
+              depthTest: false,
+            }),
+          );
+          profileFill.position.set(offsetX, offsetY, -0.0015);
+          profileFill.renderOrder = 2;
+          boundsGroup.add(profileFill);
+          boundsGroup.add(profileOutline);
+          addHoverInfo(profileFill, buildMachineProfileEnvelopeText(profileBounds), {
+            passthrough: true,
+          });
+        }
 
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
@@ -6384,14 +6540,23 @@
 
             const defaults = payload?.defaults ?? null;
             const bounds = payload?.bounds ?? null;
+            const machineProfile = payload?.machine_profile ?? null;
+            const normalizedMachineProfileBounds =
+              normalizeMachineProfileBounds(machineProfile);
+            machineProfileBounds = normalizedMachineProfileBounds;
             const metadata = {
               version: payload?.version ?? null,
               units: typeof payload?.units === 'string' ? payload.units : null,
               source: `Upload: ${file.name}`,
             };
 
-            applyPatternPlannerEvents(events, { defaults, bounds, metadata });
-            updateMachineProfilePanel(payload?.machine_profile ?? null);
+            applyPatternPlannerEvents(events, {
+              defaults,
+              bounds,
+              metadata,
+              machineProfileBounds: normalizedMachineProfileBounds,
+            });
+            updateMachineProfilePanel(machineProfile);
             updateStatus(`Planner upload loaded: ${file.name}`);
           } catch (error) {
             console.warn('Unable to load uploaded planner', error);

@@ -139,6 +139,9 @@ When a machine profile was provided, the `machine_profile.axes`
 mapping mirrors the JSON/YAML schema
 loaded by `--machine-profile` so downstream planners can respect the same
 travel envelope without re-reading the original file.
+The viewer now also sketches that travel envelope inside the hologram using a
+teal dashed outline, making it obvious when planner bounds sit inside the
+configured machine profile limits.
 
 ## Embedding the parser in automation
 
