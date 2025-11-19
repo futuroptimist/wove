@@ -491,6 +491,7 @@
       const interactiveMeshes = [];
       const productClusters = [];
       const safeAccessHighlights = [];
+      const cableChainPulseControllers = [];
       const stepBadgeControllers = [];
       const anchorPulseControllers = [];
       let activeCluster = null;
@@ -3265,6 +3266,8 @@
           roughness: 0.34,
           emissive: 0x0d1423,
           emissiveIntensity: 0.45,
+          transparent: true,
+          opacity: 0.92,
         });
 
         const chain = new THREE.Mesh(
@@ -3276,8 +3279,20 @@
         group.add(chain);
         addHoverInfo(
           chain,
-          'Cable chain — routes gantry wiring from the electronics bay to the hook carriage.',
+          'Cable chain — routes gantry wiring to the hook carriage with a chasing glow.',
         );
+        cableChainPulseControllers.push({
+          material: chainMaterial,
+          phaseOffset: 0,
+          idleIntensity: 0.45,
+          activeIntensity: 1.05,
+          idleOpacity: 0.92,
+          activeOpacity: 1.0,
+          idleSpeed: 1.4,
+          activeSpeed: 2.6,
+          pulseExponent: 1.35,
+          damping: 6.2,
+        });
         safeAccessHighlights.push({
           material: chainMaterial,
           baseIntensity: 0.45,
@@ -3298,6 +3313,8 @@
             roughness: 0.36,
             emissive: 0x1a2234,
             emissiveIntensity: 0.32,
+            transparent: true,
+            opacity: 0.88,
           });
           const segment = new THREE.Mesh(segmentGeometry, segmentMaterial);
           segment.position.copy(position);
@@ -3309,6 +3326,18 @@
           );
           segment.quaternion.copy(quaternion);
           group.add(segment);
+          cableChainPulseControllers.push({
+            material: segmentMaterial,
+            phaseOffset: t,
+            idleIntensity: 0.32,
+            activeIntensity: 1.0,
+            idleOpacity: 0.88,
+            activeOpacity: 1.0,
+            idleSpeed: 2.0,
+            activeSpeed: 3.3,
+            pulseExponent: 1.6,
+            damping: 6.2,
+          });
           safeAccessHighlights.push({
             material: segmentMaterial,
             baseIntensity: 0.32,
@@ -5865,6 +5894,51 @@
             const opacityPulse =
               opacityBase + Math.sin(elapsed * speed + phaseOffset) * opacityAmp;
             material.opacity = THREE.MathUtils.clamp(opacityPulse, 0, 1);
+          }
+        });
+        cableChainPulseControllers.forEach((controller) => {
+          const {
+            material,
+            phaseOffset = 0,
+            idleIntensity = 0,
+            activeIntensity = idleIntensity,
+            idleOpacity,
+            activeOpacity = idleOpacity,
+            idleSpeed = 1.6,
+            activeSpeed = idleSpeed,
+            pulseExponent = 1.0,
+            damping = 6.0,
+          } = controller;
+          if (!material) {
+            return;
+          }
+          const speed = yarnExtrusionActive ? activeSpeed : idleSpeed;
+          const pulse = Math.pow(
+            0.5 + 0.5 * Math.sin(elapsed * speed + phaseOffset * Math.PI * 2),
+            pulseExponent,
+          );
+          const targetIntensity = THREE.MathUtils.lerp(idleIntensity, activeIntensity, pulse);
+          controller.currentIntensity = THREE.MathUtils.damp(
+            controller.currentIntensity ?? idleIntensity,
+            targetIntensity,
+            damping,
+            delta,
+          );
+          material.emissiveIntensity = controller.currentIntensity;
+          if (
+            typeof idleOpacity === 'number' &&
+            typeof activeOpacity === 'number' &&
+            typeof material.opacity === 'number' &&
+            material.transparent
+          ) {
+            const targetOpacity = THREE.MathUtils.lerp(idleOpacity, activeOpacity, pulse);
+            controller.currentOpacity = THREE.MathUtils.damp(
+              controller.currentOpacity ?? idleOpacity,
+              targetOpacity,
+              damping,
+              delta,
+            );
+            material.opacity = THREE.MathUtils.clamp(controller.currentOpacity, 0, 1);
           }
         });
         anchorPulseControllers.forEach((controller) => {

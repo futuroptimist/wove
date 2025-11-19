@@ -210,9 +210,19 @@ def test_viewer_highlights_cable_chain() -> None:
 
     assert "Cable Chain" in html
     assert (
-        "Cable chain — routes gantry wiring from the electronics bay to "
-        "the hook carriage." in html
+        "Cable chain — routes gantry wiring to the hook carriage with a "
+        "chasing glow." in html
     )
+
+
+def test_cable_chain_chases_with_feed_pulses() -> None:
+    """Cable chain pulses should be controlled by a dedicated animation loop."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "const cableChainPulseControllers" in html
+    assert "cableChainPulseControllers.push" in html
+    assert "cableChainPulseControllers.forEach" in html
 
 
 def test_viewer_highlights_status_led_behavior() -> None:
