@@ -1360,7 +1360,6 @@
           yarnFlowTensionElement.textContent = yarnFlowTensionFallbackMessage;
           setTone(yarnFlowTensionElement, 'neutral');
         }
-
         if (yarnFlowPositionElement) {
           yarnFlowPositionElement.textContent = yarnFlowPositionFallbackMessage;
           setTone(yarnFlowPositionElement, 'neutral');
@@ -1674,7 +1673,24 @@
               previousExtrusion !== null ? previousExtrusion : baselineExtrusion;
             const extrusionDelta = Math.max(currentExtrusion - previousSample, 0);
             const feedRateMmPerSec = extrusionDelta / stepDurationSeconds;
-            const estimatedGrams = 6 + Math.min(feedRateMmPerSec * 0.4, 18);
+            // Tension estimation calibrated to documented profiles:
+            // - Lace: 20g @ 45mm/s
+            // - Super Bulky: 95g @ 28mm/s
+            // Linear interpolation between these points:
+            const MIN_FEED_RATE = 45; // mm/s (lace)
+            const MAX_FEED_RATE = 28; // mm/s (super bulky)
+            const MIN_TENSION = 20; // g
+            const MAX_TENSION = 95; // g
+            // Clamp feed rate to expected range
+            const clampedFeedRate = Math.max(
+              Math.min(feedRateMmPerSec, MIN_FEED_RATE),
+              MAX_FEED_RATE,
+            );
+            // Interpolate tension: higher feed rate = lower tension
+            const estimatedGrams =
+              MIN_TENSION +
+              ((MAX_TENSION - MIN_TENSION) * (MIN_FEED_RATE - clampedFeedRate)) /
+                (MIN_FEED_RATE - MAX_FEED_RATE);
 
             yarnFlowTensionElement.textContent =
               `Tension telemetry: ${estimatedGrams.toFixed(1)} g (hall sensor est.)`;
