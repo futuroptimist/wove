@@ -64,6 +64,15 @@ def test_base_chain_row_embeds_machine_profile_axes() -> None:
     assert axes["e"]["steps_per_mm"] == 95.0
 
 
+def test_machine_profile_envelope_mentions_extrusion_axis() -> None:
+    """The machine profile envelope helper should surface the E-axis bounds."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "Machine profile envelope: " in html
+    assert "E ${bounds.e.min.toFixed(1)}–${bounds.e.max.toFixed(1)} mm" in html
+
+
 def test_viewer_documents_planner_bounds_overlay() -> None:
     """The overlay should advertise the planner bounds helper."""
 
