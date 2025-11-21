@@ -2527,6 +2527,8 @@
         const progressDelta = Math.abs(clampedProgress - lastPatternProgress);
         const progressChanged = progressDelta > 1e-4;
         const progressBarNeedsUpdate = progressDelta > 0.01;
+        const shouldUpdatePosition =
+          clampedIndex !== lastPatternStepIndex || progressChanged;
 
         if (clampedIndex !== lastPatternStepIndex) {
           const comment =
@@ -2539,21 +2541,22 @@
           }
           yarnExtrusionActive =
             typeof comment === 'string' && comment.toLowerCase().includes('feed yarn');
-          if (patternPositionElement || homingGuardPositionElement) {
-            const positionSegments = [
-              `X ${formatCoordinate(interpolatedPosition.x)} mm`,
-              `Y ${formatCoordinate(interpolatedPosition.y)} mm`,
-              `Z ${formatCoordinate(interpolatedPosition.z)} mm`,
-              `E ${formatCoordinate(interpolatedPosition.extrusion)} mm`,
-            ];
-            if (patternPositionElement) {
-              patternPositionElement.textContent = `Position: ${positionSegments.join(' · ')}`;
-              setTone(patternPositionElement, yarnExtrusionActive ? 'ready' : 'info');
-            }
-            if (homingGuardPositionElement) {
-              homingGuardPositionElement.textContent = `Coordinates: ${positionSegments.join(' · ')}`;
-              setTone(homingGuardPositionElement, yarnExtrusionActive ? 'ready' : 'info');
-            }
+        }
+
+        if (shouldUpdatePosition && (patternPositionElement || homingGuardPositionElement)) {
+          const positionSegments = [
+            `X ${formatCoordinate(interpolatedPosition.x)} mm`,
+            `Y ${formatCoordinate(interpolatedPosition.y)} mm`,
+            `Z ${formatCoordinate(interpolatedPosition.z)} mm`,
+            `E ${formatCoordinate(interpolatedPosition.extrusion)} mm`,
+          ];
+          if (patternPositionElement) {
+            patternPositionElement.textContent = `Position: ${positionSegments.join(' · ')}`;
+            setTone(patternPositionElement, yarnExtrusionActive ? 'ready' : 'info');
+          }
+          if (homingGuardPositionElement) {
+            homingGuardPositionElement.textContent = `Coordinates: ${positionSegments.join(' · ')}`;
+            setTone(homingGuardPositionElement, yarnExtrusionActive ? 'ready' : 'info');
           }
         }
 

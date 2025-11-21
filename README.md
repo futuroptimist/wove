@@ -196,7 +196,8 @@ preview came from a verified homing cycle or needs attention so operators can
 double-check the gantry status before executing the motion sequence. It now
 echoes the live planner coordinates alongside those status lights so the safety
 overlay tracks the same `X`, `Y`, `Z`, and yarn-feed snapshot as the Pattern
-Studio panel.
+Studio panel. The coordinates refresh continuously between planner steps so the
+Homing Guard never lags behind the hologram.
 
 - **v1c Crochet Robot** – anchors the mechanical platform showcased at the
   center of the plaza.
