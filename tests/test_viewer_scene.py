@@ -144,8 +144,7 @@ def test_anchor_pucks_sequence_glow() -> None:
     html = VIEWER_HTML.read_text(encoding="utf-8")
 
     swap_copy = (
-        "Anchor swap order sweep — follow the clockwise halo "
-        "to swap plates safely."
+        "Anchor swap order sweep — follow the clockwise halo " "to swap plates safely."
     )
 
     assert "anchorPulseControllers = []" in html
