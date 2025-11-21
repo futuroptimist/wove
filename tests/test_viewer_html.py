@@ -91,6 +91,15 @@ def test_viewer_mentions_servo_tension_adjuster() -> None:
     assert "Servo Tensioner Prototype" in viewer_html
 
 
+def test_viewer_surfaces_controller_stack() -> None:
+    """Ensure the electronics bay exposes the controller stack details."""
+
+    viewer_html = _load_viewer_html()
+
+    assert "Controller stack PCB" in viewer_html
+    assert "controllerStackGlowControllers" in viewer_html
+
+
 def test_viewer_highlights_machine_profile_overlay() -> None:
     """Ensure the viewer advertises the machine profile metadata panel."""
 

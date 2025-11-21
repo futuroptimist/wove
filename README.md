@@ -124,6 +124,10 @@ crews can see the upcoming pulse without leaving the scene overlay.
 A pair of cooling fans—the electronics bay exhaust and the hook-carriage
 mount—idle with a gentle spin and ramp up whenever the yarn feed engages, so the
 viewer keeps thermal cues in step with spool choreography.
+A tinted electronics bay now shows the SKR Mini controller stack and trio of
+driver modules glowing through the access panel. Their indicator LEDs chase in
+sync with yarn feed pulses so contributors can trace how planner timelines map
+to motion electronics before wiring hardware.
 A shimmering Z-axis lift now hugs the hook carriage: the T8 leadscrew pulses
 beside the gantry while the anti-backlash nut and printed flexures glow to show
 how the carriage keeps vertical motion tight.
