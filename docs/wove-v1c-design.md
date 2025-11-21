@@ -22,7 +22,8 @@ Key modules include:
 - **Workpiece Support Bed** – Removable plate with magnetic anchors to hold fabric while enabling
   easy removal between runs. The Three.js viewer now pulses those anchor pucks so technicians can
   rehearse plate swaps before loading yarn, with a sequential glow sweeping across each puck to
-  illustrate the recommended swap order.
+  illustrate the recommended swap order. The sweep runs clockwise so operators mirror the same
+  plate-change choreography used on the production floor.
 - **Electronics Bay** – Enclosed mount for controller, stepper drivers, wiring harness, and cooling.
 - **Safety Interlocks** – Mechanical end stops, emergency stop button, and firmware-based motion
   limits.
