@@ -1027,8 +1027,8 @@
           if (min === null || max === null || max < min) {
             return;
           }
-          if (['x', 'y', 'z'].includes(key)) {
-            normalized[key] = { min, max };
+          if (['x', 'y', 'z', 'e', 'extrusion'].includes(key)) {
+            normalized[key === 'extrusion' ? 'e' : key] = { min, max };
           }
         });
 
@@ -1145,9 +1145,10 @@
         if (bounds.z) {
           segments.push(`Z ${bounds.z.min.toFixed(1)}–${bounds.z.max.toFixed(1)} mm`);
         }
-        if (bounds.extrusion) {
+        if (bounds.e || bounds.extrusion) {
+          const extrusionBounds = bounds.e ?? bounds.extrusion;
           segments.push(
-            `E ${bounds.extrusion.min.toFixed(1)}–${bounds.extrusion.max.toFixed(1)} mm`,
+            `E ${extrusionBounds.min.toFixed(1)}–${extrusionBounds.max.toFixed(1)} mm`,
           );
         }
         if (segments.length === 0) {
@@ -1170,6 +1171,9 @@
         }
         if (bounds.z) {
           segments.push(`Z ${bounds.z.min.toFixed(1)}–${bounds.z.max.toFixed(1)} mm`);
+        }
+        if (bounds.e) {
+          segments.push(`E ${bounds.e.min.toFixed(1)}–${bounds.e.max.toFixed(1)} mm`);
         }
 
         if (segments.length === 0) {
