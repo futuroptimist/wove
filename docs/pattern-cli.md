@@ -141,7 +141,10 @@ loaded by `--machine-profile` so downstream planners can respect the same
 travel envelope without re-reading the original file.
 The viewer now also sketches that travel envelope inside the hologram using a
 teal dashed outline, making it obvious when planner bounds sit inside the
-configured machine profile limits.
+configured machine profile limits. If a planner export exceeds those limits on
+any axis, the browser overlay now calls out the offending axes and the preview
+highlights the machine envelope in amber so you know to tighten the bounds
+before committing a dry run.
 
 ## Embedding the parser in automation
 

@@ -405,6 +405,9 @@
         <p id="machine-profile-envelope" data-tone="neutral">
           Machine profile envelope warming up…
         </p>
+        <p id="bounds-comparison" data-tone="neutral">
+          Bounds comparison warming up…
+        </p>
       </div>
       <div id="yarn-panel">
         <h2>Yarn Flow Monitor</h2>
@@ -461,6 +464,7 @@
     <script type="module">
       import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js';
       import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/controls/OrbitControls.js';
+      import { comparePlannerToMachineBounds } from './bounds.js';
 
       const renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setPixelRatio(window.devicePixelRatio);
@@ -489,6 +493,7 @@
       );
       const plannerMetadataListElement = document.getElementById('planner-metadata-details');
       const machineProfileEnvelopeElement = document.getElementById('machine-profile-envelope');
+      const boundsComparisonElement = document.getElementById('bounds-comparison');
       const machineProfileStatusElement = document.getElementById('machine-profile-status');
       const machineProfileAxesElement = document.getElementById('machine-profile-axes');
       const homingGuardStatusElement = document.getElementById('homing-guard-status');
@@ -577,11 +582,14 @@
       let lastPatternStepIndex = -1;
       let lastPatternProgress = -1;
       let spoolProgressRatio = 0;
+      let boundsComparison = null;
       const machineProfileFallbackMessage =
         'Machine profile metadata unavailable. Export with --machine-profile to surface axis settings.';
       const machineProfileEnvelopeFallbackMessage =
         'Machine profile envelope unavailable. Include travel_min_mm and '
         + 'travel_max_mm for each axis.';
+      const boundsComparisonFallbackMessage =
+        'Bounds comparison unavailable. Export planner bounds and machine profile limits to compare.';
       const homingGuardFallbackMessage =
         'Homing guard metadata unavailable. Export planner defaults.require_home and defaults.home_state.';
       const homingGuardPositionFallbackMessage =
@@ -1188,6 +1196,66 @@
         machineProfileEnvelopeElement.textContent = text;
         const tone = bounds ? 'info' : 'warning';
         setTone(machineProfileEnvelopeElement, tone);
+      }
+
+      function updateBoundsComparisonPanel(plannerBounds, machineBounds, comparison = null) {
+        if (!boundsComparisonElement) {
+          return;
+        }
+
+        const details =
+          comparison ?? comparePlannerToMachineBounds(plannerBounds ?? null, machineBounds ?? null);
+
+        if (details.missingPlanner && details.missingMachine) {
+          boundsComparisonElement.textContent = boundsComparisonFallbackMessage;
+          setTone(boundsComparisonElement, 'warning');
+          return;
+        }
+
+        if (details.missingMachine) {
+          boundsComparisonElement.textContent =
+            'Bounds check unavailable — include machine_profile axis limits to compare envelopes.';
+          setTone(boundsComparisonElement, 'warning');
+          return;
+        }
+
+        if (details.missingPlanner) {
+          boundsComparisonElement.textContent =
+            'Bounds check unavailable — planner export missing bounds metadata.';
+          setTone(boundsComparisonElement, 'warning');
+          return;
+        }
+
+        if (details.exceedingAxes?.length) {
+          const segments = details.exceedingAxes.map((axis) => {
+            const axisDetail = details.details?.[axis];
+            if (!axisDetail) {
+              return axis.toUpperCase();
+            }
+
+            const { planner, machine, overrunLow, overrunHigh } = axisDetail;
+            const issues = [];
+            if (overrunLow) {
+              issues.push(
+                `min ${planner.min.toFixed(1)} mm < machine ${machine.min.toFixed(1)} mm`,
+              );
+            }
+            if (overrunHigh) {
+              issues.push(
+                `max ${planner.max.toFixed(1)} mm > machine ${machine.max.toFixed(1)} mm`,
+              );
+            }
+            return `${axis.toUpperCase()}: ${issues.join(' · ')}`;
+          });
+          boundsComparisonElement.textContent =
+            'Bounds check: Planner exceeds machine envelope — ' + segments.join('; ');
+          setTone(boundsComparisonElement, 'warning');
+          return;
+        }
+
+        boundsComparisonElement.textContent =
+          'Bounds check: Planner fits within the machine profile envelope.';
+        setTone(boundsComparisonElement, 'ready');
       }
 
       function updatePatternBoundsOverlay(bounds) {
@@ -1956,6 +2024,7 @@
           ? normalizeBounds(options.bounds)
           : null;
         plannerBounds = providedBounds ?? computeBoundsFromEvents(patternPlannerEvents);
+        boundsComparison = comparePlannerToMachineBounds(plannerBounds, machineProfileBounds);
         const [extrusionBaseline, extrusionTarget] = computeExtrusionSummary(
           patternPlannerEvents,
           plannerBounds,
@@ -1973,6 +2042,7 @@
           });
         }
         updatePatternBoundsOverlay(plannerBounds);
+        updateBoundsComparisonPanel(plannerBounds, machineProfileBounds, boundsComparison);
 
         if (patternPreviewContainer) {
           if (patternPreviewGroup) {
@@ -1981,6 +2051,7 @@
           patternPreviewGroup = buildPlannerPreview(patternPlannerEvents, {
             bounds: plannerBounds,
             machineProfileBounds,
+            boundsComparison,
           });
           patternPreviewGroup.position.set(0, 0, 0.01);
           patternPreviewContainer.add(patternPreviewGroup);
@@ -2011,6 +2082,14 @@
             setTone(homingGuardPositionElement, 'neutral');
           }
           resetYarnFlowPanel();
+          boundsComparison = null;
+          updateBoundsComparisonPanel(null, null, {
+            missingPlanner: true,
+            missingMachine: false,
+            fits: false,
+            exceedingAxes: [],
+            details: {},
+          });
         }
       }
 
@@ -2323,6 +2402,11 @@
           const profileWidth = THREE.MathUtils.clamp(profileXSpan / xSpan, 0, 1) * usableWidth;
           const profileHeight = THREE.MathUtils.clamp(profileYSpan / ySpan, 0, 1) * usableHeight;
 
+          const profileIsSafe = !(options.boundsComparison?.exceedingAxes?.length);
+          const outlineColor = profileIsSafe ? 0x5fffd2 : 0xffc27d;
+          const fillColor = profileIsSafe ? 0x2cf9c5 : 0xffb173;
+          const fillOpacity = profileIsSafe ? 0.08 : 0.14;
+
           const centerXRatio =
             ((profileBounds.x.min + profileBounds.x.max) / 2 - displayXMin) / xSpan - 0.5;
           const centerYRatio =
@@ -2337,7 +2421,7 @@
             new THREE.Vector3(-profileWidth / 2, profileHeight / 2, 0),
           ]);
           const profileMaterial = new THREE.LineDashedMaterial({
-            color: 0x5fffd2,
+            color: outlineColor,
             linewidth: 1,
             scale: 1,
             dashSize: 0.05,
@@ -2354,9 +2438,9 @@
           const profileFill = new THREE.Mesh(
             new THREE.PlaneGeometry(profileWidth, profileHeight),
             new THREE.MeshBasicMaterial({
-              color: 0x2cf9c5,
+              color: fillColor,
               transparent: true,
-              opacity: 0.08,
+              opacity: fillOpacity,
               depthWrite: false,
               depthTest: false,
             }),
