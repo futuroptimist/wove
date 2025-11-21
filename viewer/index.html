@@ -4182,12 +4182,19 @@
             haloScaleAmplitude: 0.12,
             baseLightIntensity: anchorGlow.intensity,
             lightAmplitude: 0.75,
-            phaseOffset: index / anchorOffsets.length,
-            speed: 0.22,
+            sequenceIndex: index,
+            sequenceCount: anchorOffsets.length,
+            sequenceDuration: 9.5,
           });
 
           anchorsGroup.add(anchorGroup);
         });
+
+        addHoverInfo(
+          anchorsGroup,
+          'Anchor swap order sweep — follow the clockwise halo to swap plates safely.',
+          { passthrough: true },
+        );
 
         const anchorsLabel = buildLabel('Magnetic Anchors', '#ffe8bf');
         anchorsLabel.position.set(0, bedTopY + 0.62, 1.5);
@@ -6319,11 +6326,31 @@
             lightAmplitude = 0,
             phaseOffset = 0,
             speed = 0.22,
+            sequenceIndex,
+            sequenceCount,
+            sequenceDuration,
           } = controller;
 
-          const angle = (elapsed * speed + phaseOffset) * Math.PI * 2;
-          const normalized = 0.5 + 0.5 * Math.sin(angle);
-          const emphasis = normalized * normalized;
+          const hasSequence =
+            Number.isFinite(sequenceIndex) &&
+            Number.isFinite(sequenceCount) &&
+            sequenceCount > 0 &&
+            Number.isFinite(sequenceDuration) &&
+            sequenceDuration > 0;
+          const clock = hasSequence
+            ? (elapsed % sequenceDuration) / sequenceDuration
+            : elapsed * speed;
+          const cyclePosition = hasSequence ? clock * sequenceCount : clock + phaseOffset;
+          const loopedPosition = cyclePosition % (sequenceCount || 1);
+          const distance = hasSequence
+            ? Math.min(
+                Math.abs(loopedPosition - sequenceIndex),
+                sequenceCount - Math.abs(loopedPosition - sequenceIndex),
+              )
+            : 0;
+          const emphasis = hasSequence
+            ? Math.max(0, 1 - distance)
+            : Math.pow(0.5 + 0.5 * Math.sin((clock + phaseOffset) * Math.PI * 2), 2);
 
           if (capMaterial && typeof capMaterial.emissiveIntensity === 'number') {
             capMaterial.emissiveIntensity = Math.max(

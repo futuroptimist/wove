@@ -143,9 +143,14 @@ def test_anchor_pucks_sequence_glow() -> None:
 
     html = VIEWER_HTML.read_text(encoding="utf-8")
 
+    swap_copy = (
+        "Anchor swap order sweep — follow the clockwise halo " "to swap plates safely."
+    )
+
     assert "anchorPulseControllers = []" in html
-    assert "phaseOffset: index / anchorOffsets.length" in html
-    assert "anchorPulseControllers.forEach" in html
+    assert swap_copy in html
+    assert "sequenceDuration" in html
+    assert "sequenceIndex" in html
 
 
 def test_viewer_mentions_selection_sweep() -> None:
