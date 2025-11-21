@@ -65,3 +65,15 @@ def test_yarn_flow_panel_mentions_spool_progress() -> None:
     assert "Spool progress: Awaiting planner preview…" in html
     assert "yarnFlowProgressFallbackMessage" in html
     assert "Spool progress:" in html
+
+
+def test_homing_guard_coordinates_follow_progress() -> None:
+    """The homing guard panel should track interpolated coordinates."""
+
+    html = (PROJECT_ROOT / "viewer" / "index.html").read_text(encoding="utf-8")
+
+    assert "homing-guard-position" in html
+    assert (
+        "shouldUpdatePosition && (patternPositionElement || homingGuardPositionElement)"
+        in html
+    )
