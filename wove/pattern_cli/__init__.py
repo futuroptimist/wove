@@ -20,6 +20,8 @@ PLUNGE_FEED_RATE = 600
 YARN_FEED_RATE = 300
 DEFAULT_ROW_HEIGHT = 6.0
 MIN_MOVE_COORD_MM = 1e-3
+PLANNER_LOOP_SECONDS = 14.0
+PLANNER_METADATA_SOURCE = "pattern_cli preview"
 
 
 @dataclass(frozen=True)
@@ -472,6 +474,10 @@ def _planner_payload(
     payload: dict[str, object] = {
         "version": 1,
         "units": "millimeters",
+        "metadata": {
+            "duration_seconds": PLANNER_LOOP_SECONDS,
+            "source": PLANNER_METADATA_SOURCE,
+        },
         "defaults": {
             "safe_z_mm": SAFE_Z_MM,
             "fabric_plane_z_mm": FABRIC_PLANE_Z_MM,

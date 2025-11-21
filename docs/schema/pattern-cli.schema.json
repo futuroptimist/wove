@@ -25,6 +25,10 @@
         "millimeters"
       ]
     },
+    "metadata": {
+      "description": "Optional planner metadata consumed by visualization tools.",
+      "$ref": "#/definitions/metadata"
+    },
     "defaults": {
       "description": "Feed rates, safety planes, and other defaults applied during translation.",
       "$ref": "#/definitions/defaults"
@@ -61,6 +65,22 @@
     }
   },
   "definitions": {
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "duration_seconds": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Loop duration in seconds for preview playback."
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable source label for the planner payload."
+        }
+      }
+    },
     "defaults": {
       "type": "object",
       "required": [

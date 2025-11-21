@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -21,6 +22,16 @@ def test_viewer_planner_preview_matches_fixture() -> None:
     fixture_preview = FIXTURE_PREVIEW.read_text(encoding="utf-8")
 
     assert viewer_preview == fixture_preview
+
+
+def test_viewer_planner_preview_includes_duration_metadata() -> None:
+    """The base chain row preview should publish loop duration metadata."""
+
+    payload = json.loads(VIEWER_PREVIEW.read_text(encoding="utf-8"))
+
+    metadata = payload.get("metadata") or {}
+    assert metadata.get("duration_seconds") == 14.0
+    assert metadata.get("source") == "pattern_cli preview"
 
 
 def test_viewer_exposes_planner_defaults_panel() -> None:
@@ -65,6 +76,14 @@ def test_yarn_flow_panel_mentions_spool_progress() -> None:
     assert "Spool progress: Awaiting planner preview…" in html
     assert "yarnFlowProgressFallbackMessage" in html
     assert "Spool progress:" in html
+
+
+def test_planner_metadata_panel_mentions_duration() -> None:
+    """The metadata overlay should surface preview duration guidance."""
+
+    html = (PROJECT_ROOT / "viewer" / "index.html").read_text(encoding="utf-8")
+
+    assert "Preview duration" in html
 
 
 def test_homing_guard_coordinates_follow_progress() -> None:

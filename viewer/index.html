@@ -519,6 +519,7 @@
       const selectionRingHeight = 0.06;
       const selectionSweepSpeed = 0.9;
       const patternPreviewSource = 'assets/base_chain_row.planner.json';
+      const defaultPatternPreviewDurationSeconds = 14;
       const fallbackPatternPlannerEvents = [
         { comment: 'use millimeters', x: 0.0, y: 0.0, z: 4.0, extrusion: 0.0 },
         { comment: 'absolute positioning', x: 0.0, y: 0.0, z: 4.0, extrusion: 0.0 },
@@ -573,7 +574,7 @@
       let patternPreviewContainer = null;
       let plannerBounds = null;
       let machineProfileBounds = null;
-      const patternPreviewDurationSeconds = 14;
+      let patternPreviewDurationSeconds = defaultPatternPreviewDurationSeconds;
       let lastPatternStepIndex = -1;
       let lastPatternProgress = -1;
       let spoolProgressRatio = 0;
@@ -1336,6 +1337,13 @@
               normalized.source = trimmedSource;
             }
           }
+
+          const durationCandidate =
+            source.duration_seconds ?? source.durationSeconds ?? source.loop_seconds ?? null;
+          const parsedDuration = Number(durationCandidate);
+          if (Number.isFinite(parsedDuration) && parsedDuration > 0) {
+            normalized.durationSeconds = parsedDuration;
+          }
         }
 
         const commandCount = Array.isArray(events) ? events.length : 0;
@@ -1374,6 +1382,11 @@
         if (Number.isFinite(data?.commandCount)) {
           const rounded = Math.max(0, Math.round(data.commandCount));
           entries.push({ label: 'Planner steps', value: `${rounded}` });
+        }
+
+        if (Number.isFinite(data?.durationSeconds)) {
+          const duration = Math.max(0, data.durationSeconds);
+          entries.push({ label: 'Preview duration', value: `${duration.toFixed(1)} s` });
         }
 
         if (typeof data?.source === 'string' && data.source.trim().length > 0) {
@@ -1945,11 +1958,21 @@
         patternExtrusionTarget = 0;
         if (patternPlannerEvents.length === 0 && options.resetOverlay !== false) {
           plannerMetadata = null;
+          patternPreviewDurationSeconds = defaultPatternPreviewDurationSeconds;
         } else {
           const metadataInput = Object.prototype.hasOwnProperty.call(options, 'metadata')
             ? options.metadata
             : plannerMetadata;
           plannerMetadata = buildPlannerMetadata(metadataInput, patternPlannerEvents);
+          const durationOverride =
+            Number.isFinite(options.previewDurationSeconds) && options.previewDurationSeconds > 0
+              ? options.previewDurationSeconds
+              : null;
+          const metadataDuration = Number.isFinite(plannerMetadata?.durationSeconds)
+            ? plannerMetadata.durationSeconds
+            : null;
+          patternPreviewDurationSeconds =
+            durationOverride ?? metadataDuration ?? defaultPatternPreviewDurationSeconds;
         }
         updatePlannerMetadataPanel(plannerMetadata);
         const providedBounds = Object.prototype.hasOwnProperty.call(options, 'bounds')
@@ -2108,10 +2131,13 @@
             normalizeMachineProfileBounds(machineProfile);
           machineProfileBounds = normalizedMachineProfileBounds;
           const metadata = {
+            ...(payload?.metadata && typeof payload.metadata === 'object' ? payload.metadata : {}),
             version: payload?.version ?? null,
             units: typeof payload?.units === 'string' ? payload.units : null,
-            source: 'Base chain row asset',
           };
+          if (!metadata.source) {
+            metadata.source = 'Base chain row asset';
+          }
           applyPatternPlannerEvents(events, {
             defaults,
             bounds,
@@ -6864,10 +6890,13 @@
               normalizeMachineProfileBounds(machineProfile);
             machineProfileBounds = normalizedMachineProfileBounds;
             const metadata = {
+              ...(payload?.metadata && typeof payload.metadata === 'object' ? payload.metadata : {}),
               version: payload?.version ?? null,
               units: typeof payload?.units === 'string' ? payload.units : null,
-              source: `Upload: ${file.name}`,
             };
+            if (!metadata.source) {
+              metadata.source = `Upload: ${file.name}`;
+            }
 
             applyPatternPlannerEvents(events, {
               defaults,

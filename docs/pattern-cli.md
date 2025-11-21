@@ -208,6 +208,28 @@ captured with a verified homing cycle. The Three.js viewer consumes these
 fields in its Homing Guard panel, coloring the overlay when a planner export
 originated from a verified homing cycle or when a fresh homing run is needed.
 
+## Planner metadata for preview timing
+
+Attach a `metadata` block to planner exports when you know the intended preview
+duration. Set `duration_seconds` to the loop length (in seconds) so the Three.js
+viewer can pace the Yarn Flow countdowns and spool billboard against the same
+timeline that produced the commands:
+
+```json
+{
+  "version": 1,
+  "units": "millimeters",
+  "metadata": {
+    "duration_seconds": 14.0,
+    "source": "pattern_cli preview"
+  }
+}
+```
+
+Without the metadata field, the viewer falls back to a default preview length
+and still renders the overlay panels, but supplying the duration keeps the
+cycle timers aligned with the exported motion.
+
 ## Machine profiles and travel limits
 
 Load a JSON or YAML machine profile with ``--machine-profile`` to validate each
