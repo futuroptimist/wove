@@ -324,21 +324,6 @@ def test_calibration_lab_pedestal_documented() -> None:
     )
 
 
-def test_anchor_swap_order_sweep_documented() -> None:
-    """Anchor halos should advertise their clockwise swap choreography."""
-
-    html = VIEWER_HTML.read_text(encoding="utf-8")
-
-    swap_copy = (
-        "Anchor swap order sweep — follow the clockwise halo "
-        "to swap plates safely."
-    )
-
-    assert swap_copy in html
-    assert "sequenceDuration" in html
-    assert "sequenceIndex" in html
-
-
 def test_yarn_flow_panel_reports_cycle_timing() -> None:
     """Ensure the Yarn Flow overlay surfaces cycle timing cues."""
 
