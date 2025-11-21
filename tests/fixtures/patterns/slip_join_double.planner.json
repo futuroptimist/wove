@@ -1,6 +1,10 @@
 {
   "version": 1,
   "units": "millimeters",
+  "metadata": {
+    "duration_seconds": 14.0,
+    "source": "pattern_cli preview"
+  },
   "defaults": {
     "safe_z_mm": 4.0,
     "fabric_plane_z_mm": 0.0,
