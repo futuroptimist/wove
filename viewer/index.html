@@ -565,6 +565,7 @@
       const statusIndicatorControllers = [];
       const servoActuatorControllers = [];
       const servoSignalControllers = [];
+      const controllerStackGlowControllers = [];
       let plannerUploadResetTimer = null;
       let yarnExtrusionActive = false;
       let patternPlannerEvents = [];
@@ -3343,22 +3344,76 @@
         vent.castShadow = true;
         group.add(vent);
 
-        const controller = new THREE.Mesh(
-          new THREE.BoxGeometry(1.2, 0.1, 0.68),
+        const controllerStack = new THREE.Group();
+        controllerStack.position.set(0.1, 0.26, 0.08);
+        group.add(controllerStack);
+
+        const pcb = new THREE.Mesh(
+          new THREE.BoxGeometry(1.05, 0.08, 0.7),
           new THREE.MeshStandardMaterial({
-            color: 0x1c3d33,
-            emissive: 0x0c231d,
-            emissiveIntensity: 0.65,
-            metalness: 0.32,
-            roughness: 0.36,
+            color: 0x1c2f3d,
+            metalness: 0.28,
+            roughness: 0.48,
+            emissive: 0x09131c,
+            emissiveIntensity: 0.4,
+            transparent: true,
+            opacity: 0.92,
           }),
         );
-        controller.position.set(0, 0.32, 0);
-        controller.castShadow = true;
-        group.add(controller);
+        pcb.position.set(0, 0.06, 0);
+        pcb.castShadow = true;
+        controllerStack.add(pcb);
         addHoverInfo(
-          controller,
-          'Controller stack — SKR Mini and stepper drivers route motion commands.',
+          pcb,
+          'Controller stack PCB — SKR Mini footprint exposed through the tinted access panel.',
+          { passthrough: true },
+        );
+
+        const driverColors = [0x4c6fff, 0x6cb4ff, 0x5ad6ff];
+        driverColors.forEach((color, index) => {
+          const driver = new THREE.Mesh(
+            new THREE.BoxGeometry(0.22, 0.16, 0.32),
+            new THREE.MeshStandardMaterial({
+              color,
+              metalness: 0.5,
+              roughness: 0.32,
+              emissive: color,
+              emissiveIntensity: 0.42,
+              transparent: true,
+              opacity: 0.9,
+            }),
+          );
+          driver.position.set(-0.22 + index * 0.28, 0.18, -0.05 + (index % 2) * 0.12);
+          driver.castShadow = true;
+          controllerStack.add(driver);
+          controllerStackGlowControllers.push({
+            material: driver.material,
+            restIntensity: 0.42,
+            activeIntensity: 1.1,
+            pulseSpeed: 2.0 + index * 0.3,
+            phaseOffset: index * 0.8,
+            restOpacity: driver.material.opacity,
+            activeOpacity: 1.0,
+            damping: 5.8,
+          });
+        });
+
+        const mcu = new THREE.Mesh(
+          new THREE.BoxGeometry(0.42, 0.12, 0.42),
+          new THREE.MeshStandardMaterial({
+            color: 0x223a4c,
+            metalness: 0.42,
+            roughness: 0.38,
+            emissive: 0x102537,
+            emissiveIntensity: 0.5,
+          }),
+        );
+        mcu.position.set(0.36, 0.16, 0.12);
+        mcu.castShadow = true;
+        controllerStack.add(mcu);
+        addHoverInfo(
+          mcu,
+          'SKR Mini control SoC — routes planner pulses to the stepper drivers.',
         );
 
         const heatsink = new THREE.Mesh(
@@ -3373,7 +3428,36 @@
         );
         heatsink.position.set(-0.32, 0.5, -0.12);
         heatsink.castShadow = true;
-        group.add(heatsink);
+        controllerStack.add(heatsink);
+
+        const statusLedMaterial = new THREE.MeshStandardMaterial({
+          color: 0x7dffbe,
+          emissive: 0x33d18a,
+          emissiveIntensity: 0.9,
+          metalness: 0.2,
+          roughness: 0.25,
+          transparent: true,
+          opacity: 0.85,
+        });
+        const statusLed = new THREE.Mesh(new THREE.SphereGeometry(0.06, 18, 18), statusLedMaterial);
+        statusLed.position.set(0.36, 0.3, 0.32);
+        statusLed.castShadow = true;
+        controllerStack.add(statusLed);
+        controllerStackGlowControllers.push({
+          material: statusLedMaterial,
+          restIntensity: 0.9,
+          activeIntensity: 1.6,
+          pulseSpeed: 3.2,
+          phaseOffset: 0.4,
+          restOpacity: 0.85,
+          activeOpacity: 1.0,
+          damping: 6.2,
+        });
+
+        const pcbLabel = buildLabel('Controller Stack', '#cde8ff');
+        pcbLabel.position.set(0.12, 0.82, -0.18);
+        pcbLabel.scale.multiplyScalar(0.36);
+        controllerStack.add(pcbLabel);
 
         const fan = new THREE.Mesh(
           new THREE.CylinderGeometry(0.26, 0.26, 0.12, 32),
@@ -6545,6 +6629,46 @@
 
           if (typeof material.opacity === 'number') {
             const targetOpacity = yarnExtrusionActive ? activeOpacity : restOpacity;
+            controller.currentOpacity = THREE.MathUtils.damp(
+              controller.currentOpacity ?? targetOpacity,
+              targetOpacity,
+              damping,
+              delta,
+            );
+            material.opacity = controller.currentOpacity;
+            material.transparent = true;
+          }
+        });
+        controllerStackGlowControllers.forEach((controller) => {
+          const {
+            material,
+            restIntensity = 0.5,
+            activeIntensity = 1.1,
+            restOpacity = controller.restOpacity ?? material?.opacity ?? 1,
+            activeOpacity = controller.activeOpacity ?? restOpacity,
+            pulseSpeed = 2.2,
+            phaseOffset = 0,
+            damping = 5.6,
+          } = controller;
+          if (!material) {
+            return;
+          }
+          const pulse = 0.5 + 0.5 * Math.sin(elapsed * pulseSpeed + phaseOffset);
+          const targetIntensity = yarnExtrusionActive
+            ? THREE.MathUtils.lerp(restIntensity, activeIntensity, pulse)
+            : restIntensity;
+          controller.currentIntensity = THREE.MathUtils.damp(
+            controller.currentIntensity ?? targetIntensity,
+            targetIntensity,
+            damping,
+            delta,
+          );
+          material.emissiveIntensity = controller.currentIntensity;
+
+          if (typeof material.opacity === 'number') {
+            const targetOpacity = yarnExtrusionActive
+              ? THREE.MathUtils.lerp(restOpacity, activeOpacity, pulse)
+              : restOpacity;
             controller.currentOpacity = THREE.MathUtils.damp(
               controller.currentOpacity ?? targetOpacity,
               targetOpacity,
