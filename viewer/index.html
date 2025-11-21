@@ -355,7 +355,7 @@
         </li>
         <li>
           The spool progress billboard now echoes the Yarn Flow countdowns so you can spot the next
-          feed pulse directly from the hologram.
+          two feed pulses directly from the hologram.
         </li>
         <li>
           Upload a planner export from <code>wove.pattern_cli</code> to rehearse your own motion
@@ -1572,6 +1572,7 @@
         let spoolProgressTone = 'neutral';
         let spoolProgress = 0;
         let nextFeedCountdown = null;
+        let followingFeedCountdown = null;
         let remainingFeedCount = null;
         if (yarnFlowTotalElement) {
           const fedLabel = fedAmount.toFixed(2);
@@ -1720,6 +1721,7 @@
           } else {
             const { countdowns: entries, next, following } = countdowns;
             nextFeedCountdown = next;
+            followingFeedCountdown = following;
             if (!entries || entries.length === 0) {
               yarnFlowTimingElement.textContent =
                 'Feed timing: No additional feed pulses in this preview.';
@@ -1826,6 +1828,13 @@
                 1,
               )} s`,
             );
+            if (followingFeedCountdown) {
+              detailLines.push(
+                `Following feed: #${followingFeedCountdown.step + 1} in ${followingFeedCountdown.delta.toFixed(
+                  1,
+                )} s`,
+              );
+            }
           } else if (remainingFeedCount === 0) {
             detailLines.push('Next feed: Queue clear.');
           } else {

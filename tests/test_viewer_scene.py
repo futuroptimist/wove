@@ -182,6 +182,14 @@ def test_viewer_highlights_machine_profile_panel() -> None:
     )
 
 
+def test_spool_billboard_tracks_following_feed() -> None:
+    """The spool billboard should echo next and following feed countdowns."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "Following feed: #" in html
+
+
 def test_viewer_supports_keyboard_cluster_navigation() -> None:
     """Arrow keys should cycle roadmap milestones."""
 
