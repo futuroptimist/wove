@@ -1968,7 +1968,8 @@
             Number.isFinite(options.previewDurationSeconds) && options.previewDurationSeconds > 0
               ? options.previewDurationSeconds
               : null;
-          const metadataDuration = Number.isFinite(plannerMetadata?.durationSeconds)
+          const metadataDuration = Number.isFinite(plannerMetadata?.durationSeconds) &&
+            plannerMetadata.durationSeconds > 0
             ? plannerMetadata.durationSeconds
             : null;
           patternPreviewDurationSeconds =

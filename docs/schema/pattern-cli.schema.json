@@ -71,7 +71,7 @@
       "properties": {
         "duration_seconds": {
           "type": "number",
-          "minimum": 0,
+          "exclusiveMinimum": 0,
           "description": "Loop duration in seconds for preview playback."
         },
         "source": {
