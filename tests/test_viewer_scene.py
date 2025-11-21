@@ -70,7 +70,7 @@ def test_machine_profile_envelope_mentions_extrusion_axis() -> None:
     html = VIEWER_HTML.read_text(encoding="utf-8")
 
     assert "Machine profile envelope: " in html
-    assert "E ${extrusionBounds.min.toFixed(1)}–${extrusionBounds.max.toFixed(1)} mm" in html
+    assert "E ${bounds.e.min.toFixed(1)}–${bounds.e.max.toFixed(1)} mm" in html
 
 
 def test_viewer_documents_planner_bounds_overlay() -> None:
