@@ -65,3 +65,22 @@ def test_bounds_reports_fit_when_envelopes_match():
     assert result["exceedingAxes"] == []
     assert result["missingMachine"] is False
     assert result["missingPlanner"] is False
+
+
+def test_bounds_warns_when_axis_metadata_missing():
+    script = "".join(
+        [
+            "import { comparePlannerToMachineBounds } from './viewer/bounds.js';",
+            "const planner = { x: { min: 0, max: 200 }, y: { min: 0, max: 200 } };",
+            "const machine = { x: { min: 0, max: 220 }, z: { min: 0, max: 120 } };",
+            "const result = comparePlannerToMachineBounds(planner, machine);",
+            "console.log(JSON.stringify(result));",
+        ]
+    )
+    result = run_node(script)
+
+    assert result["fits"] is False
+    assert result["missingMachine"] is True
+    assert result["missingPlanner"] is True
+    assert set(result["missingPlannerAxes"]) == {"z"}
+    assert set(result["missingMachineAxes"]) == {"y"}

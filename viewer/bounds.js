@@ -14,13 +14,21 @@ export function comparePlannerToMachineBounds(plannerBounds, machineBounds) {
   const axes = ['x', 'y', 'z'];
   const normalizedPlanner = {};
   const normalizedMachine = {};
+  const missingPlannerAxes = [];
+  const missingMachineAxes = [];
   axes.forEach((axis) => {
     normalizedPlanner[axis] = normalizeAxisBounds(plannerBounds?.[axis]);
     normalizedMachine[axis] = normalizeAxisBounds(machineBounds?.[axis]);
+    if (!normalizedPlanner[axis]) {
+      missingPlannerAxes.push(axis);
+    }
+    if (!normalizedMachine[axis]) {
+      missingMachineAxes.push(axis);
+    }
   });
 
-  const missingPlanner = axes.every((axis) => !normalizedPlanner[axis]);
-  const missingMachine = axes.every((axis) => !normalizedMachine[axis]);
+  const missingPlanner = missingPlannerAxes.length > 0;
+  const missingMachine = missingMachineAxes.length > 0;
   const details = {};
   const exceedingAxes = [];
 
@@ -48,6 +56,8 @@ export function comparePlannerToMachineBounds(plannerBounds, machineBounds) {
   return {
     missingPlanner,
     missingMachine,
+    missingPlannerAxes,
+    missingMachineAxes,
     fits,
     exceedingAxes,
     details,
