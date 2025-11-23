@@ -49,11 +49,13 @@ def test_bounds_reports_fit_when_envelopes_match():
             "import { comparePlannerToMachineBounds } from './viewer/bounds.js';",
             (
                 "const planner = { x: { min: 0, max: 200 }, "
-                "y: { min: 0, max: 200 }, z: { min: 0, max: 100 }, e: { min: 0, max: 90 } };"
+                "y: { min: 0, max: 200 }, z: { min: 0, max: 100 }, "
+                "e: { min: 0, max: 90 } };"
             ),
             (
                 "const machine = { x: { min: 0, max: 220 }, "
-                "y: { min: -20, max: 220 }, z: { min: 0, max: 120 }, e: { min: 0, max: 100 } };"
+                "y: { min: -20, max: 220 }, z: { min: 0, max: 120 }, "
+                "e: { min: 0, max: 100 } };"
             ),
             "const result = comparePlannerToMachineBounds(planner, machine);",
             "console.log(JSON.stringify(result));",
