@@ -914,13 +914,13 @@
           context.font = '700 58px "Segoe UI", sans-serif';
           context.fillText(header, canvas.width / 2, paddingY + 70);
 
-          context.fillStyle = palette.text;
-          context.font = '46px "Segoe UI", sans-serif';
-          const startY = paddingY + 130;
-          const spacing = 54;
-          detailLines.forEach((line, index) => {
-            context.fillText(line, canvas.width / 2, startY + index * spacing);
-          });
+            context.fillStyle = palette.text;
+            context.font = '46px "Segoe UI", sans-serif';
+            const startY = paddingY + 124;
+            const spacing = 52;
+            detailLines.forEach((line, index) => {
+              context.fillText(line, canvas.width / 2, startY + index * spacing);
+            });
 
           context.restore();
           texture.needsUpdate = true;
