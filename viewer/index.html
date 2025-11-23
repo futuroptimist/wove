@@ -433,7 +433,7 @@
           Feed timing: Awaiting planner preview…
         </p>
         <p id="yarn-flow-cycle" data-tone="neutral">
-          Cycle timing: Awaiting planner preview…
+          Cycle pacing: Awaiting planner preview…
         </p>
         <p id="yarn-flow-tension" data-tone="neutral">
           Tension telemetry: Awaiting planner preview…
@@ -616,7 +616,7 @@
       const yarnFlowTimingFallbackMessage =
         'Feed timing: Awaiting planner preview…';
       const yarnFlowCycleFallbackMessage =
-        'Cycle timing: Awaiting planner preview…';
+        'Cycle pacing: Awaiting planner preview…';
       const yarnFlowTensionFallbackMessage =
         'Tension telemetry: Awaiting planner preview…';
       const yarnFlowPositionFallbackMessage =
@@ -914,13 +914,13 @@
           context.font = '700 58px "Segoe UI", sans-serif';
           context.fillText(header, canvas.width / 2, paddingY + 70);
 
-          context.fillStyle = palette.text;
-          context.font = '46px "Segoe UI", sans-serif';
-          const startY = paddingY + 142;
-          const spacing = 58;
-          detailLines.forEach((line, index) => {
-            context.fillText(line, canvas.width / 2, startY + index * spacing);
-          });
+            context.fillStyle = palette.text;
+            context.font = '46px "Segoe UI", sans-serif';
+            const startY = paddingY + 124;
+            const spacing = 52;
+            detailLines.forEach((line, index) => {
+              context.fillText(line, canvas.width / 2, startY + index * spacing);
+            });
 
           context.restore();
           texture.needsUpdate = true;
@@ -1709,12 +1709,17 @@
             ? patternPreviewDurationSeconds
             : null;
 
+        let cycleTimingDetail = null;
+
         if (yarnFlowCycleElement) {
           if (previewDuration !== null && previewProgressRatio !== null) {
             const elapsedSeconds = previewProgressRatio * previewDuration;
             const remainingSeconds = Math.max(previewDuration - elapsedSeconds, 0);
-            yarnFlowCycleElement.textContent =
+            const cycleTimingText =
               `Cycle timing: ${elapsedSeconds.toFixed(1)} s elapsed · ${remainingSeconds.toFixed(1)} s remaining.`;
+            yarnFlowCycleElement.textContent = cycleTimingText;
+            cycleTimingDetail =
+              `Cycle pacing: ${elapsedSeconds.toFixed(1)} s elapsed · ${remainingSeconds.toFixed(1)} s remaining.`;
             const cycleTone =
               previewProgressRatio >= 0.999
                 ? 'ready'
@@ -1725,6 +1730,7 @@
           } else {
             yarnFlowCycleElement.textContent = yarnFlowCycleFallbackMessage;
             setTone(yarnFlowCycleElement, 'neutral');
+            cycleTimingDetail = yarnFlowCycleFallbackMessage;
           }
         }
 
@@ -1925,6 +1931,10 @@
             detailLines.push('Next feed: Queue clear.');
           } else {
             detailLines.push('Next feed: Awaiting planner preview…');
+          }
+
+          if (cycleTimingDetail) {
+            detailLines.push(cycleTimingDetail);
           }
 
           spoolProgressLabelController.update({

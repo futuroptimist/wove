@@ -338,9 +338,20 @@ def test_yarn_flow_panel_reports_cycle_timing() -> None:
     html = VIEWER_HTML.read_text(encoding="utf-8")
 
     assert "yarn-flow-cycle" in html
-    assert "Cycle timing: Awaiting planner preview…" in html
+    assert "Cycle pacing: Awaiting planner preview…" in html
     assert (
         "Cycle timing: ${elapsedSeconds.toFixed(1)} s elapsed · "
+        "${remainingSeconds.toFixed(1)} s remaining." in html
+    )
+
+
+def test_spool_billboard_mirrors_cycle_pacing() -> None:
+    """The spool billboard should echo the Yarn Flow cycle pacing."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert (
+        "Cycle pacing: ${elapsedSeconds.toFixed(1)} s elapsed · "
         "${remainingSeconds.toFixed(1)} s remaining." in html
     )
 
