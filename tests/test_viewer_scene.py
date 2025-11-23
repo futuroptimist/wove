@@ -351,8 +351,8 @@ def test_spool_billboard_mirrors_cycle_pacing() -> None:
     html = VIEWER_HTML.read_text(encoding="utf-8")
 
     assert (
-        "Cycle pacing: ${elapsedSeconds.toFixed(1)} s elapsed · ${remainingSeconds.toFixed(1)} s remaining."
-        in html
+        "Cycle pacing: ${elapsedSeconds.toFixed(1)} s elapsed · "
+        "${remainingSeconds.toFixed(1)} s remaining." in html
     )
 
 
