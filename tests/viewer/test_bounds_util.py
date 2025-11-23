@@ -49,11 +49,11 @@ def test_bounds_reports_fit_when_envelopes_match():
             "import { comparePlannerToMachineBounds } from './viewer/bounds.js';",
             (
                 "const planner = { x: { min: 0, max: 200 }, "
-                "y: { min: 0, max: 200 }, z: { min: 0, max: 100 } };"
+                "y: { min: 0, max: 200 }, z: { min: 0, max: 100 }, e: { min: 0, max: 90 } };"
             ),
             (
                 "const machine = { x: { min: 0, max: 220 }, "
-                "y: { min: -20, max: 220 }, z: { min: 0, max: 120 } };"
+                "y: { min: -20, max: 220 }, z: { min: 0, max: 120 }, e: { min: 0, max: 100 } };"
             ),
             "const result = comparePlannerToMachineBounds(planner, machine);",
             "console.log(JSON.stringify(result));",
@@ -82,5 +82,30 @@ def test_bounds_warns_when_axis_metadata_missing():
     assert result["fits"] is False
     assert result["missingMachine"] is True
     assert result["missingPlanner"] is True
-    assert set(result["missingPlannerAxes"]) == {"z"}
-    assert set(result["missingMachineAxes"]) == {"y"}
+    assert set(result["missingPlannerAxes"]) == {"e", "z"}
+    assert set(result["missingMachineAxes"]) == {"e", "y"}
+
+
+def test_bounds_compare_extrusion_axis():
+    script = "".join(
+        [
+            "import { comparePlannerToMachineBounds } from './viewer/bounds.js';",
+            (
+                "const planner = { x: { min: 0, max: 200 }, y: { min: 0, max: 200 }, "
+                "z: { min: 0, max: 100 }, extrusion: { min: 0, max: 120 } };"
+            ),
+            (
+                "const machine = { x: { min: 0, max: 220 }, y: { min: -20, max: 220 }, "
+                "z: { min: 0, max: 120 }, e: { min: 0, max: 90 } };"
+            ),
+            "const result = comparePlannerToMachineBounds(planner, machine);",
+            "console.log(JSON.stringify(result));",
+        ]
+    )
+    result = run_node(script)
+
+    assert result["fits"] is False
+    assert set(result["exceedingAxes"]) == {"e"}
+    extrusion_detail = result["details"].get("e")
+    assert extrusion_detail["overrunHigh"] is True
+    assert extrusion_detail["overrunLow"] is False

@@ -11,19 +11,40 @@ export function normalizeAxisBounds(bounds) {
 }
 
 export function comparePlannerToMachineBounds(plannerBounds, machineBounds) {
-  const axes = ['x', 'y', 'z'];
+  const axes = [
+    { key: 'x' },
+    { key: 'y' },
+    { key: 'z' },
+    { key: 'e', plannerKeys: ['e', 'extrusion'], machineKeys: ['e', 'extrusion'] },
+  ];
   const normalizedPlanner = {};
   const normalizedMachine = {};
   const missingPlannerAxes = [];
   const missingMachineAxes = [];
-  axes.forEach((axis) => {
-    normalizedPlanner[axis] = normalizeAxisBounds(plannerBounds?.[axis]);
-    normalizedMachine[axis] = normalizeAxisBounds(machineBounds?.[axis]);
-    if (!normalizedPlanner[axis]) {
-      missingPlannerAxes.push(axis);
+
+  const resolveAxisBounds = (source, keys, axisKey) => {
+    if (!source || typeof source !== 'object') {
+      return null;
     }
-    if (!normalizedMachine[axis]) {
-      missingMachineAxes.push(axis);
+    const candidates = Array.isArray(keys) && keys.length > 0 ? keys : [axisKey];
+    for (let index = 0; index < candidates.length; index += 1) {
+      const candidate = normalizeAxisBounds(source?.[candidates[index]]);
+      if (candidate) {
+        return candidate;
+      }
+    }
+    return null;
+  };
+
+  axes.forEach((axis) => {
+    const { key, plannerKeys, machineKeys } = axis;
+    normalizedPlanner[key] = resolveAxisBounds(plannerBounds, plannerKeys, key);
+    normalizedMachine[key] = resolveAxisBounds(machineBounds, machineKeys, key);
+    if (!normalizedPlanner[key]) {
+      missingPlannerAxes.push(key);
+    }
+    if (!normalizedMachine[key]) {
+      missingMachineAxes.push(key);
     }
   });
 
@@ -32,18 +53,18 @@ export function comparePlannerToMachineBounds(plannerBounds, machineBounds) {
   const details = {};
   const exceedingAxes = [];
 
-  axes.forEach((axis) => {
-    const planner = normalizedPlanner[axis];
-    const machine = normalizedMachine[axis];
+  axes.forEach(({ key }) => {
+    const planner = normalizedPlanner[key];
+    const machine = normalizedMachine[key];
     if (!planner || !machine) {
       return;
     }
     const overrunLow = planner.min < machine.min;
     const overrunHigh = planner.max > machine.max;
     if (overrunLow || overrunHigh) {
-      exceedingAxes.push(axis);
+      exceedingAxes.push(key);
     }
-    details[axis] = {
+    details[key] = {
       planner,
       machine,
       overrunLow,
