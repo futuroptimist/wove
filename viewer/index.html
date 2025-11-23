@@ -433,7 +433,7 @@
           Feed timing: Awaiting planner preview…
         </p>
         <p id="yarn-flow-cycle" data-tone="neutral">
-          Cycle timing: Awaiting planner preview…
+          Cycle pacing: Awaiting planner preview…
         </p>
         <p id="yarn-flow-tension" data-tone="neutral">
           Tension telemetry: Awaiting planner preview…
@@ -616,7 +616,7 @@
       const yarnFlowTimingFallbackMessage =
         'Feed timing: Awaiting planner preview…';
       const yarnFlowCycleFallbackMessage =
-        'Cycle timing: Awaiting planner preview…';
+        'Cycle pacing: Awaiting planner preview…';
       const yarnFlowTensionFallbackMessage =
         'Tension telemetry: Awaiting planner preview…';
       const yarnFlowPositionFallbackMessage =
@@ -916,8 +916,8 @@
 
           context.fillStyle = palette.text;
           context.font = '46px "Segoe UI", sans-serif';
-          const startY = paddingY + 142;
-          const spacing = 58;
+          const startY = paddingY + 130;
+          const spacing = 54;
           detailLines.forEach((line, index) => {
             context.fillText(line, canvas.width / 2, startY + index * spacing);
           });
