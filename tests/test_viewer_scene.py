@@ -345,6 +345,17 @@ def test_yarn_flow_panel_reports_cycle_timing() -> None:
     )
 
 
+def test_spool_billboard_mirrors_cycle_pacing() -> None:
+    """The spool billboard should echo the Yarn Flow cycle pacing."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert (
+        "Cycle pacing: ${elapsedSeconds.toFixed(1)} s elapsed · ${remainingSeconds.toFixed(1)} s remaining."
+        in html
+    )
+
+
 def test_viewer_builds_spool_progress_ring() -> None:
     """The 3D scene should describe the spool progress indicator."""
 

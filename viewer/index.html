@@ -1709,12 +1709,17 @@
             ? patternPreviewDurationSeconds
             : null;
 
+        let cycleTimingDetail = null;
+
         if (yarnFlowCycleElement) {
           if (previewDuration !== null && previewProgressRatio !== null) {
             const elapsedSeconds = previewProgressRatio * previewDuration;
             const remainingSeconds = Math.max(previewDuration - elapsedSeconds, 0);
-            yarnFlowCycleElement.textContent =
+            const cycleTimingText =
               `Cycle timing: ${elapsedSeconds.toFixed(1)} s elapsed · ${remainingSeconds.toFixed(1)} s remaining.`;
+            yarnFlowCycleElement.textContent = cycleTimingText;
+            cycleTimingDetail =
+              `Cycle pacing: ${elapsedSeconds.toFixed(1)} s elapsed · ${remainingSeconds.toFixed(1)} s remaining.`;
             const cycleTone =
               previewProgressRatio >= 0.999
                 ? 'ready'
@@ -1725,6 +1730,7 @@
           } else {
             yarnFlowCycleElement.textContent = yarnFlowCycleFallbackMessage;
             setTone(yarnFlowCycleElement, 'neutral');
+            cycleTimingDetail = yarnFlowCycleFallbackMessage;
           }
         }
 
@@ -1925,6 +1931,10 @@
             detailLines.push('Next feed: Queue clear.');
           } else {
             detailLines.push('Next feed: Awaiting planner preview…');
+          }
+
+          if (cycleTimingDetail) {
+            detailLines.push(cycleTimingDetail);
           }
 
           spoolProgressLabelController.update({
