@@ -162,6 +162,16 @@ def test_anchor_pucks_sequence_glow() -> None:
     assert "sequenceIndex" in html
 
 
+def test_viewer_mentions_filament_break_sensor() -> None:
+    """The viewer should highlight the filament/runout sensor along the yarn path."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "Filament Break Sensor" in html
+    assert "filament break sensor" in html.lower()
+    assert "filamentSensorControllers" in html
+
+
 def test_viewer_mentions_selection_sweep() -> None:
     """Ensure the viewer copy mentions the rotating cluster sweep."""
 

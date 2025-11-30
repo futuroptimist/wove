@@ -358,6 +358,10 @@
           two feed pulses directly from the hologram.
         </li>
         <li>
+          Follow the filament break sensor tucked along the PTFE run—its glow flags runout before
+          fiber reaches the tensioner.
+        </li>
+        <li>
           Upload a planner export from <code>wove.pattern_cli</code> to rehearse your own motion
           envelope inside the Pattern Studio hologram.
         </li>
@@ -520,6 +524,7 @@
       const cableChainPulseControllers = [];
       const stepBadgeControllers = [];
       const anchorPulseControllers = [];
+      const filamentSensorControllers = [];
       let activeCluster = null;
       const selectionRingHeight = 0.06;
       const selectionSweepSpeed = 0.9;
@@ -4756,9 +4761,81 @@
         const effectorPoint = new THREE.Vector3();
         effector.userData.guide.getWorldPosition(effectorPoint);
 
+        const runoutSensorGroup = new THREE.Group();
+        runoutSensorGroup.name = 'filament-break-sensor';
+        const runoutAnchor = spoolPoint.clone().lerp(tensionEntryPoint, 0.42);
+        runoutSensorGroup.position.copy(runoutAnchor.add(new THREE.Vector3(0, 0.12, 0.06)));
+
+        const runoutHousing = new THREE.Mesh(
+          new THREE.BoxGeometry(0.26, 0.16, 0.18),
+          new THREE.MeshStandardMaterial({
+            color: 0x1a2639,
+            metalness: 0.4,
+            roughness: 0.32,
+            emissive: 0x0e1624,
+            emissiveIntensity: 0.4,
+          }),
+        );
+        runoutHousing.castShadow = true;
+        runoutHousing.receiveShadow = true;
+        runoutSensorGroup.add(runoutHousing);
+        addHoverInfo(
+          runoutHousing,
+          'Filament break sensor — flags runout before the yarn reaches the tensioner.',
+        );
+
+        const runoutWindowMaterial = new THREE.MeshStandardMaterial({
+          color: 0x9ae8ff,
+          emissive: 0x45d8ff,
+          emissiveIntensity: 0.8,
+          metalness: 0.25,
+          roughness: 0.26,
+          transparent: true,
+          opacity: 0.7,
+        });
+        const runoutWindow = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.07, 0.07, 0.04, 24),
+          runoutWindowMaterial,
+        );
+        runoutWindow.rotation.x = Math.PI / 2;
+        runoutWindow.position.set(0, 0.08, 0);
+        runoutWindow.castShadow = true;
+        runoutSensorGroup.add(runoutWindow);
+
+        const runoutGlow = new THREE.PointLight(0x78e3ff, 0.9, 1.6);
+        runoutGlow.position.set(0, 0.18, 0);
+        runoutSensorGroup.add(runoutGlow);
+
+        const runoutGuide = new THREE.Object3D();
+        runoutGuide.position.set(0, 0.06, 0);
+        runoutSensorGroup.add(runoutGuide);
+
+        const runoutLabel = buildLabel('Filament Break Sensor', '#b6f0ff');
+        runoutLabel.position.set(0, 0.56, 0);
+        runoutLabel.scale.multiplyScalar(0.5);
+        runoutSensorGroup.add(runoutLabel);
+
+        group.add(runoutSensorGroup);
+        group.updateWorldMatrix(true, true);
+
+        const runoutSensorPoint = new THREE.Vector3();
+        runoutGuide.getWorldPosition(runoutSensorPoint);
+
+        filamentSensorControllers.push({
+          material: runoutWindowMaterial,
+          light: runoutGlow,
+          restEmissive: runoutWindowMaterial.emissiveIntensity ?? 0.8,
+          activeEmissive: 1.4,
+          restIntensity: runoutGlow.intensity,
+          activeIntensity: 1.8,
+          damping: 6.4,
+        });
+
         const ptfeCurve = new THREE.CatmullRomCurve3([
           spoolPoint,
           spoolPoint.clone().add(new THREE.Vector3(0.45, 0.12, 0.18)),
+          runoutSensorPoint.clone().add(new THREE.Vector3(0.1, 0.04, 0.04)),
+          runoutSensorPoint,
           tensionEntryPoint,
           tensionExitPoint,
           sensorPoint.clone().add(new THREE.Vector3(0.18, 0.15, 0.04)),
@@ -6678,6 +6755,39 @@
             material.opacity = controller.currentOpacity;
           });
         }
+        filamentSensorControllers.forEach((controller) => {
+          const {
+            material,
+            light,
+            restEmissive = 0.6,
+            activeEmissive = restEmissive,
+            restIntensity = 0.6,
+            activeIntensity = restIntensity,
+            damping = 6.2,
+          } = controller;
+
+          const targetEmissive = yarnExtrusionActive ? activeEmissive : restEmissive;
+          if (material && typeof material.emissiveIntensity === 'number') {
+            controller.currentEmissive = THREE.MathUtils.damp(
+              controller.currentEmissive ?? restEmissive,
+              targetEmissive,
+              damping,
+              delta,
+            );
+            material.emissiveIntensity = controller.currentEmissive;
+          }
+
+          const targetIntensity = yarnExtrusionActive ? activeIntensity : restIntensity;
+          if (light) {
+            controller.currentIntensity = THREE.MathUtils.damp(
+              controller.currentIntensity ?? restIntensity,
+              targetIntensity,
+              damping,
+              delta,
+            );
+            light.intensity = controller.currentIntensity;
+          }
+        });
         spoolControllers.forEach((controller) => {
           const {
             mesh,

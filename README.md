@@ -103,6 +103,8 @@ flow from the spool, past the hall-effect sensor, and into the crochet hook as
 the planner preview runs. Three glowing beads now chase along the same guide,
 staggering their pace whenever the preview feeds yarn so the flow direction
 stays obvious at a glance—even in still frames.
+A filament break sensor now glows along that PTFE run, flagging runout before
+fiber reaches the tensioner so crews can swap spools before the preview stalls.
 
 The Yarn Flow overlay now mirrors that hall-effect telemetry, translating feed
 bursts into estimated grams so operators can read tension directly from the
