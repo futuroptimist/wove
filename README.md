@@ -83,8 +83,8 @@ left/right cadence before approaching the enclosure.
 
 Pulsing magnetic anchor pucks now mark the removable workpiece bed so crews can
 practice swapping swatch plates into position before the gantry starts tracing
-calibration paths. A sequential glow now sweeps across the anchors to rehearse
-the recommended swap order at a glance.
+calibration paths. A sequential glow now sweeps clockwise across the anchors to
+rehearse the recommended swap order at a glance.
 
 Peek through the tinted electronics bay under the work bed to see the SKR Mini
 controller stack, cooling fan, and glowing status LED that route motion power up
