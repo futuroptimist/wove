@@ -1,6 +1,8 @@
 """Tests for the Three.js assembly viewer scene."""
 
+import ast
 import json
+import re
 from pathlib import Path
 
 VIEWER_HTML = Path(__file__).resolve().parents[1] / "viewer" / "index.html"
@@ -160,6 +162,26 @@ def test_anchor_pucks_sequence_glow() -> None:
     assert swap_copy in html
     assert "sequenceDuration" in html
     assert "sequenceIndex" in html
+
+
+def test_anchor_pucks_sequence_runs_clockwise() -> None:
+    """Anchor pulses should follow the clockwise swap choreography."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    match = re.search(r"const anchorOffsets = \[(.*?)\];", html, flags=re.DOTALL)
+    assert match is not None
+
+    offsets = ast.literal_eval(f"[{match.group(1)}]")
+    assert isinstance(offsets, list)
+    assert len(offsets) >= 3
+
+    area = 0.0
+    for index, (x1, z1) in enumerate(offsets):
+        x2, z2 = offsets[(index + 1) % len(offsets)]
+        area += x1 * z2 - x2 * z1
+
+    assert area < 0, "anchor offsets should wind clockwise"
 
 
 def test_viewer_mentions_selection_sweep() -> None:
