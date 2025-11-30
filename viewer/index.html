@@ -7086,13 +7086,20 @@
         if (!hasFiles) {
           return;
         }
+        // Only show hover state when a JSON file is being dragged
+        const items = event.dataTransfer.items;
+        if (items && items.length > 0 && items[0].type && items[0].type !== 'application/json') {
+          return;
+        }
         event.preventDefault();
         event.dataTransfer.dropEffect = 'copy';
         setPlannerUploadHover(true);
       }
 
-      function handlePlannerDragLeave() {
-        setPlannerUploadHover(false);
+      function handlePlannerDragLeave(event) {
+        if (event?.relatedTarget === null || event?.relatedTarget?.nodeName === 'HTML') {
+          setPlannerUploadHover(false);
+        }
       }
 
       function handlePlannerDrop(event) {
@@ -7104,7 +7111,14 @@
 
         const file = event.dataTransfer?.files?.[0];
         if (file) {
-          loadPlannerFile(file);
+          const isJsonType = file.type === 'application/json';
+          const isJsonExt = file.name && file.name.toLowerCase().endsWith('.json');
+
+          if (isJsonType || isJsonExt) {
+            loadPlannerFile(file);
+          } else {
+            updateStatus('Error: Only JSON files are supported for planner upload.');
+          }
         }
       }
 
