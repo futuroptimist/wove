@@ -216,7 +216,8 @@ Homing Guard never lags behind the hologram.
   servo-driven yarn tensioners, complete with a prototype micro-servo adjuster
   pulsing on the bench. Watch the horn pivot and the status orb brighten
   whenever the planner preview feeds yarn so teams can rehearse programmable
-  pulls.
+  pulls. Hover the indicator to read how the orb tracks each yarn feed pulse as
+  it brightens alongside the planner timeline.
 - **Material Prep Pod** – organizes yarn cones, prep bins, and inspection
   checklists so dye lots and weights are verified before automation runs.
 - **Pattern Studio** – previews the planner workspace that visualizes

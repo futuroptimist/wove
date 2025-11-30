@@ -136,6 +136,14 @@ def test_viewer_animates_servo_adjuster() -> None:
     assert "servoSignalControllers.push" in html
 
 
+def test_servo_status_orb_tracks_yarn_feed() -> None:
+    """The servo status orb should advertise its feed-synced brightness."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+    assert "Servo status orb — brightens with yarn feed pulses" in html
+    assert "light: servoLight" in html
+
+
 def test_viewer_mentions_selection_ring_glow() -> None:
     """The viewer should document the pulsing roadmap selection ring."""
 

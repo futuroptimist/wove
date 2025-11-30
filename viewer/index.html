@@ -5459,18 +5459,26 @@
         servoIndicator.position.set(0.86, 0.6, -0.42);
         servoIndicator.castShadow = true;
         group.add(servoIndicator);
+        const servoLight = new THREE.PointLight(0xffd89c, 0.9, 3.2);
+        servoLight.position.set(0.82, 0.92, -0.28);
+        group.add(servoLight);
+
+        addHoverInfo(
+          servoIndicator,
+          'Servo status orb — brightens with yarn feed pulses to mirror the horn sweep.',
+        );
+
         servoSignalControllers.push({
           material: servoIndicatorMaterial,
+          light: servoLight,
           restIntensity: 0.25,
           activeIntensity: 1.2,
+          restLightIntensity: servoLight.intensity,
+          activeLightIntensity: 1.8,
           restOpacity: 0.35,
           activeOpacity: 0.9,
           damping: 5.5,
         });
-
-        const servoLight = new THREE.PointLight(0xffd89c, 0.9, 3.2);
-        servoLight.position.set(0.82, 0.92, -0.28);
-        group.add(servoLight);
 
         const servoLabel = buildLabel('Servo Tensioner Prototype', '#ccfff0');
         servoLabel.position.set(0.92, 0.96, -0.32);
@@ -6764,8 +6772,12 @@
         servoSignalControllers.forEach((controller) => {
           const {
             material,
+            light,
             restIntensity = 0.3,
             activeIntensity = 1.0,
+            restLightIntensity = controller.restLightIntensity ?? light?.intensity ?? 0,
+            activeLightIntensity =
+              controller.activeLightIntensity ?? light?.intensity ?? 0,
             restOpacity = controller.restOpacity ?? material?.opacity ?? 1,
             activeOpacity = controller.activeOpacity ?? controller.restOpacity ?? material?.opacity ?? 1,
             damping = 5.0,
@@ -6781,6 +6793,17 @@
             delta,
           );
           material.emissiveIntensity = controller.currentIntensity;
+
+          if (light) {
+            const targetLight = yarnExtrusionActive ? activeLightIntensity : restLightIntensity;
+            controller.currentLightIntensity = THREE.MathUtils.damp(
+              controller.currentLightIntensity ?? targetLight,
+              targetLight,
+              damping,
+              delta,
+            );
+            light.intensity = controller.currentLightIntensity;
+          }
 
           if (typeof material.opacity === 'number') {
             const targetOpacity = yarnExtrusionActive ? activeOpacity : restOpacity;
