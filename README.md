@@ -60,6 +60,9 @@ python scripts/serve_viewer.py
 # open http://127.0.0.1:8000/index.html in your browser
 ```
 
+Drag-and-drop a `--format planner` JSON onto the viewer to swap the Pattern Studio preview without
+clicking the upload control.
+
 Each contribution should leave the viewer a little better—add new assets,
 improve lighting, or enhance interactivity—so that future operators can preview
 the entire assembly from a browser. Hover the glowing emergency stop or the axis
