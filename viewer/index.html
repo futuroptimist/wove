@@ -2297,6 +2297,8 @@
         let minY = initialY;
         let maxY = initialY;
         let maxExtrusion = initialExtrusion;
+        let minZ = coerceFiniteNumber(events[0]?.z ?? 0) ?? 0;
+        let maxZ = minZ;
 
         events.forEach((event) => {
           const xValue = coerceFiniteNumber(event.x);
@@ -2308,6 +2310,11 @@
           if (yValue !== null) {
             minY = Math.min(minY, yValue);
             maxY = Math.max(maxY, yValue);
+          }
+          const zValue = coerceFiniteNumber(event.z);
+          if (zValue !== null) {
+            minZ = Math.min(minZ, zValue);
+            maxZ = Math.max(maxZ, zValue);
           }
           const extrusionValue = coerceFiniteNumber(event.extrusion);
           if (extrusionValue !== null) {
@@ -2321,6 +2328,9 @@
         }
         if (Number.isFinite(minY) && Number.isFinite(maxY) && maxY >= minY) {
           fallbackBounds.y = { min: minY, max: maxY };
+        }
+        if (Number.isFinite(minZ) && Number.isFinite(maxZ) && maxZ >= minZ) {
+          fallbackBounds.z = { min: minZ, max: maxZ };
         }
         if (Number.isFinite(maxExtrusion)) {
           fallbackBounds.extrusion = { min: 0, max: maxExtrusion };
@@ -2359,14 +2369,26 @@
           : Number.isFinite(maxExtrusion)
             ? maxExtrusion
             : displayExtrusionMin + 0.01;
+        const displayZMin = Number.isFinite(computedBounds?.z?.min)
+          ? computedBounds.z.min
+          : Number.isFinite(minZ)
+            ? minZ
+            : 0;
+        const displayZMax = Number.isFinite(computedBounds?.z?.max)
+          ? computedBounds.z.max
+          : Number.isFinite(maxZ)
+            ? maxZ
+            : displayZMin + 1;
 
         const planeWidth = 0.72;
         const planeHeight = 0.52;
         const usableWidth = planeWidth * 0.88;
         const usableHeight = planeHeight * 0.82;
+        const usableDepth = planeWidth * 0.34;
 
         const xSpan = Math.max(displayXMax - displayXMin, 1);
         const ySpan = Math.max(displayYMax - displayYMin, 1);
+        const zSpan = Math.max(displayZMax - displayZMin, 1);
         const extrusionSpan = Math.max(
           displayExtrusionMax - displayExtrusionMin,
           0.01,
@@ -2444,6 +2466,21 @@
         fill.renderOrder = 1;
         boundsGroup.add(fill);
         addHoverInfo(fill, buildBoundsHoverText(hoverBounds), { passthrough: true });
+
+        const boundsCage = new THREE.LineSegments(
+          new THREE.EdgesGeometry(new THREE.BoxGeometry(usableWidth, usableHeight, usableDepth)),
+          new THREE.LineBasicMaterial({
+            color: 0x9bb7ff,
+            transparent: true,
+            opacity: 0.55,
+            depthTest: false,
+          }),
+        );
+        const zCenterRatio = ((displayZMin + displayZMax) / 2 - displayZMin) / zSpan;
+        const normalizedZCenter = zCenterRatio - 0.5;
+        boundsCage.position.set(0, 0, normalizedZCenter * usableDepth);
+        boundsCage.name = 'planner-bounds-cage';
+        boundsGroup.add(boundsCage);
 
         const profileBounds = options.machineProfileBounds;
         if (profileBounds?.x && profileBounds?.y) {

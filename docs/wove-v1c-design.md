@@ -224,7 +224,10 @@ overview.
   `viewer/assets/base_chain_row.planner.json` so the hologram stays aligned with
   the repository's planner fixtures. A translucent bounds frame now wraps the
   hologram while the overlay lists the exported X/Y/Z/E ranges so operators can
-  verify the motion envelope matches the CLI payload.
+  verify the motion envelope matches the CLI payload. A floating 3D bounds cage
+  now rides above the preview plane with mint edges that track the planner's Z
+  span so crews can see vertical clearance without cross-referencing the
+  sidebar.
 - Optional polycarbonate shield with hinged access door for production environments;
   the Three.js viewer renders the translucent enclosure so teams can rehearse
   safe access paths before printing hardware. Mint-highlighted floor markings

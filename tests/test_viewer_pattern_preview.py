@@ -86,6 +86,15 @@ def test_planner_metadata_panel_mentions_duration() -> None:
     assert "Preview duration" in html
 
 
+def test_planner_bounds_cage_highlights_z_span() -> None:
+    """The planner overlay should expose the 3D bounds cage for Z coverage."""
+
+    html = (PROJECT_ROOT / "viewer" / "index.html").read_text(encoding="utf-8")
+
+    assert "planner-bounds-cage" in html
+    assert "displayZMin" in html
+
+
 def test_homing_guard_coordinates_follow_progress() -> None:
     """The homing guard panel should track interpolated coordinates."""
 
