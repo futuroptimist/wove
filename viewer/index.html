@@ -598,6 +598,7 @@
       let lastPatternStepIndex = -1;
       let lastPatternProgress = -1;
       let spoolProgressRatio = 0;
+      let spoolProgressTone = 'neutral';
       let boundsComparison = null;
       const machineProfileFallbackMessage =
         'Machine profile metadata unavailable. Export with --machine-profile to surface axis settings.';
@@ -636,6 +637,12 @@
         'Tension telemetry: Awaiting planner preview…';
       const yarnFlowPositionFallbackMessage =
         'Coordinates: Awaiting yarn flow coordinates…';
+      const spoolProgressTonePalette = {
+        neutral: { color: 0xffb173, emissive: 0xff8c2f },
+        info: { color: 0x9ee5ff, emissive: 0x48c2ff },
+        ready: { color: 0x9fffd7, emissive: 0x36e2ad },
+        warning: { color: 0xffc27d, emissive: 0xff8c2f },
+      };
 
       function formatCoordinate(value) {
         return Number.isFinite(value) ? value.toFixed(1) : '—';
@@ -1508,6 +1515,26 @@
         }
       }
 
+      function applySpoolProgressTone(tone) {
+        if (!tone || !spoolProgressTonePalette[tone]) {
+          tone = 'neutral';
+        }
+
+        if (tone === spoolProgressTone) {
+          return;
+        }
+
+        spoolProgressTone = tone;
+        const palette = spoolProgressTonePalette[tone];
+        spoolProgressSegments.forEach(({ material }) => {
+          if (!material) {
+            return;
+          }
+          material.color.setHex(palette.color);
+          material.emissive.setHex(palette.emissive);
+        });
+      }
+
       function computeFeedCountdowns(preview, feedStepIndices, progressRatio, durationSeconds) {
         const cumulativeDistances =
           preview && Array.isArray(preview.cumulativeDistances)
@@ -1617,6 +1644,8 @@
             tone: 'neutral',
           });
         }
+
+        applySpoolProgressTone('neutral');
       }
 
       function updateYarnFlowPanel(
@@ -1670,7 +1699,7 @@
         const fedAmount = Math.max(rawExtrusion - baseline, 0);
         const plannedAmount = Math.max(target - baseline, 0);
         let spoolProgressHeader = 'Yarn Feed Progress';
-        let spoolProgressTone = 'neutral';
+        let spoolProgressToneState = 'neutral';
         let spoolProgress = 0;
         let nextFeedCountdown = null;
         let followingFeedCountdown = null;
@@ -1697,19 +1726,19 @@
           progressText = `Spool progress: ${percent}% of planned yarn fed.`;
           progressTone = percent >= 100 ? 'ready' : yarnExtrusionActive ? 'ready' : 'info';
           spoolProgressHeader = 'Yarn Feed Progress';
-          spoolProgressTone = progressTone;
+          spoolProgressToneState = progressTone;
         } else if (fedAmount > 0.0001) {
           spoolProgress = 1;
           progressText = 'Spool progress: Feeding yarn without a declared target.';
           progressTone = 'warning';
           spoolProgressHeader = 'Yarn Feed';
-          spoolProgressTone = progressTone;
+          spoolProgressToneState = progressTone;
         } else {
           spoolProgress = 0;
           progressText = yarnFlowProgressFallbackMessage;
           progressTone = 'neutral';
           spoolProgressHeader = 'Yarn Feed';
-          spoolProgressTone = progressTone;
+          spoolProgressToneState = progressTone;
         }
 
         if (yarnFlowProgressElement) {
@@ -1718,6 +1747,7 @@
         }
 
         spoolProgressRatio = spoolProgress;
+        applySpoolProgressTone(spoolProgressToneState);
 
         const previewDuration =
           Number.isFinite(patternPreviewDurationSeconds) && patternPreviewDurationSeconds > 0

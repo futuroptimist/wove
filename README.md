@@ -84,6 +84,10 @@ footprints so operators can practice each step without clipping the gantry or te
 Floating step badges bob above each marker and cant toward the doorway so crews can rehearse the
 left/right cadence before approaching the enclosure.
 
+The spool progress ring now shifts between info, ready, and warning tones alongside the Yarn Flow
+panel and billboard. Feed pulses that finish, hit 100%, or run without a declared target now light
+up in the hologram before you even glance at the overlay.
+
 Pulsing magnetic anchor pucks now mark the removable workpiece bed so crews can
 practice swapping swatch plates into position before the gantry starts tracing
 calibration paths. A sequential glow now sweeps clockwise across the anchors to
