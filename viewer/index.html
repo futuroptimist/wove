@@ -2476,8 +2476,8 @@
             depthTest: false,
           }),
         );
-        const zCenterRatio = (displayZMin + displayZMax) / 2 - displayZMin;
-        const normalizedZCenter = zCenterRatio / zSpan - 0.5;
+        const zCenterRatio = ((displayZMin + displayZMax) / 2 - displayZMin) / zSpan;
+        const normalizedZCenter = zCenterRatio - 0.5;
         boundsCage.position.set(0, 0, normalizedZCenter * usableDepth);
         boundsCage.name = 'planner-bounds-cage';
         boundsGroup.add(boundsCage);
