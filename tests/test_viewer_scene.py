@@ -283,7 +283,10 @@ def test_cable_chain_chase_orb_tracks_feed_queue() -> None:
     html = VIEWER_HTML.read_text(encoding="utf-8")
 
     assert "const cableChainChaseControllers" in html
-    assert "Cable chain chase orb — accelerates as yarn feed pulses approach the gantry." in html
+    assert (
+        "Cable chain chase orb — accelerates as yarn feed pulses approach the gantry."
+        in html
+    )
     assert "cableChainNextFeedSeconds" in html
 
 
