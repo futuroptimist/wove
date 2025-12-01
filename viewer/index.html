@@ -6541,7 +6541,7 @@
 
           const chaseStrength = yarnExtrusionActive
             ? 1
-            : THREE.MathUtils.clamp(upcomingUrgency, 0, 1);
+            : upcomingUrgency;
           const targetIntensity = THREE.MathUtils.lerp(
             restIntensity,
             activeIntensity,
