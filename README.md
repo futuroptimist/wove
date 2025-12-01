@@ -79,6 +79,10 @@ the scene. A teal sweep now orbits the
 selected pedestal so the active milestone stays obvious from the plaza
 overview. The plaza highlights these milestones today:
 
+Follow the glowing cable chain from the electronics bay to the gantry and watch
+the chase orb accelerate whenever planner feed pulses approach, rehearsing safe
+wire routing before the effector moves.
+
 Mint-highlighted floor markings now extend through the open doorway with alternating, pulsing
 footprints so operators can practice each step without clipping the gantry or tension hardware.
 Floating step badges bob above each marker and cant toward the doorway so crews can rehearse the

@@ -269,7 +269,9 @@ overview.
 - JST-XH harnesses for modular axis replacement; printed cable chains keep wiring tidy.
 - The Three.js viewer now threads a glowing cable chain from the electronics bay to the
   gantry and sweeps a chasing glow that accelerates during yarn feed events so crews can
-  trace harness routing and avoid snag points during dry runs.
+  trace harness routing and avoid snag points during dry runs. A dedicated chase orb now
+  sprints toward the gantry as upcoming feed pulses approach, rehearsing the harness motion
+  before the effector moves.
 - Provide wiring schematics and harness length tables for standard build sizes.
 
 ### Firmware and Software

@@ -277,6 +277,19 @@ def test_cable_chain_chases_with_feed_pulses() -> None:
     assert "cableChainPulseControllers.forEach" in html
 
 
+def test_cable_chain_chase_orb_tracks_feed_queue() -> None:
+    """Cable chain chase orb should anticipate upcoming yarn feed pulses."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "const cableChainChaseControllers" in html
+    assert (
+        "Cable chain chase orb — accelerates as yarn feed pulses approach the gantry."
+        in html
+    )
+    assert "cableChainNextFeedSeconds" in html
+
+
 def test_viewer_highlights_status_led_behavior() -> None:
     """The electronics bay status LED should advertise its pulsing behavior."""
 
