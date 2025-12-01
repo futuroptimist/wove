@@ -532,6 +532,7 @@
       const productClusters = [];
       const safeAccessHighlights = [];
       const cableChainPulseControllers = [];
+      const cableChainChaseControllers = [];
       const stepBadgeControllers = [];
       const anchorPulseControllers = [];
       let activeCluster = null;
@@ -589,6 +590,8 @@
       let plannerUploadResetTimer = null;
       const plannerUploadLimitBytes = 10 * 1024 * 1024;
       let yarnExtrusionActive = false;
+      let cableChainNextFeedSeconds = null;
+      let cableChainRemainingFeeds = null;
       let patternPlannerEvents = [];
       let patternPreviewGroup = null;
       let patternPreviewContainer = null;
@@ -1577,6 +1580,8 @@
         setTone(yarnFlowStatusElement, 'neutral');
         yarnFlowSpoolElement.textContent = yarnFlowSpoolFallbackMessage;
         setTone(yarnFlowSpoolElement, 'neutral');
+        cableChainNextFeedSeconds = null;
+        cableChainRemainingFeeds = null;
         if (yarnFlowTotalElement) {
           yarnFlowTotalElement.textContent = yarnFlowTotalFallbackMessage;
           setTone(yarnFlowTotalElement, 'neutral');
@@ -1848,6 +1853,10 @@
             }
           }
         }
+
+        cableChainNextFeedSeconds = nextFeedCountdown ? nextFeedCountdown.delta : null;
+        cableChainRemainingFeeds =
+          typeof remainingFeedCount === 'number' ? remainingFeedCount : null;
 
         if (yarnFlowTensionElement) {
           const previousEvent =
@@ -3776,6 +3785,47 @@
           chain,
           'Cable chain — routes gantry wiring to the hook carriage with a chasing glow.',
         );
+
+        const chaseMaterial = new THREE.MeshStandardMaterial({
+          color: 0x96d0ff,
+          emissive: 0x4c95ff,
+          emissiveIntensity: 0.6,
+          metalness: 0.42,
+          roughness: 0.28,
+          transparent: true,
+          opacity: 0.92,
+          depthWrite: false,
+        });
+        const chaseOrb = new THREE.Mesh(new THREE.SphereGeometry(0.09, 20, 20), chaseMaterial);
+        chainCurve.getPointAt(0.12, chaseOrb.position);
+        chaseOrb.castShadow = false;
+        chaseOrb.receiveShadow = false;
+        group.add(chaseOrb);
+        addHoverInfo(
+          chaseOrb,
+          'Cable chain chase orb — accelerates as yarn feed pulses approach the gantry.',
+          { passthrough: true },
+        );
+
+        const chaseLight = new THREE.PointLight(0x7cc2ff, 1.0, 3.0);
+        chaseLight.position.copy(chaseOrb.position);
+        group.add(chaseLight);
+
+        cableChainChaseControllers.push({
+          mesh: chaseOrb,
+          light: chaseLight,
+          material: chaseMaterial,
+          curve: chainCurve,
+          travel: 0.12,
+          idleSpeed: 0.12,
+          approachSpeed: 0.24,
+          activeSpeed: 0.4,
+          restIntensity: 0.6,
+          activeIntensity: 1.25,
+          restLight: chaseLight.intensity,
+          activeLight: 1.6,
+          damping: 6.0,
+        });
         cableChainPulseControllers.push({
           material: chainMaterial,
           phaseOffset: 0,
@@ -6449,6 +6499,71 @@
               delta,
             );
             material.opacity = THREE.MathUtils.clamp(controller.currentOpacity, 0, 1);
+          }
+        });
+        cableChainChaseControllers.forEach((controller) => {
+          const {
+            mesh,
+            material,
+            light,
+            curve,
+            travel = 0,
+            idleSpeed = 0.1,
+            approachSpeed = idleSpeed,
+            activeSpeed = approachSpeed,
+            restIntensity = 0.4,
+            activeIntensity = restIntensity,
+            restLight = light?.intensity ?? 0,
+            activeLight = restLight,
+            damping = 6.0,
+          } = controller;
+          if (!mesh || !material || !curve) {
+            return;
+          }
+
+          const upcomingUrgency =
+            cableChainNextFeedSeconds !== null &&
+            cableChainRemainingFeeds !== null &&
+            cableChainRemainingFeeds > 0
+              ? THREE.MathUtils.clamp(1 - cableChainNextFeedSeconds / 6, 0, 1)
+              : 0;
+          const speed = yarnExtrusionActive
+            ? activeSpeed
+            : THREE.MathUtils.lerp(idleSpeed, approachSpeed, upcomingUrgency);
+          const updatedTravel = (travel + delta * speed) % 1;
+          controller.travel = updatedTravel;
+
+          const position = curve.getPointAt(updatedTravel);
+          mesh.position.copy(position);
+          if (light) {
+            light.position.copy(position);
+          }
+
+          const chaseStrength = yarnExtrusionActive
+            ? 1
+            : THREE.MathUtils.clamp(upcomingUrgency, 0, 1);
+          const targetIntensity = THREE.MathUtils.lerp(
+            restIntensity,
+            activeIntensity,
+            chaseStrength,
+          );
+          controller.currentIntensity = THREE.MathUtils.damp(
+            controller.currentIntensity ?? restIntensity,
+            targetIntensity,
+            damping,
+            delta,
+          );
+          material.emissiveIntensity = controller.currentIntensity;
+
+          const targetLight = THREE.MathUtils.lerp(restLight, activeLight, chaseStrength);
+          controller.currentLight = THREE.MathUtils.damp(
+            controller.currentLight ?? restLight,
+            targetLight,
+            damping,
+            delta,
+          );
+          if (light) {
+            light.intensity = controller.currentLight;
           }
         });
         anchorPulseControllers.forEach((controller) => {
