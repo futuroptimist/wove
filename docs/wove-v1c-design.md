@@ -60,9 +60,11 @@ The supply spool now spins in the hologram whenever yarn is extruding so teams c
 unwind from the source while the tube pulses, then glides to a stop when feed events pause so idle
 segments stay calm.
 A progress ring now wraps that spool, filling around the reel as the hologram pulls yarn so
-technicians can gauge completion without staring at the overlay. The Yarn Flow panel mirrors the
-same percentage, highlighting when the preview reaches its planned payout and flagging runs that
-feed fiber without a declared target.
+technicians can gauge completion without staring at the overlay. The ring now shifts between
+ready, neutral, and warning tones so crews can see at a glance when the preview hits 100% payout or
+feeds yarn without a declared target. The Yarn Flow panel mirrors the same percentage, highlighting
+when the preview reaches its planned payout and flagging runs that feed fiber without a declared
+target.
 A floating yarn-feed progress billboard now hangs above the spool, echoing the fed-versus-planned
 totals directly inside the hologram so visitors can read the numbers without shifting back to the
 overlay. It now also surfaces the next yarn feed countdown so operators can time the upcoming pulse

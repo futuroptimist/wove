@@ -403,6 +403,16 @@ def test_viewer_builds_spool_progress_ring() -> None:
     assert progress_copy in html
 
 
+def test_spool_progress_ring_shifts_with_tone() -> None:
+    """Spool progress segments should react to Yarn Flow tones."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "spoolProgressTonePalette" in html
+    assert "applySpoolProgressTone" in html
+    assert "material.color.setHex(palette.color)" in html
+
+
 def test_viewer_attaches_yarn_feed_billboard() -> None:
     """The spool should host the yarn feed progress billboard."""
 
