@@ -94,6 +94,15 @@ def test_homing_guard_streams_coordinates() -> None:
     assert "Coordinates: Awaiting planner coordinates…" in html
 
 
+def test_yarn_flow_surface_feed_rate_copy() -> None:
+    """Yarn flow telemetry should include live feed-rate messaging."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "yarn-flow-rate" in html
+    assert "Feed rate: Awaiting yarn feed telemetry…" in html
+
+
 def test_viewer_mentions_cooling_fan_mount() -> None:
     """The hook carriage cooling fan mount should be called out."""
 
