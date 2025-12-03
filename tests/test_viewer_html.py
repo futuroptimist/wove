@@ -115,7 +115,10 @@ def test_viewer_surfaces_machine_profile_envelope_fallback() -> None:
 
     viewer_html = _load_viewer_html()
 
-    assert "Machine profile envelope unavailable. Include travel_min_mm and " in viewer_html
+    assert (
+        "Machine profile envelope unavailable. Include travel_min_mm and "
+        in viewer_html
+    )
     assert "travel_max_mm for each axis." in viewer_html
 
 
