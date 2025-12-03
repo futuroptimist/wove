@@ -85,6 +85,19 @@ def test_viewer_documents_planner_bounds_overlay() -> None:
     assert "Planner bounds overlay" in html
 
 
+def test_planner_bounds_cage_highlights_z_span() -> None:
+    """The bounds cage should spotlight the mint Z-span markers."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "planner-bounds-cage" in html
+    assert "Mint bounds cage — tracks the planner Z span above the preview plane." in html
+    assert "Z-span beacon — mint column spotlights the planner clearance band." in html
+    assert "Z-span markers — twin halos pulse at the planner min and max heights." in html
+    assert "boundsCageControllers" in html
+    assert "boundsZMarkerControllers" in html
+
+
 def test_homing_guard_streams_coordinates() -> None:
     """The Homing Guard panel should advertise the coordinate stream."""
 
