@@ -379,7 +379,8 @@ def test_yarn_flow_panel_reports_tension_telemetry() -> None:
 
     assert "yarn-flow-tension" in html
     assert "Tension telemetry: Awaiting planner preview…" in html
-    assert "hall sensor est." in html
+    assert "tension_sensor_calibration" in html
+    assert "feed-rate estimate" in html
 
 
 def test_calibration_lab_pedestal_documented() -> None:

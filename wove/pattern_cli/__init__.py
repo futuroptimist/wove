@@ -22,6 +22,11 @@ DEFAULT_ROW_HEIGHT = 6.0
 MIN_MOVE_COORD_MM = 1e-3
 PLANNER_LOOP_SECONDS = 14.0
 PLANNER_METADATA_SOURCE = "pattern_cli preview"
+TENSION_SENSOR_CALIBRATION = (
+    (102.0, 20.0),
+    (168.5, 55.0),
+    (220.0, 85.0),
+)
 
 
 @dataclass(frozen=True)
@@ -442,6 +447,28 @@ def _load_pattern(
     return sys.stdin.read()
 
 
+def _tension_sensor_reading(comment: str | None) -> float:
+    """Return a representative hall-effect reading for the planner snapshot."""
+
+    if not comment:
+        return 140.0
+
+    normalized = comment.lower()
+
+    if "feed yarn" in normalized:
+        return 188.0
+    if "plunge" in normalized:
+        return 162.0
+    if "raise" in normalized:
+        return 150.0
+    if any(token in normalized for token in ("advance", "reposition", "turn")):
+        return 155.0
+    if "pause" in normalized:
+        return 142.0
+
+    return 140.0
+
+
 def _planner_payload(
     events: Sequence[PlannerEvent],
     *,
@@ -465,6 +492,7 @@ def _planner_payload(
                 "y_mm": event.y_mm,
                 "z_mm": event.z_mm,
                 "extrusion_mm": event.extrusion_mm,
+                "tension_sensor_reading": _tension_sensor_reading(event.comment),
             },
         }
         if event.comment is not None:
@@ -487,6 +515,9 @@ def _planner_payload(
             "default_row_height_mm": DEFAULT_ROW_HEIGHT,
             "require_home": bool(require_home),
             "home_state": home_state,
+            "tension_sensor_calibration": {
+                "pairs": [list(pair) for pair in TENSION_SENSOR_CALIBRATION]
+            },
         },
         "bounds": {
             "x_mm": bounds(event.x_mm for event in events),

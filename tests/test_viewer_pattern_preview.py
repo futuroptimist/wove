@@ -34,6 +34,30 @@ def test_viewer_planner_preview_includes_duration_metadata() -> None:
     assert metadata.get("source") == "pattern_cli preview"
 
 
+def test_viewer_planner_preview_includes_tension_calibration() -> None:
+    """Tension telemetry should ship with hall sensor calibration hints."""
+
+    payload = json.loads(VIEWER_PREVIEW.read_text(encoding="utf-8"))
+
+    defaults = payload.get("defaults") or {}
+    calibration = defaults.get("tension_sensor_calibration")
+    assert calibration
+    assert calibration.get("pairs") == [
+        [102.0, 20.0],
+        [168.5, 55.0],
+        [220.0, 85.0],
+    ]
+
+    readings = [
+        entry.get("state", {}).get("tension_sensor_reading")
+        for entry in payload.get("commands", [])
+        if isinstance(entry, dict)
+    ]
+
+    assert any(readings)
+    assert min(readings) >= 0
+
+
 def test_viewer_exposes_planner_defaults_panel() -> None:
     """The overlay should advertise the planner defaults list."""
 

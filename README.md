@@ -126,6 +126,10 @@ planner preview without juggling calculator scripts.
 Live feed-rate estimates now sit beside those tension callouts so yarn flow
 changes remain obvious even when extrusion targets are absent from the planner
 payload.
+Planner exports can now embed a ``tension_sensor_calibration`` block and per-
+command ``tension_sensor_reading`` values so the viewer converts hall-effect
+telemetry into grams, flags clamped readings, and falls back to feed-rate
+estimates when calibration data is missing.
 
 The source spool now spins in sync with yarn feed events so the hologram shows
 fiber unwinding from the supply while the PTFE tube glows. When extrusion
