@@ -134,6 +134,9 @@ A golden progress ring now wraps that spool, filling around the reel as the
 planner feeds yarn so crews can read completion from across the plaza. The Yarn
 Flow monitor echoes the same percentage so the overlay and hologram agree on
 how much of the planned payout has completed.
+When a planner omits a yarn target, the ring now pauses its fill while keeping
+the warning tone active so viewers do not mistake an undefined feed plan for a
+completed payout.
 A floating yarn-feed progress billboard now hovers over the spool, broadcasting
 fed-versus-planned totals so contributors can grab the numbers without leaving
 the hologram. The billboard now mirrors the Yarn Flow panel in real time,

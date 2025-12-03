@@ -1749,8 +1749,9 @@
           spoolProgressHeader = 'Yarn Feed Progress';
           spoolProgressToneState = progressTone;
         } else if (fedAmount > 0.0001) {
-          spoolProgress = 1;
-          progressText = 'Spool progress: Feeding yarn without a declared target.';
+          spoolProgress = 0;
+          progressText =
+            'Spool progress: Feeding yarn without a declared target — progress ring paused until planner target provided.';
           progressTone = 'warning';
           spoolProgressHeader = 'Yarn Feed';
           spoolProgressToneState = progressTone;
@@ -1986,7 +1987,7 @@
             detailLines.push(`Target ${plannedAmount.toFixed(1)} mm (${percent}% complete)`);
           } else if (fedAmount > 0.0001) {
             detailLines.push(`Fed ${fedAmount.toFixed(1)} mm`);
-            detailLines.push('Target not declared');
+            detailLines.push('Target not declared — progress ring paused.');
           } else {
             detailLines.push('Awaiting planner preview…');
           }
