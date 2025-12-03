@@ -105,3 +105,11 @@ def test_homing_guard_coordinates_follow_progress() -> None:
         "shouldUpdatePosition && (patternPositionElement || homingGuardPositionElement)"
         in html
     )
+
+
+def test_spool_progress_ring_pauses_without_target() -> None:
+    """When no target is supplied, the progress ring should pause and warn viewers."""
+
+    html = (PROJECT_ROOT / "viewer" / "index.html").read_text(encoding="utf-8")
+
+    assert "progress ring paused until planner target provided" in html
