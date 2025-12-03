@@ -388,6 +388,17 @@ def test_yarn_flow_panel_reports_cycle_timing() -> None:
     )
 
 
+def test_tension_lab_traces_calibration_path() -> None:
+    """The Tension Lab should visualize its automation sweep."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert (
+        "Automation sweep — traces the load-cell carriage path across the calibration rail." in html
+    )
+    assert "tensionLabPathControllers" in html
+
+
 def test_spool_billboard_mirrors_cycle_pacing() -> None:
     """The spool billboard should echo the Yarn Flow cycle pacing."""
 

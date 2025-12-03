@@ -183,6 +183,10 @@ contributors can see how programmable feed loops interface with the spool rig be
 hardware. The horn now sweeps through its pull stroke whenever the planner preview feeds yarn and
 the status orb brightens in step, making the servo-driven tension cues obvious from the plaza
 overview.
+An illuminated rail overlay now traces the carriage sweep across the calibration bench while a
+glowing tracer orb follows the same curve. The path advances slowly when idle and accelerates with
+planner feed pulses so contributors can rehearse the full automation stroke before building the
+fixture.
 
 ### Frame and Build Volume
 - **Frame**: 20x20 mm aluminum extrusion perimeter with printed corner cubes and feet. Designed for
