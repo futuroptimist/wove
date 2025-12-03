@@ -538,6 +538,9 @@
       const filamentSensorControllers = [];
       const cableChainPulseControllers = [];
       const cableChainChaseControllers = [];
+      const tensionLabPathControllers = [];
+      const automationTracerPoint = new THREE.Vector3();
+      const automationLightOffset = new THREE.Vector3(0, 0.18, 0);
       const stepBadgeControllers = [];
       const anchorPulseControllers = [];
       let activeCluster = null;
@@ -5482,6 +5485,71 @@
         rail.castShadow = true;
         group.add(rail);
 
+        const automationPath = new THREE.CatmullRomCurve3([
+          new THREE.Vector3(-0.95, 0.28, -0.42),
+          new THREE.Vector3(-0.2, 0.32, -0.22),
+          new THREE.Vector3(0.65, 0.34, 0.12),
+        ]);
+        const automationPoints = automationPath.getPoints(40);
+        const automationGeometry = new THREE.BufferGeometry().setFromPoints(automationPoints);
+        const automationMaterial = new THREE.LineDashedMaterial({
+          color: 0x8fffe2,
+          linewidth: 1,
+          scale: 1,
+          dashSize: 0.08,
+          gapSize: 0.05,
+          transparent: true,
+          opacity: 0.85,
+          depthTest: false,
+        });
+        const automationLine = new THREE.Line(automationGeometry, automationMaterial);
+        automationLine.computeLineDistances();
+        automationLine.position.y = 0.02;
+        automationLine.renderOrder = 6;
+        group.add(automationLine);
+        addHoverInfo(
+          automationLine,
+          'Automation sweep — traces the load-cell carriage path across the calibration rail.',
+          { passthrough: true },
+        );
+
+        const automationTracer = new THREE.Mesh(
+          new THREE.SphereGeometry(0.06, 18, 18),
+          new THREE.MeshStandardMaterial({
+            color: 0x9bffe8,
+            emissive: 0x44ffd5,
+            emissiveIntensity: 0.4,
+            metalness: 0.3,
+            roughness: 0.28,
+            transparent: true,
+            opacity: 0.85,
+          }),
+        );
+        automationTracer.position.copy(automationPath.getPoint(0));
+        automationTracer.castShadow = true;
+        automationTracer.receiveShadow = true;
+        group.add(automationTracer);
+
+        const automationLight = new THREE.PointLight(0x9bffe8, 0.9, 2.6);
+        automationLight.position.copy(automationTracer.position.clone().add(new THREE.Vector3(0, 0.18, 0)));
+        group.add(automationLight);
+
+        tensionLabPathControllers.push({
+          tracer: automationTracer,
+          light: automationLight,
+          curve: automationPath,
+          travel: 0,
+          activeSpeed: 0.24,
+          idleSpeed: 0.06,
+          restIntensity: 0.4,
+          activeIntensity: 1.1,
+          restOpacity: 0.4,
+          activeOpacity: 0.95,
+          restLightIntensity: automationLight.intensity,
+          activeLightIntensity: 1.6,
+          damping: 5.5,
+        });
+
         const spoolRig = new THREE.Group();
         spoolRig.position.set(0.38, 0.36, 0.02);
 
@@ -6972,6 +7040,65 @@
           );
           material.opacity = controller.currentOpacity;
           mesh.visible = material.opacity > 0.02;
+        });
+        tensionLabPathControllers.forEach((controller) => {
+          const {
+            tracer,
+            light,
+            curve,
+            activeSpeed = 0.24,
+            idleSpeed = 0.06,
+            restIntensity = 0.4,
+            activeIntensity = 1.1,
+            restOpacity = 0.4,
+            activeOpacity = 0.95,
+            restLightIntensity = 0.9,
+            activeLightIntensity = 1.6,
+            damping = 5.5,
+          } = controller;
+          if (!tracer || !curve) {
+            return;
+          }
+
+          const speed = yarnExtrusionActive ? activeSpeed : idleSpeed;
+          const travel = typeof controller.travel === 'number' ? controller.travel : 0;
+          const updatedTravel = (travel + delta * speed) % 1;
+          controller.travel = updatedTravel;
+
+          curve.getPointAt(updatedTravel, automationTracerPoint);
+          tracer.position.copy(automationTracerPoint);
+          if (light) {
+            light.position.copy(automationTracerPoint).add(automationLightOffset);
+          }
+
+          const targetIntensity = yarnExtrusionActive ? activeIntensity : restIntensity;
+          controller.currentIntensity = THREE.MathUtils.damp(
+            controller.currentIntensity ?? restIntensity,
+            targetIntensity,
+            damping,
+            delta,
+          );
+          tracer.material.emissiveIntensity = controller.currentIntensity;
+
+          const targetOpacity = yarnExtrusionActive ? activeOpacity : restOpacity;
+          controller.currentOpacity = THREE.MathUtils.damp(
+            controller.currentOpacity ?? restOpacity,
+            targetOpacity,
+            damping,
+            delta,
+          );
+          tracer.material.opacity = controller.currentOpacity;
+
+          if (light) {
+            const targetLight = yarnExtrusionActive ? activeLightIntensity : restLightIntensity;
+            light.intensity = THREE.MathUtils.damp(
+              controller.currentLight ?? restLightIntensity,
+              targetLight,
+              damping,
+              delta,
+            );
+            controller.currentLight = light.intensity;
+          }
         });
         if (spoolProgressSegments.length > 0) {
           const normalizedProgress = THREE.MathUtils.clamp(spoolProgressRatio, 0, 1);
