@@ -119,6 +119,16 @@ def test_viewer_highlights_tension_post_and_ptfe_path() -> None:
     assert "PTFE guide tube" in html
 
 
+def test_viewer_surfaces_filament_break_sensor() -> None:
+    """Optional filament break detection should be documented in the viewer."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "filamentSensorControllers" in html
+    assert "Filament break sensor — optional inline detector" in html
+    assert "Filament Break Sensor" in html
+
+
 def test_tension_lab_mentions_servo_adjuster() -> None:
     """The Tension Lab display should mention the servo tension adjuster."""
 
