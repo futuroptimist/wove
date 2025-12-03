@@ -110,6 +110,18 @@ def test_viewer_highlights_machine_profile_overlay() -> None:
     assert "Planner-aligned axis settings" in viewer_html
 
 
+def test_viewer_surfaces_machine_profile_envelope_fallback() -> None:
+    """The machine profile envelope should render a helpful fallback message."""
+
+    viewer_html = _load_viewer_html()
+
+    assert (
+        "Machine profile envelope unavailable. Include travel_min_mm and "
+        in viewer_html
+    )
+    assert "travel_max_mm for each axis." in viewer_html
+
+
 def test_viewer_surfaces_yarn_flow_monitor() -> None:
     """Ensure the yarn flow overlay ships with idle messaging."""
 
