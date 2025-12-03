@@ -2607,6 +2607,11 @@
         const zMinMarker = new THREE.Mesh(zMarkerGeometry, markerMaterial.clone());
         zMinMarker.rotation.x = Math.PI / 2;
         zMinMarker.position.set(0, 0, -usableDepth / 2);
+        addHoverInfo(
+          zMinMarker,
+          'Z-span markers — twin halos pulse at the planner min and max heights.',
+          { passthrough: true },
+        );
         zSpanColumn.add(zMinMarker);
         const zMaxMarker = new THREE.Mesh(zMarkerGeometry, markerMaterial.clone());
         zMaxMarker.rotation.x = Math.PI / 2;
