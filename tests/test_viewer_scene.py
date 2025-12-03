@@ -393,9 +393,12 @@ def test_tension_lab_traces_calibration_path() -> None:
 
     html = VIEWER_HTML.read_text(encoding="utf-8")
 
-    assert (
-        "Automation sweep — traces the load-cell carriage path across the calibration rail." in html
+    automation_tooltip = (
+        "Automation sweep — traces the load-cell carriage path across the calibration "
+        "rail."
     )
+
+    assert automation_tooltip in html
     assert "tensionLabPathControllers" in html
 
 
