@@ -447,6 +447,15 @@ def test_billboard_highlights_next_feed_countdown() -> None:
     assert "Next feed: Queue clear." in html
 
 
+def test_spool_billboard_reports_remaining_feeds() -> None:
+    """The spool billboard should mirror the remaining feed queue length."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "Remaining feeds: Awaiting planner preview…" in html
+    assert "Remaining feeds: Queue clear." in html
+
+
 def test_viewer_mentions_z_axis_leadscrew() -> None:
     """The scene should describe the Z-axis leadscrew lift assembly."""
 

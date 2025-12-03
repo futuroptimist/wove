@@ -132,9 +132,10 @@ the hologram. The billboard now mirrors the Yarn Flow panel in real time,
 flagging missing targets and keeping the fed-versus-planned totals in sync with
 the hologram and spool ring. It now calls out the next two yarn feed countdowns
 so crews can see the upcoming and following pulses without leaving the scene
-overlay. Cycle pacing now mirrors the Yarn Flow timer on the same billboard,
-listing the elapsed and remaining seconds beside the feed countdowns for a
-single at-a-glance progress pulse.
+overlay and reports how many yarn feed cues remain in the preview loop. Cycle
+pacing now mirrors the Yarn Flow timer on the same billboard, listing the
+elapsed and remaining seconds beside the feed countdowns for a single
+at-a-glance progress pulse.
 A pair of cooling fans—the electronics bay exhaust and the hook-carriage
 mount—idle with a gentle spin and ramp up whenever the yarn feed engages, so the
 viewer keeps thermal cues in step with spool choreography.

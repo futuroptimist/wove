@@ -1968,6 +1968,16 @@
             detailLines.push('Awaiting planner preview…');
           }
 
+          if (typeof remainingFeedCount === 'number') {
+            detailLines.push(
+              remainingFeedCount > 0
+                ? `Remaining feeds: ${remainingFeedCount}`
+                : 'Remaining feeds: Queue clear.',
+            );
+          } else {
+            detailLines.push('Remaining feeds: Awaiting planner preview…');
+          }
+
           if (nextFeedCountdown && remainingFeedCount !== 0) {
             detailLines.push(
               `Next feed: #${nextFeedCountdown.step + 1} in ${nextFeedCountdown.delta.toFixed(
