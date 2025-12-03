@@ -130,6 +130,29 @@
             "homed"
           ],
           "description": "Reported homing state captured when generating the plan."
+        },
+        "tension_sensor_calibration": {
+          "type": "object",
+          "description": "Calibration pairs mapping hall-effect sensor readings to grams.",
+          "required": [
+            "pairs"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "pairs": {
+              "type": "array",
+              "description": "Ordered reading/grams pairs for interpolation.",
+              "minItems": 2,
+              "items": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                  "type": "number"
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -227,6 +250,10 @@
         "extrusion_mm": {
           "type": "number",
           "description": "Yarn extrusion distance in millimeters after applying the command."
+        },
+        "tension_sensor_reading": {
+          "type": "number",
+          "description": "Optional hall-effect sensor reading captured alongside the state snapshot."
         }
       }
     },

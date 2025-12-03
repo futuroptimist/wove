@@ -25,6 +25,7 @@ from wove.pattern_cli import (
     _planner_payload,
     _points_from_svg,
     _strip_namespace,
+    _tension_sensor_reading,
     _write_output,
     main,
     parse_args,
@@ -186,6 +187,11 @@ def test_planner_schema_accepts_machine_profile_block(
     )
 
     planner_validator.validate(payload)
+
+
+def test_tension_sensor_reading_defaults_to_baseline_for_missing_comment() -> None:
+    assert _tension_sensor_reading(None) == pytest.approx(140.0)
+    assert _tension_sensor_reading("unexpected step") == pytest.approx(140.0)
 
 
 def test_translate_pattern_slip_stitches():

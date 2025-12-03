@@ -180,6 +180,9 @@ additional debugging, or to raise errors when routing data through
 ``estimate_profile_for_sensor_reading``. When driving the optional servo-based tension adjuster,
 use ``estimate_sensor_reading_for_tension`` to determine the sensor reading that corresponds to a
 target pull force before commanding the actuator.
+Planner exports can include ``tension_sensor_calibration`` metadata alongside per-command
+``tension_sensor_reading`` samples so the Three.js overlay converts hall-effect telemetry into
+grams in real time and highlights when readings are clamped to the calibrated span.
 
 The calibration bench inside the Tension Lab renders that automation path. The Three.js viewer now
 parks a micro-servo tension adjuster beside the load-cell carriage with a glowing status light so

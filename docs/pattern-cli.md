@@ -144,7 +144,11 @@ teal dashed outline, making it obvious when planner bounds sit inside the
 configured machine profile limits. If a planner export exceeds those limits on
 any axis, the browser overlay now calls out the offending axes and the preview
 highlights the machine envelope in amber so you know to tighten the bounds
-before committing a dry run.
+before committing a dry run. Include ``tension_sensor_calibration`` metadata and
+per-command ``tension_sensor_reading`` samples in planner exports to feed the
+viewer live hall-effect telemetry; the overlay converts those readings into
+grams, notes when samples are clamped to the calibrated span, and falls back to
+feed-rate estimates when calibration is absent.
 
 ## Embedding the parser in automation
 

@@ -605,6 +605,7 @@
       let patternPreviewContainer = null;
       let plannerBounds = null;
       let machineProfileBounds = null;
+      let tensionCalibration = null;
       let patternPreviewDurationSeconds = defaultPatternPreviewDurationSeconds;
       let lastPatternStepIndex = -1;
       let lastPatternProgress = -1;
@@ -1012,6 +1013,101 @@
       function coerceFiniteNumber(value) {
         const numeric = Number(value);
         return Number.isFinite(numeric) ? numeric : null;
+      }
+
+      function normalizeTensionCalibration(defaults) {
+        if (!defaults || typeof defaults !== 'object') {
+          return null;
+        }
+
+        const calibration =
+          defaults.tension_sensor_calibration ??
+          defaults.tension_calibration ??
+          null;
+
+        const candidatePoints = Array.isArray(calibration?.pairs)
+          ? calibration.pairs
+          : Array.isArray(calibration?.points)
+            ? calibration.points
+            : Array.isArray(calibration)
+              ? calibration
+              : null;
+
+        if (!candidatePoints) {
+          return null;
+        }
+
+        const points = [];
+
+        candidatePoints.forEach((entry) => {
+          if (Array.isArray(entry) && entry.length >= 2) {
+            const [reading, grams] = entry;
+            const normalizedReading = coerceFiniteNumber(reading);
+            const normalizedGrams = coerceFiniteNumber(grams);
+            if (normalizedReading !== null && normalizedGrams !== null && normalizedGrams >= 0) {
+              points.push({ reading: normalizedReading, grams: normalizedGrams });
+            }
+            return;
+          }
+
+          if (entry && typeof entry === 'object') {
+            const normalizedReading = coerceFiniteNumber(entry.reading ?? entry.sensor);
+            const normalizedGrams = coerceFiniteNumber(entry.grams ?? entry.force_grams);
+            if (normalizedReading !== null && normalizedGrams !== null && normalizedGrams >= 0) {
+              points.push({ reading: normalizedReading, grams: normalizedGrams });
+            }
+          }
+        });
+
+        if (points.length < 2) {
+          return null;
+        }
+
+        const ordered = points
+          .slice()
+          .sort((a, b) => a.reading - b.reading)
+          .filter((point, index, array) => {
+            if (index === 0) {
+              return true;
+            }
+            const previous = array[index - 1];
+            return point.reading > previous.reading && point.grams > previous.grams;
+          });
+
+        return ordered.length >= 2 ? ordered : null;
+      }
+
+      function estimateTensionFromSensor(reading, calibration) {
+        if (reading === null || !Array.isArray(calibration) || calibration.length < 2) {
+          return null;
+        }
+
+        const sorted = calibration;
+        const lower = sorted[0];
+        const upper = sorted[sorted.length - 1];
+        let clamped = false;
+        let safeReading = reading;
+
+        if (reading <= lower.reading) {
+          safeReading = lower.reading;
+          clamped = reading < lower.reading;
+        } else if (reading >= upper.reading) {
+          safeReading = upper.reading;
+          clamped = reading > upper.reading;
+        }
+
+        for (let index = 0; index < sorted.length - 1; index += 1) {
+          const start = sorted[index];
+          const end = sorted[index + 1];
+          if (safeReading >= start.reading && safeReading <= end.reading) {
+            const span = end.reading - start.reading;
+            const ratio = span > 0 ? (safeReading - start.reading) / span : 0;
+            const grams = THREE.MathUtils.lerp(start.grams, end.grams, ratio);
+            return { grams, clamped, min: lower.reading, max: upper.reading };
+          }
+        }
+
+        return null;
       }
 
       function normalizeBounds(bounds) {
@@ -1905,7 +2001,9 @@
         cableChainRemainingFeeds =
           typeof remainingFeedCount === 'number' ? remainingFeedCount : null;
 
-        if (yarnFlowTensionElement) {
+        let feedRateMmPerSec = null;
+
+        if (yarnFlowTensionElement || yarnFlowRateElement) {
           const previousEvent =
             Number.isFinite(stepIndex) &&
             stepIndex > 0 &&
@@ -1923,19 +2021,45 @@
               ? patternPreviewDurationSeconds / totalSteps
               : null;
 
-          if (currentExtrusion === null || stepDurationSeconds === null) {
-            yarnFlowTensionElement.textContent = yarnFlowTensionFallbackMessage;
-            setTone(yarnFlowTensionElement, 'neutral');
-          } else {
+          if (currentExtrusion !== null && stepDurationSeconds !== null) {
             const baselineExtrusion = Number.isFinite(patternExtrusionBaseline)
               ? patternExtrusionBaseline
               : 0;
             const previousSample =
               previousExtrusion !== null ? previousExtrusion : baselineExtrusion;
             const extrusionDelta = Math.max(currentExtrusion - previousSample, 0);
-            const feedRateMmPerSec = extrusionDelta / stepDurationSeconds;
+            feedRateMmPerSec = extrusionDelta / stepDurationSeconds;
             feedRateLabel = `Feed rate: ${feedRateMmPerSec.toFixed(1)} mm/s`;
             feedRateTone = yarnExtrusionActive ? 'ready' : 'info';
+          } else {
+            feedRateLabel = yarnFlowRateFallbackMessage;
+            feedRateTone = 'neutral';
+          }
+        }
+
+        if (yarnFlowTensionElement) {
+          const tensionGrams = coerceFiniteNumber(event.tensionGrams);
+          const tensionReading = coerceFiniteNumber(event.tensionSensorReading);
+          const sensorEstimate = estimateTensionFromSensor(tensionReading, tensionCalibration);
+
+          let tensionLabel = yarnFlowTensionFallbackMessage;
+          let tensionTone = 'neutral';
+
+          if (tensionGrams !== null) {
+            tensionLabel = `Tension telemetry: ${tensionGrams.toFixed(1)} g (sensor feed).`;
+            tensionTone = yarnExtrusionActive ? 'ready' : 'info';
+          } else if (sensorEstimate) {
+            const suffix = sensorEstimate.clamped
+              ? ` — clamped to ${sensorEstimate.min.toFixed(1)}–${sensorEstimate.max.toFixed(1)} reading range`
+              : '';
+            tensionLabel =
+              `Tension telemetry: ${sensorEstimate.grams.toFixed(1)} g (hall sensor${suffix}).`;
+            tensionTone = yarnExtrusionActive ? 'ready' : 'info';
+          } else if (tensionReading !== null && !sensorEstimate) {
+            tensionLabel =
+              'Tension telemetry: Include tension_sensor_calibration to convert hall sensor readings.';
+            tensionTone = 'warning';
+          } else if (feedRateMmPerSec !== null) {
             // Tension estimation calibrated to documented profiles:
             // - Lace: 20g @ 45mm/s
             // - Super Bulky: 95g @ 28mm/s
@@ -1955,10 +2079,13 @@
               ((MAX_TENSION - MIN_TENSION) * (MIN_FEED_RATE - clampedFeedRate)) /
                 (MIN_FEED_RATE - MAX_FEED_RATE);
 
-            yarnFlowTensionElement.textContent =
-              `Tension telemetry: ${estimatedGrams.toFixed(1)} g (hall sensor est.)`;
-            setTone(yarnFlowTensionElement, yarnExtrusionActive ? 'ready' : 'info');
+            tensionLabel =
+              `Tension telemetry: ${estimatedGrams.toFixed(1)} g (feed-rate estimate).`;
+            tensionTone = yarnExtrusionActive ? 'ready' : 'info';
           }
+
+          yarnFlowTensionElement.textContent = tensionLabel;
+          setTone(yarnFlowTensionElement, tensionTone);
         }
 
         if (yarnFlowRateElement) {
@@ -2104,6 +2231,12 @@
             y: normalizeNumber(state.y_mm),
             z: normalizeNumber(state.z_mm),
             extrusion: normalizeNumber(state.extrusion_mm),
+            tensionGrams: coerceFiniteNumber(
+              state.tension_grams ?? state.tension_g ?? state.tension,
+            ),
+            tensionSensorReading: coerceFiniteNumber(
+              state.tension_sensor_reading ?? state.sensor_reading ?? state.tension_sensor,
+            ),
           };
         });
       }
@@ -2114,6 +2247,7 @@
             options.defaults && typeof options.defaults === 'object'
               ? options.defaults
               : null;
+          tensionCalibration = normalizeTensionCalibration(plannerDefaults);
         }
         if (Object.prototype.hasOwnProperty.call(options, 'machineProfileBounds')) {
           machineProfileBounds = normalizeMachineProfileBounds(options.machineProfileBounds);

@@ -13,7 +13,23 @@
     "yarn_feed_rate_mm_min": 300,
     "default_row_height_mm": 6.0,
     "require_home": false,
-    "home_state": "unknown"
+    "home_state": "unknown",
+    "tension_sensor_calibration": {
+      "pairs": [
+        [
+          102.0,
+          20.0
+        ],
+        [
+          168.5,
+          55.0
+        ],
+        [
+          220.0,
+          85.0
+        ]
+      ]
+    }
   },
   "bounds": {
     "x_mm": {
@@ -41,7 +57,8 @@
         "x_mm": 0.0,
         "y_mm": 0.0,
         "z_mm": 4.0,
-        "extrusion_mm": 0.0
+        "extrusion_mm": 0.0,
+        "tension_sensor_reading": 140.0
       },
       "comment": "use millimeters"
     },
@@ -52,7 +69,8 @@
         "x_mm": 0.0,
         "y_mm": 0.0,
         "z_mm": 4.0,
-        "extrusion_mm": 0.0
+        "extrusion_mm": 0.0,
+        "tension_sensor_reading": 140.0
       },
       "comment": "absolute positioning"
     },
@@ -63,7 +81,8 @@
         "x_mm": 0.0,
         "y_mm": 0.0,
         "z_mm": 4.0,
-        "extrusion_mm": 0.0
+        "extrusion_mm": 0.0,
+        "tension_sensor_reading": 140.0
       },
       "comment": "zero axes"
     },
@@ -74,7 +93,8 @@
         "x_mm": 0.0,
         "y_mm": 0.0,
         "z_mm": -1.5,
-        "extrusion_mm": 0.0
+        "extrusion_mm": 0.0,
+        "tension_sensor_reading": 162.0
       },
       "comment": "chain stitch 1 of 3: plunge"
     },
@@ -85,7 +105,8 @@
         "x_mm": 0.0,
         "y_mm": 0.0,
         "z_mm": -1.5,
-        "extrusion_mm": 0.5
+        "extrusion_mm": 0.5,
+        "tension_sensor_reading": 188.0
       },
       "comment": "chain stitch 1 of 3: feed yarn"
     },
@@ -96,7 +117,8 @@
         "x_mm": 0.0,
         "y_mm": 0.0,
         "z_mm": 4.0,
-        "extrusion_mm": 0.5
+        "extrusion_mm": 0.5,
+        "tension_sensor_reading": 150.0
       },
       "comment": "chain stitch 1 of 3: raise"
     },
@@ -107,7 +129,8 @@
         "x_mm": 5.0,
         "y_mm": 0.0,
         "z_mm": 4.0,
-        "extrusion_mm": 0.5
+        "extrusion_mm": 0.5,
+        "tension_sensor_reading": 155.0
       },
       "comment": "chain stitch 1 of 3: advance"
     },
@@ -118,7 +141,8 @@
         "x_mm": 5.0,
         "y_mm": 0.0,
         "z_mm": -1.5,
-        "extrusion_mm": 0.5
+        "extrusion_mm": 0.5,
+        "tension_sensor_reading": 162.0
       },
       "comment": "chain stitch 2 of 3: plunge"
     },
@@ -129,7 +153,8 @@
         "x_mm": 5.0,
         "y_mm": 0.0,
         "z_mm": -1.5,
-        "extrusion_mm": 1.0
+        "extrusion_mm": 1.0,
+        "tension_sensor_reading": 188.0
       },
       "comment": "chain stitch 2 of 3: feed yarn"
     },
@@ -140,7 +165,8 @@
         "x_mm": 5.0,
         "y_mm": 0.0,
         "z_mm": 4.0,
-        "extrusion_mm": 1.0
+        "extrusion_mm": 1.0,
+        "tension_sensor_reading": 150.0
       },
       "comment": "chain stitch 2 of 3: raise"
     },
@@ -151,7 +177,8 @@
         "x_mm": 10.0,
         "y_mm": 0.0,
         "z_mm": 4.0,
-        "extrusion_mm": 1.0
+        "extrusion_mm": 1.0,
+        "tension_sensor_reading": 155.0
       },
       "comment": "chain stitch 2 of 3: advance"
     },
@@ -162,7 +189,8 @@
         "x_mm": 10.0,
         "y_mm": 0.0,
         "z_mm": -1.5,
-        "extrusion_mm": 1.0
+        "extrusion_mm": 1.0,
+        "tension_sensor_reading": 162.0
       },
       "comment": "chain stitch 3 of 3: plunge"
     },
@@ -173,7 +201,8 @@
         "x_mm": 10.0,
         "y_mm": 0.0,
         "z_mm": -1.5,
-        "extrusion_mm": 1.5
+        "extrusion_mm": 1.5,
+        "tension_sensor_reading": 188.0
       },
       "comment": "chain stitch 3 of 3: feed yarn"
     },
@@ -184,7 +213,8 @@
         "x_mm": 10.0,
         "y_mm": 0.0,
         "z_mm": 4.0,
-        "extrusion_mm": 1.5
+        "extrusion_mm": 1.5,
+        "tension_sensor_reading": 150.0
       },
       "comment": "chain stitch 3 of 3: raise"
     },
@@ -195,7 +225,8 @@
         "x_mm": 15.0,
         "y_mm": 0.0,
         "z_mm": 4.0,
-        "extrusion_mm": 1.5
+        "extrusion_mm": 1.5,
+        "tension_sensor_reading": 155.0
       },
       "comment": "chain stitch 3 of 3: advance"
     },
@@ -206,7 +237,8 @@
         "x_mm": 15.0,
         "y_mm": 0.0,
         "z_mm": 4.0,
-        "extrusion_mm": 1.5
+        "extrusion_mm": 1.5,
+        "tension_sensor_reading": 142.0
       },
       "comment": "pause for 0.250 s"
     },
@@ -217,7 +249,8 @@
         "x_mm": 15.0,
         "y_mm": 8.0,
         "z_mm": 4.0,
-        "extrusion_mm": 1.5
+        "extrusion_mm": 1.5,
+        "tension_sensor_reading": 155.0
       },
       "comment": "reposition"
     },
@@ -228,7 +261,8 @@
         "x_mm": 0.0,
         "y_mm": 14.5,
         "z_mm": 4.0,
-        "extrusion_mm": 1.5
+        "extrusion_mm": 1.5,
+        "tension_sensor_reading": 155.0
       },
       "comment": "turn to next row"
     },
@@ -239,7 +273,8 @@
         "x_mm": 0.0,
         "y_mm": 14.5,
         "z_mm": -2.0,
-        "extrusion_mm": 1.5
+        "extrusion_mm": 1.5,
+        "tension_sensor_reading": 162.0
       },
       "comment": "single stitch 1 of 2: plunge"
     },
@@ -250,7 +285,8 @@
         "x_mm": 0.0,
         "y_mm": 14.5,
         "z_mm": -2.0,
-        "extrusion_mm": 2.1
+        "extrusion_mm": 2.1,
+        "tension_sensor_reading": 188.0
       },
       "comment": "single stitch 1 of 2: feed yarn"
     },
@@ -261,7 +297,8 @@
         "x_mm": 0.0,
         "y_mm": 14.5,
         "z_mm": 4.0,
-        "extrusion_mm": 2.1
+        "extrusion_mm": 2.1,
+        "tension_sensor_reading": 150.0
       },
       "comment": "single stitch 1 of 2: raise"
     },
@@ -272,7 +309,8 @@
         "x_mm": 4.5,
         "y_mm": 14.5,
         "z_mm": 4.0,
-        "extrusion_mm": 2.1
+        "extrusion_mm": 2.1,
+        "tension_sensor_reading": 155.0
       },
       "comment": "single stitch 1 of 2: advance"
     },
@@ -283,7 +321,8 @@
         "x_mm": 4.5,
         "y_mm": 14.5,
         "z_mm": -2.0,
-        "extrusion_mm": 2.1
+        "extrusion_mm": 2.1,
+        "tension_sensor_reading": 162.0
       },
       "comment": "single stitch 2 of 2: plunge"
     },
@@ -294,7 +333,8 @@
         "x_mm": 4.5,
         "y_mm": 14.5,
         "z_mm": -2.0,
-        "extrusion_mm": 2.7
+        "extrusion_mm": 2.7,
+        "tension_sensor_reading": 188.0
       },
       "comment": "single stitch 2 of 2: feed yarn"
     },
@@ -305,7 +345,8 @@
         "x_mm": 4.5,
         "y_mm": 14.5,
         "z_mm": 4.0,
-        "extrusion_mm": 2.7
+        "extrusion_mm": 2.7,
+        "tension_sensor_reading": 150.0
       },
       "comment": "single stitch 2 of 2: raise"
     },
@@ -316,7 +357,8 @@
         "x_mm": 9.0,
         "y_mm": 14.5,
         "z_mm": 4.0,
-        "extrusion_mm": 2.7
+        "extrusion_mm": 2.7,
+        "tension_sensor_reading": 155.0
       },
       "comment": "single stitch 2 of 2: advance"
     }
