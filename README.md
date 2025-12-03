@@ -118,6 +118,9 @@ stays obvious at a glance—even in still frames.
 The Yarn Flow overlay now mirrors that hall-effect telemetry, translating feed
 bursts into estimated grams so operators can read tension directly from the
 planner preview without juggling calculator scripts.
+Live feed-rate estimates now sit beside those tension callouts so yarn flow
+changes remain obvious even when extrusion targets are absent from the planner
+payload.
 
 The source spool now spins in sync with yarn feed events so the hologram shows
 fiber unwinding from the supply while the PTFE tube glows. When extrusion

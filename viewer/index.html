@@ -438,6 +438,9 @@
         <p id="yarn-flow-queue" data-tone="neutral">
           Remaining feed pulses: Awaiting planner preview…
         </p>
+        <p id="yarn-flow-rate" data-tone="neutral">
+          Feed rate: Awaiting yarn feed telemetry…
+        </p>
         <p id="yarn-flow-upcoming" data-tone="neutral">
           Next feed pulses: Awaiting planner preview…
         </p>
@@ -520,6 +523,7 @@
       const yarnFlowTotalElement = document.getElementById('yarn-flow-total');
       const yarnFlowProgressElement = document.getElementById('yarn-flow-progress');
       const yarnFlowQueueElement = document.getElementById('yarn-flow-queue');
+      const yarnFlowRateElement = document.getElementById('yarn-flow-rate');
       const yarnFlowUpcomingElement = document.getElementById('yarn-flow-upcoming');
       const yarnFlowTimingElement = document.getElementById('yarn-flow-timing');
       const yarnFlowCycleElement = document.getElementById('yarn-flow-cycle');
@@ -628,6 +632,8 @@
         'Total yarn fed: Awaiting planner preview…';
       const yarnFlowProgressFallbackMessage =
         'Spool progress: Awaiting planner preview…';
+      const yarnFlowRateFallbackMessage =
+        'Feed rate: Awaiting yarn feed telemetry…';
       const yarnFlowQueueFallbackMessage =
         'Remaining feed pulses: Awaiting planner preview…';
       const yarnFlowUpcomingFallbackMessage =
@@ -1621,6 +1627,10 @@
           yarnFlowQueueElement.textContent = yarnFlowQueueFallbackMessage;
           setTone(yarnFlowQueueElement, 'neutral');
         }
+        if (yarnFlowRateElement) {
+          yarnFlowRateElement.textContent = yarnFlowRateFallbackMessage;
+          setTone(yarnFlowRateElement, 'neutral');
+        }
         if (yarnFlowUpcomingElement) {
           yarnFlowUpcomingElement.textContent = yarnFlowUpcomingFallbackMessage;
           setTone(yarnFlowUpcomingElement, 'neutral');
@@ -1709,6 +1719,8 @@
         let nextFeedCountdown = null;
         let followingFeedCountdown = null;
         let remainingFeedCount = null;
+        let feedRateLabel = yarnFlowRateFallbackMessage;
+        let feedRateTone = 'neutral';
         if (yarnFlowTotalElement) {
           const fedLabel = fedAmount.toFixed(2);
           let summary = `Total yarn fed: ${fedLabel} mm`;
@@ -1917,6 +1929,8 @@
               previousExtrusion !== null ? previousExtrusion : baselineExtrusion;
             const extrusionDelta = Math.max(currentExtrusion - previousSample, 0);
             const feedRateMmPerSec = extrusionDelta / stepDurationSeconds;
+            feedRateLabel = `Feed rate: ${feedRateMmPerSec.toFixed(1)} mm/s`;
+            feedRateTone = yarnExtrusionActive ? 'ready' : 'info';
             // Tension estimation calibrated to documented profiles:
             // - Lace: 20g @ 45mm/s
             // - Super Bulky: 95g @ 28mm/s
@@ -1940,6 +1954,11 @@
               `Tension telemetry: ${estimatedGrams.toFixed(1)} g (hall sensor est.)`;
             setTone(yarnFlowTensionElement, yarnExtrusionActive ? 'ready' : 'info');
           }
+        }
+
+        if (yarnFlowRateElement) {
+          yarnFlowRateElement.textContent = feedRateLabel;
+          setTone(yarnFlowRateElement, feedRateTone);
         }
 
         if (yarnFlowPositionElement) {
