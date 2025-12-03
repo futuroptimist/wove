@@ -240,7 +240,8 @@ fixture.
   verify the motion envelope matches the CLI payload. A floating 3D bounds cage
   now rides above the preview plane with mint edges that track the planner's Z
   span so crews can see vertical clearance without cross-referencing the
-  sidebar.
+  sidebar. Twin Z-span halos now pulse at the cage limits so the clearance band
+  stays obvious even when the overlay is hidden.
 - Optional polycarbonate shield with hinged access door for production environments;
   the Three.js viewer renders the translucent enclosure so teams can rehearse
   safe access paths before printing hardware. Mint-highlighted floor markings

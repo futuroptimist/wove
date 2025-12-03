@@ -216,7 +216,9 @@ and remain in the preview loop so crews can gauge overall progress at a glance.
 
 A translucent planner bounds frame now wraps the hologram while the overlay
 lists the X/Y/Z/E limits emitted by the planner payload so teams can confirm the
-motion envelope before committing the sequence to hardware.
+motion envelope before committing the sequence to hardware. A mint-glow bounds
+cage now hovers above the preview plane with pulsing Z-span markers so vertical
+clearance stays obvious from inside the hologram.
 
 Live coordinates now accompany each planner step so technicians can confirm the
 active `X`, `Y`, `Z`, and yarn-feed positions directly from the overlay while

@@ -589,6 +589,8 @@
       const yarnBeadControllers = [];
       const spoolControllers = [];
       const spoolProgressSegments = [];
+      const boundsCageControllers = [];
+      const boundsZMarkerControllers = [];
       let spoolProgressLabelController = null;
       const fanControllers = [];
       const statusIndicatorControllers = [];
@@ -2679,9 +2681,9 @@
         const boundsCage = new THREE.LineSegments(
           new THREE.EdgesGeometry(new THREE.BoxGeometry(usableWidth, usableHeight, usableDepth)),
           new THREE.LineBasicMaterial({
-            color: 0x9bb7ff,
+            color: 0x5fffd2,
             transparent: true,
-            opacity: 0.55,
+            opacity: 0.62,
             depthTest: false,
           }),
         );
@@ -2690,6 +2692,108 @@
         boundsCage.position.set(0, 0, normalizedZCenter * usableDepth);
         boundsCage.name = 'planner-bounds-cage';
         boundsGroup.add(boundsCage);
+        addHoverInfo(
+          boundsCage,
+          'Mint bounds cage — tracks the planner Z span above the preview plane.',
+          { passthrough: true },
+        );
+        boundsCageControllers.push({
+          material: boundsCage.material,
+          baseOpacity: boundsCage.material.opacity ?? 0.62,
+          opacityAmplitude: 0.18,
+          speed: 1.4,
+          phaseOffset: 0.4,
+        });
+
+        const zSpanColumnMaterial = new THREE.MeshStandardMaterial({
+          color: 0x5fffd2,
+          emissive: 0x2cf9c5,
+          emissiveIntensity: 0.8,
+          metalness: 0.12,
+          roughness: 0.35,
+          transparent: true,
+          opacity: 0.36,
+          depthTest: false,
+          depthWrite: false,
+        });
+        const zSpanColumn = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.013, 0.013, usableDepth, 24),
+          zSpanColumnMaterial,
+        );
+        zSpanColumn.rotation.x = Math.PI / 2;
+        zSpanColumn.position.set(-(usableWidth / 2) - 0.055, 0, normalizedZCenter * usableDepth);
+        zSpanColumn.renderOrder = 3;
+        boundsGroup.add(zSpanColumn);
+        addHoverInfo(
+          zSpanColumn,
+          'Z-span beacon — mint column spotlights the planner clearance band.',
+          { passthrough: true },
+        );
+
+        const markerMaterial = new THREE.MeshStandardMaterial({
+          color: 0xb4fff1,
+          emissive: 0x56ffd3,
+          emissiveIntensity: 0.9,
+          metalness: 0.2,
+          roughness: 0.28,
+          transparent: true,
+          opacity: 0.72,
+          depthTest: false,
+        });
+        const zMarkerGeometry = new THREE.TorusGeometry(0.08, 0.01, 16, 48);
+        const zMinMarker = new THREE.Mesh(zMarkerGeometry, markerMaterial.clone());
+        zMinMarker.rotation.x = Math.PI / 2;
+        zMinMarker.position.set(0, 0, -usableDepth / 2);
+        addHoverInfo(
+          zMinMarker,
+          'Z-span markers — twin halos pulse at the planner min and max heights.',
+          { passthrough: true },
+        );
+        zSpanColumn.add(zMinMarker);
+        const zMaxMarker = new THREE.Mesh(zMarkerGeometry, markerMaterial.clone());
+        zMaxMarker.rotation.x = Math.PI / 2;
+        zMaxMarker.position.set(0, 0, usableDepth / 2);
+        zSpanColumn.add(zMaxMarker);
+        addHoverInfo(
+          zMaxMarker,
+          'Z-span markers — twin halos pulse at the planner min and max heights.',
+          { passthrough: true },
+        );
+
+        boundsZMarkerControllers.push(
+          {
+            mesh: zSpanColumn,
+            material: zSpanColumnMaterial,
+            baseOpacity: zSpanColumnMaterial.opacity ?? 0.36,
+            opacityAmplitude: 0.16,
+            baseIntensity: zSpanColumnMaterial.emissiveIntensity ?? 0.8,
+            intensityAmplitude: 0.5,
+            speed: 1.8,
+            phaseOffset: 0.2,
+          },
+          {
+            mesh: zMinMarker,
+            material: zMinMarker.material,
+            baseOpacity: zMinMarker.material.opacity ?? 0.72,
+            opacityAmplitude: 0.18,
+            baseIntensity: zMinMarker.material.emissiveIntensity ?? 0.9,
+            intensityAmplitude: 0.6,
+            scaleAmplitude: 0.16,
+            speed: 2.4,
+            phaseOffset: 0.1,
+          },
+          {
+            mesh: zMaxMarker,
+            material: zMaxMarker.material,
+            baseOpacity: zMaxMarker.material.opacity ?? 0.72,
+            opacityAmplitude: 0.18,
+            baseIntensity: zMaxMarker.material.emissiveIntensity ?? 0.9,
+            intensityAmplitude: 0.6,
+            scaleAmplitude: 0.16,
+            speed: 2.2,
+            phaseOffset: 1.2,
+          },
+        );
 
         const profileBounds = options.machineProfileBounds;
         if (profileBounds?.x && profileBounds?.y) {
@@ -6825,6 +6929,55 @@
             const opacityPulse =
               opacityBase + Math.sin(elapsed * speed + phaseOffset) * opacityAmp;
             material.opacity = THREE.MathUtils.clamp(opacityPulse, 0, 1);
+          }
+        });
+        boundsCageControllers.forEach((controller) => {
+          const { material, baseOpacity = 0, opacityAmplitude = 0, speed = 1, phaseOffset = 0 } =
+            controller;
+          if (!material || typeof material.opacity !== 'number') {
+            return;
+          }
+          const swing = Math.sin(elapsed * speed + phaseOffset);
+          const opacity = THREE.MathUtils.clamp(
+            baseOpacity + swing * opacityAmplitude,
+            0,
+            1,
+          );
+          material.opacity = opacity;
+        });
+        boundsZMarkerControllers.forEach((controller) => {
+          const {
+            mesh,
+            material,
+            baseOpacity = 0,
+            opacityAmplitude = 0,
+            baseIntensity = 0,
+            intensityAmplitude = 0,
+            scaleAmplitude = 0,
+            speed = 1,
+            phaseOffset = 0,
+          } = controller;
+          const swing = Math.sin(elapsed * speed + phaseOffset);
+          const pulse = 0.5 + 0.5 * swing;
+
+          if (material) {
+            if (typeof material.opacity === 'number') {
+              const opacity = THREE.MathUtils.clamp(
+                baseOpacity + swing * opacityAmplitude,
+                0,
+                1,
+              );
+              material.opacity = opacity;
+            }
+            if (typeof material.emissiveIntensity === 'number') {
+              const intensity = Math.max(0, baseIntensity + swing * intensityAmplitude);
+              material.emissiveIntensity = intensity;
+            }
+          }
+
+          if (mesh && scaleAmplitude) {
+            const scale = 1 + scaleAmplitude * pulse;
+            mesh.scale.setScalar(scale);
           }
         });
         filamentSensorControllers.forEach((controller) => {
