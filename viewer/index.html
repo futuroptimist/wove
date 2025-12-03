@@ -2049,7 +2049,7 @@
             tensionTone = yarnExtrusionActive ? 'ready' : 'info';
           } else if (sensorEstimate) {
             const suffix = sensorEstimate.clamped
-              ? ` — clamped to ${sensorEstimate.min.toFixed(1)}–${sensorEstimate.max.toFixed(1)}`
+              ? ` — clamped to ${sensorEstimate.min.toFixed(1)}–${sensorEstimate.max.toFixed(1)} reading range`
               : '';
             tensionLabel =
               `Tension telemetry: ${sensorEstimate.grams.toFixed(1)} g (hall sensor${suffix}).`;
