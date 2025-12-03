@@ -534,6 +534,7 @@
       const cableChainPulseControllers = [];
       const cableChainChaseControllers = [];
       const tensionLabPathControllers = [];
+      const automationLightOffset = new THREE.Vector3(0, 0.18, 0);
       const stepBadgeControllers = [];
       const anchorPulseControllers = [];
       let activeCluster = null;
@@ -6916,7 +6917,7 @@
             activeIntensity = 1.1,
             restOpacity = 0.4,
             activeOpacity = 0.95,
-            restLightIntensity = 0.8,
+            restLightIntensity = 0.9,
             activeLightIntensity = 1.6,
             damping = 5.5,
           } = controller;
@@ -6932,7 +6933,7 @@
           const point = curve.getPointAt(updatedTravel);
           tracer.position.copy(point);
           if (light) {
-            light.position.copy(point.clone().add(new THREE.Vector3(0, 0.18, 0)));
+            light.position.copy(point).add(automationLightOffset);
           }
 
           const targetIntensity = yarnExtrusionActive ? activeIntensity : restIntensity;
