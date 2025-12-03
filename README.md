@@ -186,6 +186,9 @@ envelope now also calls out the extrusion range, making it obvious when
 E-axis limits differ from the gantry travel. Bounds checks now compare the
 extrusion axis too, warning when yarn-feed envelopes outgrow the machine
 profile limits.
+When a planner omits travel_min/travel_max values, the overlay now warns that
+the machine profile envelope is unavailable and points to the missing fields so
+contributors know what to include in their next export.
 
 A Yarn Flow monitor in the overlay mirrors the hologram's yarn feed state,
 calling out when the planner is actively pulling fiber and when the spool is
