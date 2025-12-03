@@ -115,6 +115,11 @@ the planner preview runs. Three glowing beads now chase along the same guide,
 staggering their pace whenever the preview feeds yarn so the flow direction
 stays obvious at a glance—even in still frames.
 
+A filament break sensor now sits along that PTFE run. The viewer highlights the
+optional detector with a glowing window and label, pulsing brighter whenever
+the planner feeds yarn so operators can rehearse where to slot inline sensors
+before wiring hardware.
+
 The Yarn Flow overlay now mirrors that hall-effect telemetry, translating feed
 bursts into estimated grams so operators can read tension directly from the
 planner preview without juggling calculator scripts.

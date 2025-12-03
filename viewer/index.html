@@ -531,6 +531,7 @@
       const interactiveMeshes = [];
       const productClusters = [];
       const safeAccessHighlights = [];
+      const filamentSensorControllers = [];
       const cableChainPulseControllers = [];
       const cableChainChaseControllers = [];
       const stepBadgeControllers = [];
@@ -4814,6 +4815,71 @@
           'Yarn management module: active tensioning keeps stitches uniform throughout runs.',
         );
 
+        const filamentSensor = new THREE.Group();
+        filamentSensor.name = 'filament-break-sensor';
+        filamentSensor.position.set(-1.76, 1.92, -1.56);
+
+        const filamentBracket = new THREE.Mesh(
+          new THREE.BoxGeometry(0.36, 0.18, 0.32),
+          new THREE.MeshStandardMaterial({
+            color: 0x273141,
+            metalness: 0.42,
+            roughness: 0.4,
+            emissive: 0x0f1524,
+            emissiveIntensity: 0.3,
+          }),
+        );
+        filamentBracket.castShadow = true;
+        filamentBracket.position.set(0, -0.04, 0);
+        filamentSensor.add(filamentBracket);
+
+        const filamentWindowMaterial = new THREE.MeshStandardMaterial({
+          color: 0xffe3b5,
+          metalness: 0.2,
+          roughness: 0.2,
+          emissive: 0x3a2a0d,
+          emissiveIntensity: 0.35,
+          transparent: true,
+          opacity: 0.9,
+        });
+        const filamentWindow = new THREE.Mesh(
+          new THREE.BoxGeometry(0.22, 0.22, 0.22),
+          filamentWindowMaterial,
+        );
+        filamentWindow.castShadow = true;
+        filamentSensor.add(filamentWindow);
+
+        const filamentIndicator = new THREE.PointLight(0xffb86c, 0.9, 2.2);
+        filamentIndicator.position.set(0, 0.12, 0);
+        filamentSensor.add(filamentIndicator);
+
+        const filamentGuide = new THREE.Object3D();
+        filamentGuide.position.set(0, 0.16, 0);
+        filamentSensor.add(filamentGuide);
+        filamentSensor.userData.guide = filamentGuide;
+
+        const filamentLabel = buildLabel('Filament Break Sensor', '#ffe7c7');
+        filamentLabel.position.set(0.02, 0.74, 0);
+        filamentLabel.scale.multiplyScalar(0.42);
+        filamentSensor.add(filamentLabel);
+
+        addHoverInfo(
+          filamentSensor,
+          'Filament break sensor — optional inline detector to pause runs if yarn snaps.',
+        );
+        filamentSensorControllers.push({
+          material: filamentWindowMaterial,
+          light: filamentIndicator,
+          idleIntensity: 0.35,
+          activeIntensity: 1.2,
+          idleLight: filamentIndicator.intensity,
+          activeLight: 2.0,
+          linkedToExtrusion: true,
+          damping: 4.4,
+        });
+
+        group.add(filamentSensor);
+
         const sensorAssembly = new THREE.Group();
         sensorAssembly.position.set(-1.1, 1.9, -1.9);
 
@@ -4883,6 +4949,8 @@
         tensionAssembly.userData.guideEntry.getWorldPosition(tensionEntryPoint);
         const tensionExitPoint = new THREE.Vector3();
         tensionAssembly.userData.guideExit.getWorldPosition(tensionExitPoint);
+        const filamentSensorPoint = new THREE.Vector3();
+        filamentSensor.userData.guide.getWorldPosition(filamentSensorPoint);
         const sensorPoint = new THREE.Vector3();
         sensorAssembly.userData.guide.getWorldPosition(sensorPoint);
         const effectorPoint = new THREE.Vector3();
@@ -4893,6 +4961,8 @@
           spoolPoint.clone().add(new THREE.Vector3(0.45, 0.12, 0.18)),
           tensionEntryPoint,
           tensionExitPoint,
+          filamentSensorPoint.clone().add(new THREE.Vector3(0.1, 0.08, -0.02)),
+          filamentSensorPoint,
           sensorPoint.clone().add(new THREE.Vector3(0.18, 0.15, 0.04)),
           sensorPoint,
           effectorPoint.clone().add(new THREE.Vector3(-0.22, 0.1, -0.12)),
@@ -6521,6 +6591,41 @@
             const opacityPulse =
               opacityBase + Math.sin(elapsed * speed + phaseOffset) * opacityAmp;
             material.opacity = THREE.MathUtils.clamp(opacityPulse, 0, 1);
+          }
+        });
+        filamentSensorControllers.forEach((controller) => {
+          const {
+            material,
+            light,
+            idleIntensity = 0,
+            activeIntensity = idleIntensity,
+            idleLight = 0,
+            activeLight = idleLight,
+            linkedToExtrusion = false,
+            damping = 6.0,
+          } = controller;
+          const isActive = linkedToExtrusion ? yarnExtrusionActive : true;
+
+          if (material && typeof material.emissiveIntensity === 'number') {
+            const target = isActive ? activeIntensity : idleIntensity;
+            controller.currentIntensity = THREE.MathUtils.damp(
+              controller.currentIntensity ?? idleIntensity,
+              target,
+              damping,
+              delta,
+            );
+            material.emissiveIntensity = controller.currentIntensity;
+          }
+
+          if (light) {
+            const target = isActive ? activeLight : idleLight;
+            controller.currentLight = THREE.MathUtils.damp(
+              controller.currentLight ?? idleLight,
+              target,
+              damping,
+              delta,
+            );
+            light.intensity = controller.currentLight;
           }
         });
         cableChainPulseControllers.forEach((controller) => {
