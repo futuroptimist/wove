@@ -534,6 +534,7 @@
       const cableChainPulseControllers = [];
       const cableChainChaseControllers = [];
       const tensionLabPathControllers = [];
+      const automationTracerPoint = new THREE.Vector3();
       const automationLightOffset = new THREE.Vector3(0, 0.18, 0);
       const stepBadgeControllers = [];
       const anchorPulseControllers = [];
@@ -6930,10 +6931,10 @@
           const updatedTravel = (travel + delta * speed) % 1;
           controller.travel = updatedTravel;
 
-          const point = curve.getPointAt(updatedTravel);
-          tracer.position.copy(point);
+          curve.getPointAt(updatedTravel, automationTracerPoint);
+          tracer.position.copy(automationTracerPoint);
           if (light) {
-            light.position.copy(point).add(automationLightOffset);
+            light.position.copy(automationTracerPoint).add(automationLightOffset);
           }
 
           const targetIntensity = yarnExtrusionActive ? activeIntensity : restIntensity;
