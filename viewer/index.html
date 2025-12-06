@@ -2195,7 +2195,12 @@
         homingGuardHomeStateElement.style.display = '';
 
         if (hasVerifiedHome) {
-          const verifiedPrefix = requireHome === false ? 'Homing optional' : 'Homing required';
+          const verifiedPrefix =
+            requireHome === false
+              ? 'Homing optional'
+              : requireHome === true
+                ? 'Homing required'
+                : 'Homing status unknown';
           homingGuardStatusElement.textContent = `${verifiedPrefix} — planner captured a verified homing cycle.`;
           setTone(homingGuardStatusElement, 'ready');
         } else if (requireHome === true) {
