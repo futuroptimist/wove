@@ -236,7 +236,10 @@ rendering the expected payload before rehearsing motion.
 The new **Homing Guard** panel highlights whether the planner required a homed
 machine and echoes the captured `home_state`. Green and amber tones flag when a
 preview came from a verified homing cycle or needs attention so operators can
-double-check the gantry status before executing the motion sequence. It now
+double-check the gantry status before executing the motion sequence. When a
+preview records a homed machine, the status callout flips to a ready tone and
+labels the capture as a verified homing cycle so operators know the requirement
+is satisfied. It now
 echoes the live planner coordinates alongside those status lights so the safety
 overlay tracks the same `X`, `Y`, `Z`, and yarn-feed snapshot as the Pattern
 Studio panel. The coordinates refresh continuously between planner steps so the

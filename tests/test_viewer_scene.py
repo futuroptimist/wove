@@ -280,6 +280,14 @@ def test_viewer_supports_keyboard_cluster_navigation() -> None:
     assert "event.key === 'ArrowRight'" in html
 
 
+def test_homing_guard_verifies_homed_cycles() -> None:
+    """Homing Guard should acknowledge a verified homing capture."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "planner captured a verified homing cycle" in html
+
+
 def test_viewer_mentions_thermistor_channel() -> None:
     """Ensure the overlay documents the heated-bed thermistor channel."""
 
