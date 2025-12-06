@@ -2182,6 +2182,7 @@
         const requireHome =
           typeof guard?.require_home === 'boolean' ? guard.require_home : null;
         const homeState = normalizeHomeState(guard?.home_state);
+        const hasVerifiedHome = homeState && homeState.toLowerCase() === 'homed';
 
         if (requireHome === null && !homeState) {
           homingGuardStatusElement.textContent = homingGuardFallbackMessage;
@@ -2193,7 +2194,16 @@
 
         homingGuardHomeStateElement.style.display = '';
 
-        if (requireHome === true) {
+        if (hasVerifiedHome) {
+          const verifiedPrefix =
+            requireHome === false
+              ? 'Homing optional'
+              : requireHome === true
+                ? 'Homing required'
+                : 'Homing status unknown';
+          homingGuardStatusElement.textContent = `${verifiedPrefix} — planner captured a verified homing cycle.`;
+          setTone(homingGuardStatusElement, 'ready');
+        } else if (requireHome === true) {
           homingGuardStatusElement.textContent =
             'Requires a homed machine before executing this planner preview.';
           setTone(homingGuardStatusElement, 'warning');
