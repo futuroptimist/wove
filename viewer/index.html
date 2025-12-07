@@ -7060,6 +7060,12 @@
             material.opacity = THREE.MathUtils.clamp(controller.currentOpacity, 0, 1);
           }
         });
+        const upcomingFeedUrgency =
+          cableChainNextFeedSeconds !== null &&
+          cableChainRemainingFeeds !== null &&
+          cableChainRemainingFeeds > 0
+            ? THREE.MathUtils.clamp(1 - cableChainNextFeedSeconds / 6, 0, 1)
+            : 0;
         cableChainChaseControllers.forEach((controller) => {
           const {
             mesh,
@@ -7080,15 +7086,9 @@
             return;
           }
 
-          const upcomingUrgency =
-            cableChainNextFeedSeconds !== null &&
-            cableChainRemainingFeeds !== null &&
-            cableChainRemainingFeeds > 0
-              ? THREE.MathUtils.clamp(1 - cableChainNextFeedSeconds / 6, 0, 1)
-              : 0;
           const speed = yarnExtrusionActive
             ? activeSpeed
-            : THREE.MathUtils.lerp(idleSpeed, approachSpeed, upcomingUrgency);
+            : THREE.MathUtils.lerp(idleSpeed, approachSpeed, upcomingFeedUrgency);
           const updatedTravel = (travel + delta * speed) % 1;
           controller.travel = updatedTravel;
 
@@ -7098,9 +7098,7 @@
             light.position.copy(position);
           }
 
-          const chaseStrength = yarnExtrusionActive
-            ? 1
-            : upcomingUrgency;
+          const chaseStrength = yarnExtrusionActive ? 1 : upcomingFeedUrgency;
           const targetIntensity = THREE.MathUtils.lerp(
             restIntensity,
             activeIntensity,
@@ -7395,13 +7393,7 @@
           const scaledProgress = normalizedProgress * spoolProgressSegments.length;
           const fullSegments = Math.floor(scaledProgress);
           const partialStrength = scaledProgress - fullSegments;
-          const feedPulseHighlight = yarnExtrusionActive
-            ? 1
-            : cableChainNextFeedSeconds !== null &&
-                cableChainRemainingFeeds !== null &&
-                cableChainRemainingFeeds > 0
-              ? THREE.MathUtils.clamp(1 - cableChainNextFeedSeconds / 6, 0, 1)
-              : 0;
+          const feedPulseHighlight = yarnExtrusionActive ? 1 : upcomingFeedUrgency;
           const feedPulseWave = 0.5 + 0.5 * Math.sin(elapsed * 3.2);
           spoolProgressSegments.forEach((controller, index) => {
             const {
