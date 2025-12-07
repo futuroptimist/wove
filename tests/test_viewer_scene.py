@@ -228,6 +228,16 @@ def test_anchor_pucks_sequence_runs_clockwise() -> None:
     assert area < 0, "anchor offsets should wind clockwise"
 
 
+def test_z_lift_shimmers_with_yarn_feed() -> None:
+    """The Z-axis lift should glow in sync with yarn feed pulses."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "const zLiftGlowControllers" in html
+    assert "zLiftGlowControllers.push" in html
+    assert "zLiftGlowControllers.forEach" in html
+
+
 def test_viewer_mentions_selection_sweep() -> None:
     """Ensure the viewer copy mentions the rotating cluster sweep."""
 
