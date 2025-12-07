@@ -220,12 +220,15 @@ def test_anchor_pucks_sequence_runs_clockwise() -> None:
     assert isinstance(offsets, list)
     assert len(offsets) >= 3
 
+    assert offsets[0] == [-1.8, -1.0]
+    assert offsets[1] == [1.8, -1.0]
+
     area = 0.0
     for index, (x1, z1) in enumerate(offsets):
         x2, z2 = offsets[(index + 1) % len(offsets)]
         area += x1 * z2 - x2 * z1
 
-    assert area < 0, "anchor offsets should wind clockwise"
+    assert area > 0, "anchor offsets should wind clockwise from the plaza entry"
 
 
 def test_viewer_mentions_selection_sweep() -> None:

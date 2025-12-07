@@ -97,7 +97,10 @@ up in the hologram before you even glance at the overlay.
 Pulsing magnetic anchor pucks now mark the removable workpiece bed so crews can
 practice swapping swatch plates into position before the gantry starts tracing
 calibration paths. A sequential glow now sweeps clockwise across the anchors to
-rehearse the recommended swap order at a glance.
+rehearse the recommended swap order at a glance. The halo kicks off at the
+operator-side anchor closest to the plaza entry before circling clockwise so
+technicians start each plate swap near the doorway and follow the production
+floor choreography.
 
 Peek through the tinted electronics bay under the work bed to see the SKR Mini
 controller stack, cooling fan, and glowing status LED that route motion power up
