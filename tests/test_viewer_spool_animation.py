@@ -27,3 +27,13 @@ def test_spool_progress_billboard_tracks_planner_totals() -> None:
     assert "spoolProgressLabelController.update" in html
     assert "header: spoolProgressHeader" in html
     assert "detailLines.push('Next feed: Awaiting planner preview…')" in html
+
+
+def test_spool_progress_ring_pre_pulses_for_upcoming_feed() -> None:
+    """The spool progress ring should glow ahead of the next feed pulse."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "feedPulseHighlight" in html
+    assert "cableChainNextFeedSeconds" in html
+    assert "feedPulseWave" in html
