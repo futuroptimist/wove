@@ -538,6 +538,7 @@
       const filamentSensorControllers = [];
       const cableChainPulseControllers = [];
       const cableChainChaseControllers = [];
+      const zLiftGlowControllers = [];
       let cableChainBillboardController = null;
       const tensionLabPathControllers = [];
       const automationTracerPoint = new THREE.Vector3();
@@ -4996,6 +4997,14 @@
           speed: 1.8,
           phaseOffset: 0.3,
         });
+        zLiftGlowControllers.push({
+          material: leadscrewMaterial,
+          baseIntensity: leadscrewMaterial.emissiveIntensity ?? 0.35,
+          amplitude: 0.35,
+          lightAmplitude: 0.25,
+          speed: 1.4,
+          phaseOffset: 0.15,
+        });
 
         const nutMaterial = new THREE.MeshStandardMaterial({
           color: 0xffe0ad,
@@ -5019,6 +5028,15 @@
           amplitude: 0.28,
           speed: 2.4,
           phaseOffset: 1.1,
+        });
+        zLiftGlowControllers.push({
+          material: nutMaterial,
+          baseIntensity: nutMaterial.emissiveIntensity ?? 0.5,
+          amplitude: 0.4,
+          lightAmplitude: 0.3,
+          speed: 1.9,
+          phaseOffset: 0.65,
+          feedBoost: 0.4,
         });
 
         const flexureMaterial = new THREE.MeshStandardMaterial({
@@ -5049,6 +5067,15 @@
           speed: 2.0,
           phaseOffset: 0.6,
         });
+        zLiftGlowControllers.push({
+          material: flexureMaterial,
+          baseIntensity: flexureMaterial.emissiveIntensity ?? 0.45,
+          amplitude: 0.35,
+          lightAmplitude: 0.25,
+          speed: 2.3,
+          phaseOffset: 0.35,
+          feedBoost: 0.35,
+        });
 
         const zLiftLabel = buildLabel('Z-Axis Leadscrew', '#d8f0ff');
         zLiftLabel.position.set(0, zStepperHeight + leadscrewHeight + 0.7, 0);
@@ -5058,6 +5085,14 @@
         const zLiftGlow = new THREE.PointLight(0xaad6ff, 0.9, 3.2);
         zLiftGlow.position.set(0, nut.position.y + 0.4, 0.2);
         zLiftGroup.add(zLiftGlow);
+        zLiftGlowControllers.push({
+          light: zLiftGlow,
+          baseLightIntensity: zLiftGlow.intensity,
+          lightAmplitude: 0.35,
+          speed: 1.3,
+          phaseOffset: 0.9,
+          feedBoost: 0.25,
+        });
 
         group.add(zLiftGroup);
 
@@ -7382,6 +7417,50 @@
 
           if (light) {
             light.intensity = baseLightIntensity + lightAmplitude * emphasis;
+          }
+        });
+        const zLiftFeedHighlight = yarnExtrusionActive ? 1 : upcomingFeedUrgency * 0.7;
+        zLiftGlowControllers.forEach((controller) => {
+          const {
+            material,
+            light,
+            baseIntensity = 0,
+            amplitude = 0,
+            baseLightIntensity = 0,
+            lightAmplitude = 0,
+            speed = 1.0,
+            phaseOffset = 0,
+            feedBoost = 0,
+            damping = 4.0,
+          } = controller;
+
+          const idlePulse = 0.5 + 0.5 * Math.sin((elapsed + phaseOffset) * speed * Math.PI * 2);
+          const emphasis = THREE.MathUtils.clamp(
+            idlePulse + zLiftFeedHighlight + feedBoost * zLiftFeedHighlight,
+            0,
+            2,
+          );
+
+          if (material && typeof material.emissiveIntensity === 'number') {
+            const target = baseIntensity + amplitude * emphasis;
+            controller.currentIntensity = THREE.MathUtils.damp(
+              controller.currentIntensity ?? baseIntensity,
+              target,
+              damping,
+              delta,
+            );
+            material.emissiveIntensity = Math.max(0, controller.currentIntensity);
+          }
+
+          if (light) {
+            const targetLight = baseLightIntensity + lightAmplitude * emphasis;
+            controller.currentLight = THREE.MathUtils.damp(
+              controller.currentLight ?? baseLightIntensity,
+              targetLight,
+              damping,
+              delta,
+            );
+            light.intensity = Math.max(0, controller.currentLight);
           }
         });
         stepBadgeControllers.forEach((controller) => {

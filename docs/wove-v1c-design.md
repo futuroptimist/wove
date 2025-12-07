@@ -42,6 +42,8 @@ Key modules include:
   depth. Anti-backlash nut and printed flexures reduce play. The Three.js viewer now spotlights
   the Z-axis leadscrew, anti-backlash nut, and flexures beside the hook carriage so contributors
   can rehearse how the lift assembly suppresses wobble before printing hardware.
+  The glow now swells with each yarn feed pulse so the lift stack breathes in sync with the
+  planner preview while remaining calm at idle.
 
 (yarn-handling)=
 ### Yarn Handling {#yarn-handling}

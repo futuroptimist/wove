@@ -166,6 +166,8 @@ to motion electronics before wiring hardware.
 A shimmering Z-axis lift now hugs the hook carriage: the T8 leadscrew pulses
 beside the gantry while the anti-backlash nut and printed flexures glow to show
 how the carriage keeps vertical motion tight.
+The shimmer now amplifies with each yarn feed pulse so the lift stack
+breathes in sync with the planner preview.
 
 Color-coded axis beacons now glow beside the gantry so visitors can read the
 positive X, Y, and Z directions at a glance. Their hovering arrows match the
