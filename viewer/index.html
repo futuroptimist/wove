@@ -4322,6 +4322,10 @@
           sprite.position.copy(anchorPoint.clone().add(new THREE.Vector3(0, 0.42, 0)));
           sprite.scale.multiplyScalar(0.86);
           group.add(sprite);
+          addHoverInfo(
+            sprite,
+            'Cable chain countdown — displays feed timing and remaining pulses near the chase orb.',
+          );
         }
 
         cableChainChaseControllers.push({

@@ -458,6 +458,13 @@ def test_viewer_builds_spool_progress_ring() -> None:
     assert "const spoolProgressSegments" in html
     assert "spoolProgressSegments.push" in html
     assert "spoolProgressSegments.forEach" in html
+    progress_copy = " ".join(
+        [
+            "Spool progress ring — fills as the planner feeds yarn",
+            "around the supply reel.",
+        ]
+    )
+    assert progress_copy in html
 
 
 def test_cable_chain_billboard_surfaces_countdowns() -> None:
@@ -468,13 +475,6 @@ def test_cable_chain_billboard_surfaces_countdowns() -> None:
     assert "createCableChainBillboard" in html
     assert "Countdown: Awaiting planner preview…" in html
     assert "Remaining feeds: Queue clear." in html
-    progress_copy = " ".join(
-        [
-            "Spool progress ring — fills as the planner feeds yarn",
-            "around the supply reel.",
-        ]
-    )
-    assert progress_copy in html
 
 
 def test_spool_progress_ring_shifts_with_tone() -> None:
