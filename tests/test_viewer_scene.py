@@ -21,6 +21,20 @@ def test_workpiece_support_bed_is_documented() -> None:
     assert "workpiece support bed" in html.lower()
 
 
+def test_anchor_pulse_sequence_runs_clockwise() -> None:
+    """The magnetic anchor sweep should follow the clockwise swap order."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    match = re.search(r"const anchorOffsets = \[(.*?)\];", html, re.DOTALL)
+    assert match is not None
+
+    pairs = re.findall(r"\[\s*(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)\s*\]", match.group(1))
+    offsets = [(float(x), float(z)) for x, z in pairs]
+
+    assert offsets == [(-1.8, 1.2), (1.8, 1.2), (1.8, -1.0), (-1.8, -1.0)]
+
+
 def test_hall_effect_sensor_is_documented() -> None:
     """The viewer should surface the hall-effect yarn tension sensor."""
 
