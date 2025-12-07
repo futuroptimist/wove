@@ -29,7 +29,8 @@ def test_anchor_pulse_sequence_runs_clockwise() -> None:
     match = re.search(r"const anchorOffsets = \[(.*?)\];", html, re.DOTALL)
     assert match is not None
 
-    pairs = re.findall(r"\[\s*(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)\s*\]", match.group(1))
+    anchor_pattern = r"\[\s*(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)\s*\]"
+    pairs = re.findall(anchor_pattern, match.group(1))
     offsets = [(float(x), float(z)) for x, z in pairs]
 
     assert offsets == [(-1.8, 1.2), (1.8, 1.2), (1.8, -1.0), (-1.8, -1.0)]
