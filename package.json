@@ -1,0 +1,10 @@
+{
+  "name": "wove-viewer-utils",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "lint": "echo 'no JS lint defined'",
+    "format:check": "echo 'no JS formatter defined'",
+    "test": "echo 'no JS tests defined'"
+  }
+}

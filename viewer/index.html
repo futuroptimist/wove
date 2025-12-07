@@ -538,6 +538,7 @@
       const filamentSensorControllers = [];
       const cableChainPulseControllers = [];
       const cableChainChaseControllers = [];
+      let cableChainBillboardController = null;
       const tensionLabPathControllers = [];
       const automationTracerPoint = new THREE.Vector3();
       const automationLightOffset = new THREE.Vector3(0, 0.18, 0);
@@ -860,6 +861,123 @@
         const baseScale = 0.02;
         sprite.scale.set(canvas.width * baseScale, canvas.height * baseScale, 1);
         return sprite;
+      }
+
+      function createCableChainBillboard() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 256;
+        const context = canvas.getContext('2d');
+        if (!context) {
+          return null;
+        }
+
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.anisotropy = 4;
+
+        const material = new THREE.SpriteMaterial({
+          map: texture,
+          transparent: true,
+          depthWrite: false,
+        });
+
+        const sprite = new THREE.Sprite(material);
+        sprite.scale.set(1.5, 0.9, 1);
+        sprite.center.set(0.5, 0);
+        sprite.renderOrder = 6;
+
+        const toneStyles = {
+          ready: { accent: '#79f2d0', text: '#e6fff7' },
+          info: { accent: '#9bb7ff', text: '#e5ebff' },
+          warning: { accent: '#ffcf7d', text: '#fff2dc' },
+          neutral: { accent: '#d3ddff', text: '#f5f7ff' },
+        };
+
+        let lastKey = '';
+
+        function drawPanel({ header, lines, tone }) {
+          const palette = toneStyles[tone] || toneStyles.neutral;
+          context.clearRect(0, 0, canvas.width, canvas.height);
+
+          const paddingX = 18;
+          const paddingY = 16;
+          const width = canvas.width - paddingX * 2;
+          const height = canvas.height - paddingY * 2;
+          const radius = 22;
+
+          context.save();
+          context.beginPath();
+          context.moveTo(paddingX + radius, paddingY);
+          context.lineTo(paddingX + width - radius, paddingY);
+          context.quadraticCurveTo(
+            paddingX + width,
+            paddingY,
+            paddingX + width,
+            paddingY + radius,
+          );
+          context.lineTo(paddingX + width, paddingY + height - radius);
+          context.quadraticCurveTo(
+            paddingX + width,
+            paddingY + height,
+            paddingX + width - radius,
+            paddingY + height,
+          );
+          context.lineTo(paddingX + radius, paddingY + height);
+          context.quadraticCurveTo(
+            paddingX,
+            paddingY + height,
+            paddingX,
+            paddingY + height - radius,
+          );
+          context.lineTo(paddingX, paddingY + radius);
+          context.quadraticCurveTo(paddingX, paddingY, paddingX + radius, paddingY);
+          context.closePath();
+
+          context.fillStyle = 'rgba(12, 16, 34, 0.84)';
+          context.fill();
+          context.lineWidth = 4;
+          context.strokeStyle = palette.accent;
+          context.stroke();
+
+          context.fillStyle = palette.accent;
+          context.textAlign = 'center';
+          context.textBaseline = 'middle';
+          context.font = '700 54px "Segoe UI", sans-serif';
+          context.fillText(header, canvas.width / 2, paddingY + 56);
+
+          context.fillStyle = palette.text;
+          context.font = '44px "Segoe UI", sans-serif';
+          const startY = paddingY + 112;
+          const spacing = 46;
+          lines.forEach((line, index) => {
+            context.fillText(line, canvas.width / 2, startY + index * spacing);
+          });
+
+          context.restore();
+          texture.needsUpdate = true;
+        }
+
+        function updatePanel({ header, lines, tone }) {
+          const normalizedLines = Array.isArray(lines) ? lines.map((line) => String(line)) : [''];
+          const key = `${header}__${normalizedLines.join('\n')}__${tone}`;
+          if (key === lastKey) {
+            return;
+          }
+          drawPanel({ header, lines: normalizedLines, tone });
+          lastKey = key;
+        }
+
+        updatePanel({
+          header: 'Cable Chain',
+          lines: ['Countdown: Awaiting planner preview…', 'Remaining feeds: —'],
+          tone: 'neutral',
+        });
+
+        return {
+          sprite,
+          update: updatePanel,
+        };
       }
 
       function createSpoolProgressBillboard() {
@@ -1648,6 +1766,40 @@
         });
       }
 
+      function updateCableChainBillboard({ nextSeconds, remainingFeeds, extrusionActive }) {
+        if (!cableChainBillboardController) {
+          return;
+        }
+
+        let tone = 'neutral';
+        const lines = [];
+
+        if (typeof remainingFeeds === 'number') {
+          const feedLabel =
+            remainingFeeds > 0
+              ? `Remaining feeds: ${remainingFeeds}`
+              : 'Remaining feeds: Queue clear.';
+          lines.push(feedLabel);
+          tone = remainingFeeds > 0 ? 'info' : 'ready';
+        } else {
+          lines.push('Remaining feeds: Awaiting planner preview…');
+        }
+
+        if (typeof nextSeconds === 'number') {
+          const countdownText = `Next chase pulse in ${nextSeconds.toFixed(1)} s.`;
+          lines.unshift(countdownText);
+          tone = extrusionActive ? 'ready' : tone;
+        } else {
+          lines.unshift('Countdown: Awaiting planner preview…');
+        }
+
+        cableChainBillboardController.update({
+          header: 'Cable Chain',
+          lines,
+          tone,
+        });
+      }
+
       function computeFeedCountdowns(preview, feedStepIndices, progressRatio, durationSeconds) {
         const cumulativeDistances =
           preview && Array.isArray(preview.cumulativeDistances)
@@ -1765,6 +1917,11 @@
         }
 
         applySpoolProgressTone('neutral');
+        updateCableChainBillboard({
+          nextSeconds: null,
+          remainingFeeds: null,
+          extrusionActive: false,
+        });
       }
 
       function updateYarnFlowPanel(
@@ -2004,6 +2161,11 @@
         cableChainNextFeedSeconds = nextFeedCountdown ? nextFeedCountdown.delta : null;
         cableChainRemainingFeeds =
           typeof remainingFeedCount === 'number' ? remainingFeedCount : null;
+        updateCableChainBillboard({
+          nextSeconds: cableChainNextFeedSeconds,
+          remainingFeeds: cableChainRemainingFeeds,
+          extrusionActive: yarnExtrusionActive,
+        });
 
         let feedRateMmPerSec = null;
 
@@ -4161,6 +4323,20 @@
         const chaseLight = new THREE.PointLight(0x7cc2ff, 1.0, 3.0);
         chaseLight.position.copy(chaseOrb.position);
         group.add(chaseLight);
+
+        const cableChainBillboard = createCableChainBillboard();
+        if (cableChainBillboard) {
+          cableChainBillboardController = cableChainBillboard;
+          const { sprite } = cableChainBillboard;
+          const anchorPoint = chainCurve.getPointAt(0.22);
+          sprite.position.copy(anchorPoint.clone().add(new THREE.Vector3(0, 0.42, 0)));
+          sprite.scale.multiplyScalar(0.86);
+          group.add(sprite);
+          addHoverInfo(
+            sprite,
+            'Cable chain countdown — displays feed timing and remaining pulses near the chase orb.',
+          );
+        }
 
         cableChainChaseControllers.push({
           mesh: chaseOrb,

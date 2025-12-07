@@ -475,6 +475,16 @@ def test_viewer_builds_spool_progress_ring() -> None:
     assert progress_copy in html
 
 
+def test_cable_chain_billboard_surfaces_countdowns() -> None:
+    """Cable chain billboard should mirror feed countdowns and queue size."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "createCableChainBillboard" in html
+    assert "Countdown: Awaiting planner preview…" in html
+    assert "Remaining feeds: Queue clear." in html
+
+
 def test_spool_progress_ring_shifts_with_tone() -> None:
     """Spool progress segments should react to Yarn Flow tones."""
 
