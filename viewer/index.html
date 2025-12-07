@@ -7395,6 +7395,14 @@
           const scaledProgress = normalizedProgress * spoolProgressSegments.length;
           const fullSegments = Math.floor(scaledProgress);
           const partialStrength = scaledProgress - fullSegments;
+          const feedPulseHighlight = yarnExtrusionActive
+            ? 1
+            : cableChainNextFeedSeconds !== null &&
+                cableChainRemainingFeeds !== null &&
+                cableChainRemainingFeeds > 0
+              ? THREE.MathUtils.clamp(1 - cableChainNextFeedSeconds / 6, 0, 1)
+              : 0;
+          const feedPulseWave = 0.5 + 0.5 * Math.sin(elapsed * 3.2);
           spoolProgressSegments.forEach((controller, index) => {
             const {
               mesh,
@@ -7414,8 +7422,13 @@
             } else if (index === fullSegments) {
               targetStrength = partialStrength;
             }
+            const highlightedStrength = THREE.MathUtils.clamp(
+              targetStrength + feedPulseHighlight * feedPulseWave * 0.6,
+              0,
+              1,
+            );
             const intensityTarget =
-              baseIntensity + (activeIntensity - baseIntensity) * targetStrength;
+              baseIntensity + (activeIntensity - baseIntensity) * highlightedStrength;
             controller.currentIntensity = THREE.MathUtils.damp(
               controller.currentIntensity ?? baseIntensity,
               intensityTarget,
@@ -7424,7 +7437,7 @@
             );
             material.emissiveIntensity = controller.currentIntensity;
             const opacityTarget =
-              baseOpacity + (activeOpacity - baseOpacity) * targetStrength;
+              baseOpacity + (activeOpacity - baseOpacity) * highlightedStrength;
             controller.currentOpacity = THREE.MathUtils.damp(
               controller.currentOpacity ?? baseOpacity,
               opacityTarget,
