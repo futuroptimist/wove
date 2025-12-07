@@ -82,8 +82,9 @@ overview. The plaza highlights these milestones today:
 Follow the glowing cable chain from the electronics bay to the gantry and watch
 the chase orb accelerate whenever planner feed pulses approach, rehearsing safe
 wire routing before the effector moves. A floating cable-chain billboard now
-echoes the countdown and remaining feed pulses so operators can keep the chase
-orb in view without leaving the hologram.
+echoes the countdown, the following pulse, and remaining feed pulses so
+operators can keep the chase orb in view without leaving the hologram, and it
+shares the same cycle pacing callout surfaced in the Yarn Flow overlay.
 
 Mint-highlighted floor markings now extend through the open doorway with alternating, pulsing
 footprints so operators can practice each step without clipping the gantry or tension hardware.

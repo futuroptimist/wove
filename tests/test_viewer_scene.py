@@ -483,6 +483,8 @@ def test_cable_chain_billboard_surfaces_countdowns() -> None:
     assert "createCableChainBillboard" in html
     assert "Countdown: Awaiting planner preview…" in html
     assert "Remaining feeds: Queue clear." in html
+    assert "Following pulse in" in html
+    assert "Cycle pacing:" in html
 
 
 def test_spool_progress_ring_shifts_with_tone() -> None:

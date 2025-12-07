@@ -602,7 +602,9 @@
       const plannerUploadLimitBytes = 10 * 1024 * 1024;
       let yarnExtrusionActive = false;
       let cableChainNextFeedSeconds = null;
+      let cableChainFollowingFeedSeconds = null;
       let cableChainRemainingFeeds = null;
+      let cableChainCycleTimingDetail = null;
       let patternPlannerEvents = [];
       let patternPreviewGroup = null;
       let patternPreviewContainer = null;
@@ -1766,13 +1768,31 @@
         });
       }
 
-      function updateCableChainBillboard({ nextSeconds, remainingFeeds, extrusionActive }) {
+      function updateCableChainBillboard({
+        nextSeconds,
+        followingSeconds,
+        remainingFeeds,
+        cycleTimingDetail,
+        extrusionActive,
+      }) {
         if (!cableChainBillboardController) {
           return;
         }
 
         let tone = 'neutral';
         const lines = [];
+
+        if (typeof nextSeconds === 'number') {
+          const countdownText = `Next chase pulse in ${nextSeconds.toFixed(1)} s.`;
+          lines.push(countdownText);
+          tone = extrusionActive ? 'ready' : tone;
+        } else {
+          lines.push('Countdown: Awaiting planner preview…');
+        }
+
+        if (typeof followingSeconds === 'number') {
+          lines.push(`Following pulse in ${followingSeconds.toFixed(1)} s.`);
+        }
 
         if (typeof remainingFeeds === 'number') {
           const feedLabel =
@@ -1785,12 +1805,8 @@
           lines.push('Remaining feeds: Awaiting planner preview…');
         }
 
-        if (typeof nextSeconds === 'number') {
-          const countdownText = `Next chase pulse in ${nextSeconds.toFixed(1)} s.`;
-          lines.unshift(countdownText);
-          tone = extrusionActive ? 'ready' : tone;
-        } else {
-          lines.unshift('Countdown: Awaiting planner preview…');
+        if (cycleTimingDetail) {
+          lines.push(cycleTimingDetail);
         }
 
         cableChainBillboardController.update({
@@ -1908,6 +1924,10 @@
           setTone(yarnFlowPositionElement, 'neutral');
         }
         spoolProgressRatio = 0;
+        cableChainNextFeedSeconds = null;
+        cableChainFollowingFeedSeconds = null;
+        cableChainRemainingFeeds = null;
+        cableChainCycleTimingDetail = null;
         if (spoolProgressLabelController) {
           spoolProgressLabelController.update({
             header: 'Yarn Feed',
@@ -1919,7 +1939,9 @@
         applySpoolProgressTone('neutral');
         updateCableChainBillboard({
           nextSeconds: null,
+          followingSeconds: null,
           remainingFeeds: null,
+          cycleTimingDetail: null,
           extrusionActive: false,
         });
       }
@@ -2159,11 +2181,17 @@
         }
 
         cableChainNextFeedSeconds = nextFeedCountdown ? nextFeedCountdown.delta : null;
+        cableChainFollowingFeedSeconds = followingFeedCountdown
+          ? followingFeedCountdown.delta
+          : null;
         cableChainRemainingFeeds =
           typeof remainingFeedCount === 'number' ? remainingFeedCount : null;
+        cableChainCycleTimingDetail = cycleTimingDetail;
         updateCableChainBillboard({
           nextSeconds: cableChainNextFeedSeconds,
+          followingSeconds: cableChainFollowingFeedSeconds,
           remainingFeeds: cableChainRemainingFeeds,
+          cycleTimingDetail: cableChainCycleTimingDetail,
           extrusionActive: yarnExtrusionActive,
         });
 
