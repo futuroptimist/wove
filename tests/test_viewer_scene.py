@@ -295,6 +295,15 @@ def test_spool_billboard_tracks_following_feed() -> None:
     assert "Following in" in html
 
 
+def test_spool_progress_ring_pre_pulse_documented() -> None:
+    """The spool ring should call out the pre-pulse sweep before feed events."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "pre-pulse sweep wraps the ring" in html
+    assert "spoolPrePulseSettings" in html
+
+
 def test_viewer_supports_keyboard_cluster_navigation() -> None:
     """Arrow keys should cycle roadmap milestones."""
 
