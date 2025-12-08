@@ -292,7 +292,7 @@ def test_spool_billboard_tracks_following_feed() -> None:
 
     html = VIEWER_HTML.read_text(encoding="utf-8")
 
-    assert "Following feed: #" in html
+    assert "Following in" in html
 
 
 def test_viewer_supports_keyboard_cluster_navigation() -> None:
@@ -539,8 +539,8 @@ def test_billboard_highlights_next_feed_countdown() -> None:
 
     html = VIEWER_HTML.read_text(encoding="utf-8")
 
-    assert "Next feed: Awaiting planner preview…" in html
-    assert "Next feed: Queue clear." in html
+    assert "Next feeds: Awaiting Yarn Flow timing…" in html
+    assert "Next feeds: Queue clear." in html
 
 
 def test_spool_billboard_reports_remaining_feeds() -> None:

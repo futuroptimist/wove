@@ -363,7 +363,8 @@
         </li>
         <li>
           The spool progress billboard now echoes the Yarn Flow countdowns so you can spot the next
-          two feed pulses directly from the hologram.
+          two feed pulses directly from the hologram. A combined countdown line stays active even
+          when the preview is paused so the next pulses stay visible from the plaza overview.
         </li>
         <li>
           Upload a planner export from <code>wove.pattern_cli</code> to rehearse your own motion
@@ -657,6 +658,8 @@
         'Tension telemetry: Awaiting planner preview…';
       const yarnFlowPositionFallbackMessage =
         'Coordinates: Awaiting yarn flow coordinates…';
+      const spoolProgressCountdownFallbackMessage =
+        'Next feeds: Awaiting Yarn Flow timing…';
       const spoolProgressTonePalette = {
         neutral: { color: 0xffb173, emissive: 0xff8c2f },
         info: { color: 0x9ee5ff, emissive: 0x48c2ff },
@@ -1874,6 +1877,28 @@
         };
       }
 
+      function formatBillboardFeedCountdown(next, following, remainingFeedCount) {
+        if (typeof remainingFeedCount === 'number' && remainingFeedCount <= 0) {
+          return 'Next feeds: Queue clear.';
+        }
+
+        if (!next) {
+          return spoolProgressCountdownFallbackMessage;
+        }
+
+        const segments = [
+          `Next feed in ${next.delta.toFixed(1)} s (#${next.step + 1})`,
+        ];
+
+        if (following && (!remainingFeedCount || remainingFeedCount > 1)) {
+          segments.push(
+            `Following in ${following.delta.toFixed(1)} s (#${following.step + 1})`,
+          );
+        }
+
+        return `Next feeds: ${segments.join(' · ')}`;
+      }
+
       function resetYarnFlowPanel() {
         if (!yarnFlowStatusElement || !yarnFlowSpoolElement) {
           return;
@@ -2312,34 +2337,20 @@
             detailLines.push('Awaiting planner preview…');
           }
 
-          if (typeof remainingFeedCount === 'number') {
-            detailLines.push(
-              remainingFeedCount > 0
+          const remainingFeedLabel =
+            typeof remainingFeedCount === 'number'
+              ? remainingFeedCount > 0
                 ? `Remaining feeds: ${remainingFeedCount}`
-                : 'Remaining feeds: Queue clear.',
-            );
-          } else {
-            detailLines.push('Remaining feeds: Awaiting planner preview…');
-          }
+                : 'Remaining feeds: Queue clear.'
+              : 'Remaining feeds: Awaiting planner preview…';
+          detailLines.push(remainingFeedLabel);
 
-          if (nextFeedCountdown && remainingFeedCount !== 0) {
-            detailLines.push(
-              `Next feed: #${nextFeedCountdown.step + 1} in ${nextFeedCountdown.delta.toFixed(
-                1,
-              )} s`,
-            );
-            if (followingFeedCountdown) {
-              detailLines.push(
-                `Following feed: #${followingFeedCountdown.step + 1} in ${followingFeedCountdown.delta.toFixed(
-                  1,
-                )} s`,
-              );
-            }
-          } else if (remainingFeedCount === 0) {
-            detailLines.push('Next feed: Queue clear.');
-          } else {
-            detailLines.push('Next feed: Awaiting planner preview…');
-          }
+          const countdownSummary = formatBillboardFeedCountdown(
+            nextFeedCountdown,
+            followingFeedCountdown,
+            remainingFeedCount,
+          );
+          detailLines.push(countdownSummary);
 
           if (cycleTimingDetail) {
             detailLines.push(cycleTimingDetail);

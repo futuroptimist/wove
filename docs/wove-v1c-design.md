@@ -70,6 +70,9 @@ ready, neutral, and warning tones so crews can see at a glance when the preview 
 feeds yarn without a declared target. The Yarn Flow panel mirrors the same percentage, highlighting
 when the preview reaches its planned payout and flagging runs that feed fiber without a declared
 target.
+A combined countdown line now stays pinned above the spool progress billboard, surfacing the next
+two feed pulses even when the preview is paused so plaza observers never lose sight of the upcoming
+extrusion cues.
 A gentle pre-pulse now ramps around the ring whenever a countdown nears the next yarn feed, giving
 operators a visible heads-up in the hologram before the spool spins.
 A floating yarn-feed progress billboard now hangs above the spool, echoing the fed-versus-planned
