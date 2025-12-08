@@ -4082,6 +4082,7 @@
             material: driver.material,
             restIntensity: 0.42,
             activeIntensity: 1.1,
+            idlePulseStrength: 0.3,
             pulseSpeed: 2.0 + index * 0.3,
             phaseOffset: index * 0.8,
             restOpacity: driver.material.opacity,
@@ -4139,6 +4140,7 @@
           material: statusLedMaterial,
           restIntensity: 0.9,
           activeIntensity: 1.6,
+          idlePulseStrength: 0.45,
           pulseSpeed: 3.2,
           phaseOffset: 0.4,
           restOpacity: 0.85,
@@ -7866,6 +7868,7 @@
             material,
             restIntensity = 0.5,
             activeIntensity = 1.1,
+            idlePulseStrength = 0,
             restOpacity = controller.restOpacity ?? material?.opacity ?? 1,
             activeOpacity = controller.activeOpacity ?? restOpacity,
             pulseSpeed = 2.2,
@@ -7876,9 +7879,13 @@
             return;
           }
           const pulse = 0.5 + 0.5 * Math.sin(elapsed * pulseSpeed + phaseOffset);
-          const targetIntensity = yarnExtrusionActive
-            ? THREE.MathUtils.lerp(restIntensity, activeIntensity, pulse)
-            : restIntensity;
+          const pulseStrengthRaw = yarnExtrusionActive ? 1 : idlePulseStrength;
+          const pulseStrength = THREE.MathUtils.clamp(pulseStrengthRaw, 0, 1);
+          const targetIntensity = THREE.MathUtils.lerp(
+            restIntensity,
+            activeIntensity,
+            pulse * pulseStrength,
+          );
           controller.currentIntensity = THREE.MathUtils.damp(
             controller.currentIntensity ?? targetIntensity,
             targetIntensity,
@@ -7888,9 +7895,11 @@
           material.emissiveIntensity = controller.currentIntensity;
 
           if (typeof material.opacity === 'number') {
-            const targetOpacity = yarnExtrusionActive
-              ? THREE.MathUtils.lerp(restOpacity, activeOpacity, pulse)
-              : restOpacity;
+            const targetOpacity = THREE.MathUtils.lerp(
+              restOpacity,
+              activeOpacity,
+              pulse * pulseStrength,
+            );
             controller.currentOpacity = THREE.MathUtils.damp(
               controller.currentOpacity ?? targetOpacity,
               targetOpacity,

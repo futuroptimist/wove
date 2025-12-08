@@ -166,6 +166,9 @@ A tinted electronics bay now shows the SKR Mini controller stack and trio of
 driver modules glowing through the access panel. Their indicator LEDs chase in
 sync with yarn feed pulses so contributors can trace how planner timelines map
 to motion electronics before wiring hardware.
+The controller stack now breathes even when idle, with the driver pods and
+status LED pulsing softly until yarn feed events brighten them in lockstep with
+the spool choreography.
 A shimmering Z-axis lift now hugs the hook carriage: the T8 leadscrew pulses
 beside the gantry while the anti-backlash nut and printed flexures glow to show
 how the carriage keeps vertical motion tight.
