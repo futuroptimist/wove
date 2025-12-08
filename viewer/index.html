@@ -4174,6 +4174,29 @@
         fan.position.set(0.54, 0.48, 0);
         fan.castShadow = true;
         group.add(fan);
+
+        const fanBlades = new THREE.Group();
+        fanBlades.name = 'electronics-bay-exhaust-blades';
+        fanBlades.position.copy(fan.position.clone().add(new THREE.Vector3(0, 0, 0.07)));
+
+        const fanBladeMaterial = new THREE.MeshStandardMaterial({
+          color: 0xbfd4ff,
+          emissive: 0x4f6bd6,
+          emissiveIntensity: 0.45,
+          metalness: 0.5,
+          roughness: 0.32,
+          side: THREE.DoubleSide,
+        });
+        const fanBladeGeometry = new THREE.BoxGeometry(0.04, 0.46, 0.12);
+        for (let index = 0; index < 3; index += 1) {
+          const blade = new THREE.Mesh(fanBladeGeometry, fanBladeMaterial);
+          blade.rotation.z = (Math.PI / 3) * index;
+          blade.castShadow = true;
+          fanBlades.add(blade);
+        }
+
+        group.add(fanBlades);
+
         fanControllers.push({
           mesh: fan,
           axis: 'z',
@@ -4183,6 +4206,20 @@
           damping: 4.5,
           direction: 1,
         });
+        fanControllers.push({
+          mesh: fanBlades,
+          axis: 'z',
+          idleSpeed: 2.8,
+          activeSpeed: 6.2,
+          linkedToExtrusion: true,
+          damping: 4.6,
+          direction: 1,
+        });
+
+        addHoverInfo(
+          fanBlades,
+          'Electronics bay exhaust blades — idle softly and sprint with yarn feed pulses.',
+        );
         addHoverInfo(fan, 'Cooling fan — pulls heat away from the driver stack.');
 
         const fanGlow = new THREE.PointLight(0x6fd8ff, 1.4, 2.8);
