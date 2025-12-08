@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -15,5 +16,5 @@ def test_exhaust_blades_render_and_spin() -> None:
 
     assert "electronics-bay-exhaust-blades" in html
     assert "Electronics bay exhaust blades" in html
-    assert "fanControllers.push({\n          mesh: fanBlades" in html
+    assert re.search(r"fanControllers\.push\(\s*\{[\s\S]*?mesh:\s*fanBlades", html, flags=re.DOTALL)
     assert "linkedToExtrusion: true" in html
