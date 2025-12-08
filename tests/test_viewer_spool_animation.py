@@ -26,7 +26,8 @@ def test_spool_progress_billboard_tracks_planner_totals() -> None:
 
     assert "spoolProgressLabelController.update" in html
     assert "header: spoolProgressHeader" in html
-    assert "detailLines.push('Next feed: Awaiting planner preview…')" in html
+    assert "formatBillboardFeedCountdown" in html
+    assert "Next feeds: Awaiting Yarn Flow timing…" in html
 
 
 def test_spool_progress_ring_pre_pulses_for_upcoming_feed() -> None:
