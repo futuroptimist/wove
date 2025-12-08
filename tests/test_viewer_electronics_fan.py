@@ -10,11 +10,15 @@ VIEWER_HTML = PROJECT_ROOT / "viewer" / "index.html"
 
 
 def test_exhaust_blades_render_and_spin() -> None:
-    """The electronics bay exhaust fan should expose spinning blades linked to extrusion."""
+    """Exhaust fan exposes spinning blades linked to extrusion."""
 
     html = VIEWER_HTML.read_text(encoding="utf-8")
 
     assert "electronics-bay-exhaust-blades" in html
     assert "Electronics bay exhaust blades" in html
-    assert re.search(r"fanControllers\.push\(\s*\{[\s\S]*?mesh:\s*fanBlades", html, flags=re.DOTALL)
+    assert re.search(
+        r"fanControllers\.push\(\s*\{[\s\S]*?mesh:\s*fanBlades",
+        html,
+        flags=re.DOTALL,
+    )
     assert "linkedToExtrusion: true" in html
