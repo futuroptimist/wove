@@ -223,6 +223,8 @@ boundaries. Countdown timers now quantify the seconds until the next yarn feed
 and highlight the following events, translating the planner preview into a
 realtime pacing guide. Cycle timers now surface how many seconds have elapsed
 and remain in the preview loop so crews can gauge overall progress at a glance.
+The spool progress ring now sweeps a pre-pulse around the reel as feed
+countdowns approach, giving crews a heads-up before the yarn spins up again.
 
 A translucent planner bounds frame now wraps the hologram while the overlay
 lists the X/Y/Z/E limits emitted by the planner payload so teams can confirm the

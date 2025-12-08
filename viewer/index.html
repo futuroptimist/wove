@@ -591,6 +591,10 @@
       const yarnBeadControllers = [];
       const spoolControllers = [];
       const spoolProgressSegments = [];
+      const spoolPrePulseSettings = {
+        speed: 2.8,
+        phaseOffset: Math.PI / 10,
+      };
       const boundsCageControllers = [];
       const boundsZMarkerControllers = [];
       let spoolProgressLabelController = null;
@@ -5281,7 +5285,8 @@
         }
         addHoverInfo(
           spoolProgressGroup,
-          'Spool progress ring — fills as the planner feeds yarn around the supply reel.',
+          'Spool progress ring — fills as the planner feeds yarn around the supply reel. ' +
+            'A pre-pulse sweep wraps the ring as feed countdowns approach.',
           { passthrough: true },
         );
         const spoolProgressSegmentCount = 24;
@@ -7705,8 +7710,19 @@
             } else if (index === fullSegments) {
               targetStrength = partialStrength;
             }
+            const prePulseStrength = (() => {
+              if (!upcomingFeedUrgency) {
+                return 0;
+              }
+              const speed = spoolPrePulseSettings.speed ?? 0;
+              const phaseOffset = spoolPrePulseSettings.phaseOffset ?? 0;
+              const phase = elapsed * speed + phaseOffset * index;
+              return upcomingFeedUrgency * (0.5 + 0.5 * Math.sin(phase));
+            })();
             const highlightedStrength = THREE.MathUtils.clamp(
-              targetStrength + feedPulseHighlight * feedPulseWave * 0.6,
+              targetStrength +
+                feedPulseHighlight * feedPulseWave * 0.6 +
+                prePulseStrength * 0.6,
               0,
               1,
             );
