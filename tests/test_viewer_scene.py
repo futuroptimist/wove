@@ -152,6 +152,17 @@ def test_viewer_animates_cooling_fans() -> None:
     assert "fanControllers.forEach" in html
 
 
+def test_controller_stack_leds_breathe_at_idle() -> None:
+    """Electronics bay LEDs should pulse even when the yarn feed is idle."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+    assert re.search(
+        r"controllerStackGlowControllers\.push\(\{[^}]*idlePulseStrength",
+        html,
+        re.DOTALL,
+    )
+
+
 def test_viewer_highlights_tension_post_and_ptfe_path() -> None:
     """The Three.js viewer advertises the tension post and PTFE guide tube."""
 
