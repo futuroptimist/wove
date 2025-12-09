@@ -254,6 +254,17 @@ def test_anchor_pucks_sequence_runs_clockwise() -> None:
     assert area < 0, "anchor offsets should wind clockwise"
 
 
+def test_safe_access_path_drives_footstep_cadence() -> None:
+    """Safe access footprints should animate a lift cadence across the path."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "const footstepControllers" in html
+    assert "footstepControllers.push" in html
+    assert "footprint.position.y = baseHeight + lift" in html
+    assert "toe.position.y = baseToeHeight + lift * 0.82" in html
+
+
 def test_z_lift_shimmers_with_yarn_feed() -> None:
     """The Z-axis lift should glow in sync with yarn feed pulses."""
 

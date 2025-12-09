@@ -89,7 +89,8 @@ shares the same cycle pacing callout surfaced in the Yarn Flow overlay.
 Mint-highlighted floor markings now extend through the open doorway with alternating, pulsing
 footprints so operators can practice each step without clipping the gantry or tension hardware.
 Floating step badges bob above each marker and cant toward the doorway so crews can rehearse the
-left/right cadence before approaching the enclosure.
+left/right cadence before approaching the enclosure. The footprints now lift in sequence to mimic
+that cadence, keeping the walkway choreography visible even when the overlay is hidden.
 
 The spool progress ring now shifts between info, ready, and warning tones alongside the Yarn Flow
 panel and billboard. Feed pulses that finish, hit 100%, or run without a declared target now light
