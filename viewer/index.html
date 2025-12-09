@@ -354,6 +354,11 @@
           for calibration runs.
         </li>
         <li>
+          Watch the dashed calibration rail sweep glide faster whenever yarn
+          feed pulses approach; the tracer orb runs the same path so you can
+          rehearse the automation stroke from the plaza overview.
+        </li>
+        <li>
           The glowing safety interlocks mark physical end stops and the
           emergency stop switch described in the v1c roadmap.
         </li>
@@ -539,6 +544,7 @@
       const filamentSensorControllers = [];
       const cableChainPulseControllers = [];
       const cableChainChaseControllers = [];
+      const automationSweepControllers = [];
       const zLiftGlowControllers = [];
       let cableChainBillboardController = null;
       const tensionLabPathControllers = [];
@@ -6205,6 +6211,16 @@
           'Automation sweep — traces the load-cell carriage path across the calibration rail.',
           { passthrough: true },
         );
+        automationSweepControllers.push({
+          line: automationLine,
+          material: automationMaterial,
+          idleSpeed: 0.18,
+          approachSpeed: 0.34,
+          activeSpeed: 0.6,
+          baseOpacity: automationMaterial.opacity ?? 0.85,
+          activeOpacity: 1.0,
+          damping: 4.2,
+        });
 
         const automationTracer = new THREE.Mesh(
           new THREE.SphereGeometry(0.06, 18, 18),
@@ -7518,6 +7534,38 @@
           cableChainRemainingFeeds > 0
             ? THREE.MathUtils.clamp(1 - cableChainNextFeedSeconds / 6, 0, 1)
             : 0;
+        automationSweepControllers.forEach((controller) => {
+          const {
+            line,
+            material,
+            idleSpeed = 0.18,
+            approachSpeed = idleSpeed,
+            activeSpeed = approachSpeed,
+            baseOpacity = 1,
+            activeOpacity = baseOpacity,
+            damping = 4.2,
+          } = controller;
+
+          if (!line || !material) {
+            return;
+          }
+
+          const sweepStrength = yarnExtrusionActive ? 1 : upcomingFeedUrgency;
+          const speed = yarnExtrusionActive
+            ? activeSpeed
+            : THREE.MathUtils.lerp(idleSpeed, approachSpeed, sweepStrength);
+          material.dashOffset = (material.dashOffset ?? 0) - delta * speed;
+
+          const targetOpacity = THREE.MathUtils.lerp(baseOpacity, activeOpacity, sweepStrength);
+          controller.currentOpacity = THREE.MathUtils.damp(
+            controller.currentOpacity ?? baseOpacity,
+            targetOpacity,
+            damping,
+            delta,
+          );
+          material.opacity = THREE.MathUtils.clamp(controller.currentOpacity, 0, 1);
+          material.needsUpdate = true;
+        });
         cableChainChaseControllers.forEach((controller) => {
           const {
             mesh,

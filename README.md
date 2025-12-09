@@ -95,6 +95,10 @@ The spool progress ring now shifts between info, ready, and warning tones alongs
 panel and billboard. Feed pulses that finish, hit 100%, or run without a declared target now light
 up in the hologram before you even glance at the overlay.
 
+The dashed calibration rail sweeping across the tension lab now slides even faster whenever yarn
+feed pulses approach, keeping pace with the tracer orb that leads the same path. The animation makes
+it easy to rehearse the bench automation stroke from the plaza overview before wiring any sensors.
+
 Pulsing magnetic anchor pucks now mark the removable workpiece bed so crews can
 practice swapping swatch plates into position before the gantry starts tracing
 calibration paths. A sequential glow now sweeps clockwise across the anchors to
