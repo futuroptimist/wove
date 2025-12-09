@@ -536,6 +536,7 @@
       const interactiveMeshes = [];
       const productClusters = [];
       const safeAccessHighlights = [];
+      const footstepControllers = [];
       const filamentSensorControllers = [];
       const cableChainPulseControllers = [];
       const cableChainChaseControllers = [];
@@ -3818,6 +3819,16 @@
           phaseOffset: phaseOffset + 0.35,
           baseTilt,
           tiltAmplitude: THREE.MathUtils.degToRad(3.5),
+        });
+
+        footstepControllers.push({
+          footprint,
+          toe,
+          baseHeight: footprint.position.y,
+          baseToeHeight: toe.position.y,
+          liftAmplitude: 0.05,
+          speed: 2.1,
+          phaseOffset,
         });
       }
 
@@ -7382,6 +7393,24 @@
               opacityBase + Math.sin(elapsed * speed + phaseOffset) * opacityAmp;
             material.opacity = THREE.MathUtils.clamp(opacityPulse, 0, 1);
           }
+        });
+        footstepControllers.forEach((controller) => {
+          const {
+            footprint,
+            toe,
+            baseHeight,
+            baseToeHeight,
+            liftAmplitude,
+            speed,
+            phaseOffset,
+          } = controller;
+          if (!footprint || !toe) {
+            return;
+          }
+          const cadence = Math.max(Math.sin(elapsed * speed + phaseOffset), 0);
+          const lift = cadence * liftAmplitude;
+          footprint.position.y = baseHeight + lift;
+          toe.position.y = baseToeHeight + lift * 0.82;
         });
         boundsCageControllers.forEach((controller) => {
           const { material, baseOpacity = 0, opacityAmplitude = 0, speed = 1, phaseOffset = 0 } =
