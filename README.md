@@ -146,6 +146,9 @@ how much of the planned payout has completed.
 The ring now also pre-pulses as the next yarn feed approaches, lighting up the
 spool moments before the countdown hits zero so operators can anticipate the
 upcoming draw without leaving the hologram.
+An always-on countdown ribbon now sits above the spool progress billboard,
+pinning the next two feed pulses beside the reel so plaza visitors keep the
+upcoming extrusion timing in view even when the overlay is hidden.
 When a planner omits a yarn target, the ring now pauses its fill while keeping
 the warning tone active so viewers do not mistake an undefined feed plan for a
 completed payout.

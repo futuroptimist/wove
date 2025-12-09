@@ -599,6 +599,7 @@
       const boundsCageControllers = [];
       const boundsZMarkerControllers = [];
       let spoolProgressLabelController = null;
+      let spoolCountdownLabelController = null;
       const fanControllers = [];
       const statusIndicatorControllers = [];
       const servoActuatorControllers = [];
@@ -1122,6 +1123,115 @@
         }
 
         updatePanel({ detail: 'Awaiting planner preview…', tone: 'neutral' });
+
+        return {
+          sprite,
+          update: updatePanel,
+        };
+      }
+
+      function createSpoolCountdownLabel() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 160;
+        const context = canvas.getContext('2d');
+        if (!context) {
+          return null;
+        }
+
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.anisotropy = 4;
+
+        const material = new THREE.SpriteMaterial({
+          map: texture,
+          transparent: true,
+          depthWrite: false,
+        });
+
+        const sprite = new THREE.Sprite(material);
+        sprite.scale.set(1.62, 0.48, 1);
+        sprite.center.set(0.5, 0);
+        sprite.renderOrder = 8;
+
+        const toneStyles = {
+          ready: { accent: '#5fffd2', text: '#dafcf1' },
+          info: { accent: '#9bb7ff', text: '#e5ebff' },
+          warning: { accent: '#ffc27d', text: '#fff1dc' },
+          neutral: { accent: '#cfd6ff', text: '#f4f6ff' },
+        };
+
+        let lastLine = '';
+        let lastTone = '';
+
+        function drawPanel(line, tone) {
+          const palette = toneStyles[tone] || toneStyles.neutral;
+          context.clearRect(0, 0, canvas.width, canvas.height);
+
+          const paddingX = 18;
+          const paddingY = 18;
+          const width = canvas.width - paddingX * 2;
+          const height = canvas.height - paddingY * 2;
+          const radius = 22;
+
+          context.save();
+          context.beginPath();
+          context.moveTo(paddingX + radius, paddingY);
+          context.lineTo(paddingX + width - radius, paddingY);
+          context.quadraticCurveTo(
+            paddingX + width,
+            paddingY,
+            paddingX + width,
+            paddingY + radius,
+          );
+          context.lineTo(paddingX + width, paddingY + height - radius);
+          context.quadraticCurveTo(
+            paddingX + width,
+            paddingY + height,
+            paddingX + width - radius,
+            paddingY + height,
+          );
+          context.lineTo(paddingX + radius, paddingY + height);
+          context.quadraticCurveTo(
+            paddingX,
+            paddingY + height,
+            paddingX,
+            paddingY + height - radius,
+          );
+          context.lineTo(paddingX, paddingY + radius);
+          context.quadraticCurveTo(paddingX, paddingY, paddingX + radius, paddingY);
+          context.closePath();
+
+          context.fillStyle = 'rgba(12, 16, 34, 0.88)';
+          context.fill();
+          context.lineWidth = 4;
+          context.strokeStyle = palette.accent;
+          context.stroke();
+
+          context.fillStyle = palette.text;
+          context.textAlign = 'center';
+          context.textBaseline = 'middle';
+          context.font = '46px "Segoe UI", sans-serif';
+          context.fillText(line, canvas.width / 2, paddingY + height / 2);
+
+          context.restore();
+          texture.needsUpdate = true;
+        }
+
+        function updatePanel({ line, tone }) {
+          const normalizedLine = line ?? spoolProgressCountdownFallbackMessage;
+          const normalizedTone = tone ?? 'neutral';
+
+          if (normalizedLine === lastLine && normalizedTone === lastTone) {
+            return;
+          }
+
+          drawPanel(normalizedLine, normalizedTone);
+          lastLine = normalizedLine;
+          lastTone = normalizedTone;
+        }
+
+        updatePanel({ line: spoolProgressCountdownFallbackMessage, tone: 'neutral' });
 
         return {
           sprite,
@@ -1963,6 +2073,12 @@
             tone: 'neutral',
           });
         }
+        if (spoolCountdownLabelController) {
+          spoolCountdownLabelController.update({
+            line: spoolProgressCountdownFallbackMessage,
+            tone: 'neutral',
+          });
+        }
 
         applySpoolProgressTone('neutral');
         updateCableChainBillboard({
@@ -2364,6 +2480,22 @@
             header: spoolProgressHeader,
             detail: detailLines,
             tone: spoolProgressToneState,
+          });
+        }
+        if (spoolCountdownLabelController) {
+          const countdownSummary = formatBillboardFeedCountdown(
+            nextFeedCountdown,
+            followingFeedCountdown,
+            remainingFeedCount,
+          );
+          const countdownTone = spoolProgressToneState === 'warning'
+            ? 'warning'
+            : yarnExtrusionActive
+              ? 'ready'
+              : 'info';
+          spoolCountdownLabelController.update({
+            line: countdownSummary,
+            tone: countdownTone,
           });
         }
       }
@@ -5331,6 +5463,18 @@
           addHoverInfo(
             sprite,
             'Yarn feed progress display — projects live feed vs planned yarn totals.',
+          );
+        }
+        const spoolCountdownLabel = createSpoolCountdownLabel();
+        if (spoolCountdownLabel) {
+          spoolCountdownLabelController = spoolCountdownLabel;
+          const { sprite } = spoolCountdownLabel;
+          sprite.position.set(0, 2.18, 0);
+          spoolProgressGroup.add(sprite);
+          addHoverInfo(
+            sprite,
+            'Countdown ribbon — keeps the next two feed pulses pinned above the spool '
+              + 'progress display.',
           );
         }
         addHoverInfo(
