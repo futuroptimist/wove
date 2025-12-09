@@ -38,3 +38,13 @@ def test_spool_progress_ring_pre_pulses_for_upcoming_feed() -> None:
     assert "feedPulseHighlight" in html
     assert "cableChainNextFeedSeconds" in html
     assert "feedPulseWave" in html
+
+
+def test_spool_progress_countdown_ribbon_stays_pinned() -> None:
+    """The spool billboard should keep a countdown ribbon above the reel."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "createSpoolCountdownLabel" in html
+    assert "spoolCountdownLabelController" in html
+    assert "Countdown ribbon" in html
