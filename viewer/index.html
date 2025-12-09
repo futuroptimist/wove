@@ -582,6 +582,7 @@
         plunge_feed_rate_mm_min: 600,
         yarn_feed_rate_mm_min: 300,
         default_row_height_mm: 6.0,
+        row_spacing_mm: 6.0,
         require_home: false,
         home_state: 'unknown',
       };
@@ -1698,6 +1699,11 @@
         const rowHeight = Number(data?.default_row_height_mm);
         if (Number.isFinite(rowHeight)) {
           entries.push({ label: 'Row height', value: `${rowHeight.toFixed(1)} mm` });
+        }
+
+        const rowSpacing = Number(data?.row_spacing_mm);
+        if (Number.isFinite(rowSpacing)) {
+          entries.push({ label: 'Row spacing', value: `${rowSpacing.toFixed(1)} mm` });
         }
 
         const travelFeed = Number(data?.travel_feed_rate_mm_min);

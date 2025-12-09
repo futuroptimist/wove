@@ -12,6 +12,7 @@
     "plunge_feed_rate_mm_min": 600,
     "yarn_feed_rate_mm_min": 300,
     "default_row_height_mm": 6.0,
+    "row_spacing_mm": 6.0,
     "require_home": false,
     "home_state": "unknown",
     "tension_sensor_calibration": {

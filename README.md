@@ -261,7 +261,10 @@ is satisfied. It now
 echoes the live planner coordinates alongside those status lights so the safety
 overlay tracks the same `X`, `Y`, `Z`, and yarn-feed snapshot as the Pattern
 Studio panel. The coordinates refresh continuously between planner steps so the
-Homing Guard never lags behind the hologram.
+Homing Guard never lags behind the hologram. The Planner Defaults list now also
+calls out the `row_spacing_mm` guidance from planner exports so contributors can
+verify row-to-row spacing alongside safe Z, fabric plane, and feed-rate
+defaults without leaving the overlay.
 
 - **v1c Crochet Robot** – anchors the mechanical platform showcased at the
   center of the plaza.
