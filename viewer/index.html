@@ -1689,9 +1689,9 @@
         const height = Math.max((bounds.z?.max ?? 0) - (bounds.z?.min ?? 0), 0.0001);
 
         return {
-          width: width || fallbackSpan.x,
-          depth: depth || fallbackSpan.y,
-          height: height || fallbackSpan.z,
+          width: width < 0.001 ? fallbackSpan.x : width,
+          depth: depth < 0.001 ? fallbackSpan.y : depth,
+          height: height < 0.001 ? fallbackSpan.z : height,
         };
       }
 
@@ -4290,7 +4290,7 @@
 
         addHoverInfo(
           plannerOutline,
-          'Planner Travel Envelope cage — projects planner bounds above the gantry for quick checks.',
+          'Planner travel envelope cage — projects planner bounds above the gantry for quick checks.',
           { passthrough: true },
         );
         addHoverInfo(
