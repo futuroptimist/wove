@@ -91,6 +91,15 @@ def test_planner_defaults_panel_mentions_homing_guard() -> None:
     assert "Recorded home state" in html
 
 
+def test_planner_defaults_panel_highlights_row_spacing() -> None:
+    """Row spacing should appear alongside other planner defaults."""
+
+    html = (PROJECT_ROOT / "viewer" / "index.html").read_text(encoding="utf-8")
+
+    assert "Row spacing" in html
+    assert "row_spacing_mm" in html
+
+
 def test_yarn_flow_panel_mentions_spool_progress() -> None:
     """Ensure the Yarn Flow overlay advertises spool progress guidance."""
 

@@ -90,6 +90,7 @@
         "plunge_feed_rate_mm_min",
         "yarn_feed_rate_mm_min",
         "default_row_height_mm",
+        "row_spacing_mm",
         "require_home",
         "home_state"
       ],
@@ -118,6 +119,10 @@
         "default_row_height_mm": {
           "type": "number",
           "description": "Default Y increment (mm) applied by TURN commands."
+        },
+        "row_spacing_mm": {
+          "type": "number",
+          "description": "Spacing between rows (mm) for multi-row previews."
         },
         "require_home": {
           "type": "boolean",

@@ -8,12 +8,13 @@
   "defaults": {
     "safe_z_mm": 4.0,
     "fabric_plane_z_mm": 0.0,
-    "travel_feed_rate_mm_min": 1200,
-    "plunge_feed_rate_mm_min": 600,
-    "yarn_feed_rate_mm_min": 300,
-    "default_row_height_mm": 6.0,
-    "require_home": false,
-    "home_state": "unknown",
+  "travel_feed_rate_mm_min": 1200,
+  "plunge_feed_rate_mm_min": 600,
+  "yarn_feed_rate_mm_min": 300,
+  "row_spacing_mm": 6.0,
+  "default_row_height_mm": 6.0,
+  "require_home": false,
+  "home_state": "unknown",
     "tension_sensor_calibration": {
       "pairs": [
         [

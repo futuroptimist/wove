@@ -19,6 +19,7 @@ TRAVEL_FEED_RATE = 1200
 PLUNGE_FEED_RATE = 600
 YARN_FEED_RATE = 300
 DEFAULT_ROW_HEIGHT = 6.0
+DEFAULT_ROW_SPACING = 6.0
 MIN_MOVE_COORD_MM = 1e-3
 PLANNER_LOOP_SECONDS = 14.0
 PLANNER_METADATA_SOURCE = "pattern_cli preview"
@@ -513,6 +514,7 @@ def _planner_payload(
             "plunge_feed_rate_mm_min": PLUNGE_FEED_RATE,
             "yarn_feed_rate_mm_min": YARN_FEED_RATE,
             "default_row_height_mm": DEFAULT_ROW_HEIGHT,
+            "row_spacing_mm": DEFAULT_ROW_SPACING,
             "require_home": bool(require_home),
             "home_state": home_state,
             "tension_sensor_calibration": {
@@ -626,6 +628,7 @@ __all__ = [
     "PLUNGE_FEED_RATE",
     "YARN_FEED_RATE",
     "DEFAULT_ROW_HEIGHT",
+    "DEFAULT_ROW_SPACING",
     "MIN_MOVE_COORD_MM",
     "GCodeLine",
     "PlannerEvent",
