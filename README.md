@@ -186,7 +186,9 @@ scene while touring the plaza.
 
 A glowing thermistor channel now traces the reserved wiring route for the
 future heated bed accessory so teams can plan sensor hookups before the upgrade
-lands.
+lands. The overlay now includes a Heated Bed Conduit panel that mirrors the
+illuminated thermistor run and keeps the bay-to-bed wiring path visible while
+walking through planner previews.
 
 The overlay now includes a Pattern Studio preview panel that cycles through the
 current `wove.pattern_cli --format planner` comment while a progress bar tracks

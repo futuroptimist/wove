@@ -296,6 +296,27 @@
         color: #ffe1d2;
       }
 
+      #heated-bed-panel {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(245, 245, 245, 0.15);
+      }
+
+      #heated-bed-panel h2 {
+        margin: 0 0 0.35rem;
+        font-size: 0.97rem;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        color: #ffd09c;
+      }
+
+      #heated-bed-panel p {
+        margin: 0 0 0.45rem;
+        font-size: 0.86rem;
+        line-height: 1.35;
+        color: #ffe8c9;
+      }
+
       #overlay [data-tone='warning'] {
         color: #ffb4a2;
       }
@@ -475,6 +496,15 @@
           Coordinates: Awaiting planner coordinates…
         </p>
       </div>
+      <div id="heated-bed-panel">
+        <h2>Heated Bed Conduit</h2>
+        <p id="heated-bed-status" data-tone="info">
+          Thermistor conduit reserved for the heater upgrade — glowing channel marks the wiring path.
+        </p>
+        <p id="heated-bed-route" data-tone="neutral">
+          Conduit status: Illuminating the bay-to-bed run so heater wiring stays obvious during dry runs.
+        </p>
+      </div>
     </div>
     <div id="status">Initializing viewer…</div>
     <script type="module">
@@ -519,6 +549,8 @@
         'homing-guard-home-state',
       );
       const homingGuardPositionElement = document.getElementById('homing-guard-position');
+      const heatedBedStatusElement = document.getElementById('heated-bed-status');
+      const heatedBedRouteElement = document.getElementById('heated-bed-route');
       const yarnFlowStatusElement = document.getElementById('yarn-flow-status');
       const yarnFlowSpoolElement = document.getElementById('yarn-flow-spool');
       const yarnFlowTotalElement = document.getElementById('yarn-flow-total');
@@ -637,6 +669,10 @@
         'Homing guard metadata unavailable. Export planner defaults.require_home and defaults.home_state.';
       const homingGuardPositionFallbackMessage =
         'Coordinates: Awaiting planner coordinates…';
+      const heatedBedStatusFallbackMessage =
+        'Thermistor conduit reserved for the heater upgrade — glowing channel marks the wiring path.';
+      const heatedBedRouteFallbackMessage =
+        'Conduit status: Illuminating the bay-to-bed run so heater wiring stays obvious during dry runs.';
       const patternBoundsFallbackMessage =
         'Planner bounds unavailable. Export --format planner payloads with bounds to preview the motion envelope.';
       const patternDefaultsFallbackMessage =
@@ -1577,6 +1613,7 @@
       }
 
       updateMachineProfileEnvelope(null);
+      updateHeatedBedPanel();
 
       function updateBoundsComparisonPanel(plannerBounds, machineBounds, comparison = null) {
         if (!boundsComparisonElement) {
@@ -1870,6 +1907,20 @@
           element.dataset.tone = tone;
         } else if (element.dataset && element.dataset.tone) {
           delete element.dataset.tone;
+        }
+      }
+
+      function updateHeatedBedPanel(options = {}) {
+        const { statusLine, routeLine } = options;
+
+        if (heatedBedStatusElement) {
+          heatedBedStatusElement.textContent = statusLine || heatedBedStatusFallbackMessage;
+          setTone(heatedBedStatusElement, 'info');
+        }
+
+        if (heatedBedRouteElement) {
+          heatedBedRouteElement.textContent = routeLine || heatedBedRouteFallbackMessage;
+          setTone(heatedBedRouteElement, 'neutral');
         }
       }
 

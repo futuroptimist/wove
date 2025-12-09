@@ -126,6 +126,16 @@ def test_homing_guard_streams_coordinates() -> None:
     assert "Coordinates: Awaiting planner coordinates…" in html
 
 
+def test_heated_bed_conduit_panel_present() -> None:
+    """Heated bed conduit status should surface alongside the overlay panels."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "Heated Bed Conduit" in html
+    assert "Thermistor conduit reserved for the heater upgrade" in html
+    assert "bay-to-bed run" in html
+
+
 def test_yarn_flow_surface_feed_rate_copy() -> None:
     """Yarn flow telemetry should include live feed-rate messaging."""
 
