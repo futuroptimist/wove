@@ -520,6 +520,16 @@ def test_tension_lab_traces_calibration_path() -> None:
     assert "tensionLabPathControllers" in html
 
 
+def test_heated_bed_conduit_shimmers_with_feed_pulses() -> None:
+    """The heated bed conduit should shimmer and respond to feed countdowns."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "Thermistor channel — reserved wiring path" in html
+    assert "thermistorConduitControllers" in html
+    assert "countdownBias" in html
+
+
 def test_spool_billboard_mirrors_cycle_pacing() -> None:
     """The spool billboard should echo the Yarn Flow cycle pacing."""
 
