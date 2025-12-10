@@ -154,6 +154,8 @@ upcoming draw without leaving the hologram.
 An always-on countdown ribbon now sits above the spool progress billboard,
 pinning the next two feed pulses beside the reel so plaza visitors keep the
 upcoming extrusion timing in view even when the overlay is hidden.
+The ribbon now stacks the cycle pacing callout beneath the countdown so elapsed and
+remaining seconds stay visible from the hologram without opening the overlay.
 When a planner omits a yarn target, the ring now pauses its fill while keeping
 the warning tone active so viewers do not mistake an undefined feed plan for a
 completed payout.

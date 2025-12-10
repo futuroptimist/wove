@@ -146,3 +146,16 @@ def test_spool_progress_ring_pauses_without_target() -> None:
     html = (PROJECT_ROOT / "viewer" / "index.html").read_text(encoding="utf-8")
 
     assert "progress ring paused until planner target provided" in html
+
+
+def test_spool_countdown_ribbon_surfaces_cycle_pacing() -> None:
+    """The countdown ribbon should stack cycle pacing beneath feed timing."""
+
+    html = (PROJECT_ROOT / "viewer" / "index.html").read_text(encoding="utf-8")
+
+    assert "spoolProgressCountdownFallbackMessage" in html
+    assert "yarnFlowCycleFallbackMessage" in html
+    assert (
+        "lines: [spoolProgressCountdownFallbackMessage, "
+        "yarnFlowCycleFallbackMessage]" in html
+    )
