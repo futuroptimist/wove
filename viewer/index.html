@@ -6212,7 +6212,6 @@
           { passthrough: true },
         );
         automationSweepControllers.push({
-          line: automationLine,
           material: automationMaterial,
           idleSpeed: 0.18,
           approachSpeed: 0.34,
@@ -7536,7 +7535,6 @@
             : 0;
         automationSweepControllers.forEach((controller) => {
           const {
-            line,
             material,
             idleSpeed = 0.18,
             approachSpeed = idleSpeed,
@@ -7546,7 +7544,7 @@
             damping = 4.2,
           } = controller;
 
-          if (!line || !material) {
+          if (!material) {
             return;
           }
 
