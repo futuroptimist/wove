@@ -575,6 +575,7 @@
       const safeAccessHighlights = [];
       const footstepControllers = [];
       const filamentSensorControllers = [];
+      const thermistorConduitControllers = [];
       const cableChainPulseControllers = [];
       const cableChainChaseControllers = [];
       const automationSweepControllers = [];
@@ -4695,19 +4696,23 @@
           'Thermistor channel — reserved wiring path for the future heated bed accessory.',
           { passthrough: true },
         );
-        safeAccessHighlights.push({
-          material: thermistorMaterial,
-          baseIntensity: 0.55,
-          amplitude: 0.25,
-          speed: 2.1,
-          phaseOffset: 0.35,
-          baseOpacity: 0.82,
-          opacityAmplitude: 0.12,
-        });
-
         const thermistorGlow = new THREE.PointLight(0xffa15f, 0.9, 2.4);
         thermistorGlow.position.set(0.32, 0.78, 0.88);
         group.add(thermistorGlow);
+
+        thermistorConduitControllers.push({
+          material: thermistorMaterial,
+          light: thermistorGlow,
+          baseIntensity: 0.55,
+          activeIntensity: 1.4,
+          baseOpacity: 0.82,
+          activeOpacity: 1.0,
+          baseLight: thermistorGlow.intensity,
+          activeLight: 1.6,
+          shimmerSpeed: 2.4,
+          countdownBias: 0.6,
+          damping: 4.8,
+        });
 
         const thermistorLabel = buildLabel('Thermistor Channel', '#ffd9c2');
         thermistorLabel.position.set(0.28, 0.92, 0.94);
@@ -7831,6 +7836,64 @@
           cableChainRemainingFeeds > 0
             ? THREE.MathUtils.clamp(1 - cableChainNextFeedSeconds / 6, 0, 1)
             : 0;
+        thermistorConduitControllers.forEach((controller) => {
+          const {
+            material,
+            light,
+            baseIntensity = 0,
+            activeIntensity = baseIntensity,
+            baseOpacity = 1,
+            activeOpacity = baseOpacity,
+            baseLight = 0,
+            activeLight = baseLight,
+            shimmerSpeed = 1,
+            countdownBias = 0,
+            damping = 5.0,
+          } = controller;
+
+          if (!material) {
+            return;
+          }
+
+          const shimmer = 0.5 + 0.5 * Math.sin(elapsed * shimmerSpeed);
+          const previewBoost = yarnExtrusionActive
+            ? 1
+            : THREE.MathUtils.clamp(upcomingFeedUrgency * countdownBias, 0, 1);
+          const highlightStrength = THREE.MathUtils.clamp(shimmer * 0.6 + previewBoost, 0, 1);
+
+          if (typeof material.emissiveIntensity === 'number') {
+            const target = THREE.MathUtils.lerp(baseIntensity, activeIntensity, highlightStrength);
+            controller.currentIntensity = THREE.MathUtils.damp(
+              controller.currentIntensity ?? baseIntensity,
+              target,
+              damping,
+              delta,
+            );
+            material.emissiveIntensity = controller.currentIntensity;
+          }
+
+          if (typeof material.opacity === 'number' && material.transparent) {
+            const target = THREE.MathUtils.lerp(baseOpacity, activeOpacity, highlightStrength);
+            controller.currentOpacity = THREE.MathUtils.damp(
+              controller.currentOpacity ?? baseOpacity,
+              target,
+              damping,
+              delta,
+            );
+            material.opacity = THREE.MathUtils.clamp(controller.currentOpacity, 0, 1);
+          }
+
+          if (light) {
+            const target = THREE.MathUtils.lerp(baseLight, activeLight, highlightStrength);
+            controller.currentLight = THREE.MathUtils.damp(
+              controller.currentLight ?? baseLight,
+              target,
+              damping,
+              delta,
+            );
+            light.intensity = controller.currentLight;
+          }
+        });
         automationSweepControllers.forEach((controller) => {
           const {
             material,
