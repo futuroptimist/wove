@@ -21,6 +21,13 @@ def test_workpiece_support_bed_is_documented() -> None:
     assert "workpiece support bed" in html.lower()
 
 
+def test_calibration_rail_sweep_is_documented() -> None:
+    """The calibration rail animation should be called out in the overlay."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+    assert "dashed calibration rail sweep" in html.lower()
+
+
 def test_anchor_pulse_sequence_runs_clockwise() -> None:
     """The magnetic anchor sweep should follow the clockwise swap order."""
 

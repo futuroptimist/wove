@@ -201,7 +201,8 @@ overview.
 An illuminated rail overlay now traces the carriage sweep across the calibration bench while a
 glowing tracer orb follows the same curve. The path advances slowly when idle and accelerates with
 planner feed pulses so contributors can rehearse the full automation stroke before building the
-fixture.
+fixture. The dashed sweep now scrolls faster as yarn feed pulses approach, mirroring the tracer orb
+that runs the same rail so the automation cadence reads clearly from the plaza overview.
 
 ### Frame and Build Volume
 - **Frame**: 20x20 mm aluminum extrusion perimeter with printed corner cubes and feet. Designed for
