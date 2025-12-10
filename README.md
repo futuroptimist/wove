@@ -222,7 +222,9 @@ The outer cage shifts to amber whenever planner envelopes exceed the machine
 profile, giving operators a 3D mismatch indicator without leaving the scene.
 When a planner omits travel_min/travel_max values, the overlay now warns that
 the machine profile envelope is unavailable and points to the missing fields so
-contributors know what to include in their next export.
+contributors know what to include in their next export. The warning now spells
+out which axes are missing travel_min_mm and travel_max_mm values, making it
+obvious where the machine profile needs more detail.
 
 A Yarn Flow monitor in the overlay mirrors the hologram's yarn feed state,
 calling out when the planner is actively pulling fiber and when the spool is
