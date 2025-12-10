@@ -67,7 +67,10 @@ def test_viewer_planner_preview_includes_heated_bed_conduit() -> None:
     conduit = defaults.get("heated_bed_conduit") or {}
 
     assert conduit.get("status") == "Reserved for heater upgrade"
-    assert conduit.get("route") == "Bay-to-bed thermistor channel illuminated for wiring prep."
+    assert (
+        conduit.get("route")
+        == "Bay-to-bed thermistor channel illuminated for wiring prep."
+    )
 
 
 def test_viewer_exposes_planner_defaults_panel() -> None:
