@@ -155,4 +155,7 @@ def test_spool_countdown_ribbon_surfaces_cycle_pacing() -> None:
 
     assert "spoolProgressCountdownFallbackMessage" in html
     assert "yarnFlowCycleFallbackMessage" in html
-    assert "lines: [spoolProgressCountdownFallbackMessage, yarnFlowCycleFallbackMessage]" in html
+    assert (
+        "lines: [spoolProgressCountdownFallbackMessage, "
+        "yarnFlowCycleFallbackMessage]" in html
+    )
