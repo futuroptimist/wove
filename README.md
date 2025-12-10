@@ -30,7 +30,9 @@ Key features include:
   `--machine-profile` is provided) the axis metadata consumed by the
   browser-based planner roadmap. The planner defaults also surface the homing
   guard (`require_home`) and `home_state` captured during translation so
-  downstream tools can prompt builders before running motion.
+  downstream tools can prompt builders before running motion. The same defaults
+  now embed a `heated_bed_conduit` block so the viewer can mirror the bay-to-bed
+  thermistor run inside the Heated Bed Conduit panel.
 - Yarn tension profile helpers (`wove.tension`) that document tested pull
   forces, trial durations, and feed rates for lace through super bulky yarns.
   Use `find_tension_profile_for_wpi` to map wraps-per-inch measurements to the

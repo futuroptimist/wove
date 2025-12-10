@@ -520,6 +520,10 @@ def _planner_payload(
             "tension_sensor_calibration": {
                 "pairs": [list(pair) for pair in TENSION_SENSOR_CALIBRATION]
             },
+            "heated_bed_conduit": {
+                "status": "Reserved for heater upgrade",
+                "route": "Bay-to-bed thermistor channel illuminated for wiring prep.",
+            },
         },
         "bounds": {
             "x_mm": bounds(event.x_mm for event in events),

@@ -158,6 +158,25 @@
               }
             }
           }
+        },
+        "heated_bed_conduit": {
+          "type": "object",
+          "description": "Status and route text for the heated-bed thermistor conduit.",
+          "required": [
+            "status",
+            "route"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "type": "string",
+              "description": "High-level state of the heated-bed conduit."
+            },
+            "route": {
+              "type": "string",
+              "description": "Text describing the bay-to-bed thermistor wiring path."
+            }
+          }
         }
       }
     },

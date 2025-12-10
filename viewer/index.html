@@ -1916,6 +1916,24 @@
           entries.push({ label: 'Recorded home state', value: 'Unavailable' });
         }
 
+        const heatedConduit = data && typeof data === 'object' ? data.heated_bed_conduit : null;
+        const heatedStatus =
+          heatedConduit && typeof heatedConduit.status === 'string'
+            ? heatedConduit.status.trim()
+            : null;
+        const heatedRoute =
+          heatedConduit && typeof heatedConduit.route === 'string'
+            ? heatedConduit.route.trim()
+            : null;
+        if (heatedStatus) {
+          entries.push({ label: 'Heated bed conduit', value: heatedStatus });
+        }
+
+        updateHeatedBedPanel({
+          statusLine: heatedStatus,
+          routeLine: heatedRoute,
+        });
+
         if (entries.length === 0) {
           patternDefaultsStatusElement.textContent = patternDefaultsFallbackMessage;
           setTone(patternDefaultsStatusElement, 'warning');
@@ -2050,8 +2068,15 @@
         const { statusLine, routeLine } = options;
 
         if (heatedBedStatusElement) {
-          heatedBedStatusElement.textContent = statusLine || heatedBedStatusFallbackMessage;
-          setTone(heatedBedStatusElement, 'info');
+          const statusText = statusLine || heatedBedStatusFallbackMessage;
+          heatedBedStatusElement.textContent = statusText;
+          const normalized = statusText.toLowerCase();
+          const tone = normalized.includes('ready')
+            ? 'ready'
+            : normalized.includes('warn')
+              ? 'warning'
+              : 'info';
+          setTone(heatedBedStatusElement, tone);
         }
 
         if (heatedBedRouteElement) {
