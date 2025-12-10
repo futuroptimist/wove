@@ -4696,16 +4696,6 @@
           'Thermistor channel — reserved wiring path for the future heated bed accessory.',
           { passthrough: true },
         );
-        safeAccessHighlights.push({
-          material: thermistorMaterial,
-          baseIntensity: 0.55,
-          amplitude: 0.25,
-          speed: 2.1,
-          phaseOffset: 0.35,
-          baseOpacity: 0.82,
-          opacityAmplitude: 0.12,
-        });
-
         const thermistorGlow = new THREE.PointLight(0xffa15f, 0.9, 2.4);
         thermistorGlow.position.set(0.32, 0.78, 0.88);
         group.add(thermistorGlow);
