@@ -659,6 +659,8 @@
       let patternPreviewContainer = null;
       let plannerBounds = null;
       let machineProfileBounds = null;
+      let machineProfileMissingAxes = [];
+      let currentMachineProfile = null;
       let tensionCalibration = null;
       let patternPreviewDurationSeconds = defaultPatternPreviewDurationSeconds;
       let lastPatternStepIndex = -1;
@@ -671,6 +673,8 @@
       const machineProfileEnvelopeFallbackMessage =
         'Machine profile envelope unavailable. Include travel_min_mm and '
         + 'travel_max_mm for each axis.';
+      const machineProfileEnvelopeMissingAxesPrefix =
+        'Machine profile envelope unavailable — add travel_min_mm and travel_max_mm for: ';
       const boundsComparisonFallbackMessage =
         'Bounds comparison unavailable. Export planner bounds and machine profile limits to compare.';
       const homingGuardFallbackMessage =
@@ -1468,6 +1472,33 @@
         return Object.keys(normalized).length > 0 ? normalized : null;
       }
 
+      function computeMissingMachineProfileAxes(machineProfile) {
+        if (!machineProfile || typeof machineProfile !== 'object') {
+          return ['X', 'Y', 'Z', 'E'];
+        }
+
+        const axes = machineProfile.axes && typeof machineProfile.axes === 'object'
+          ? machineProfile.axes
+          : null;
+        if (!axes) {
+          return ['X', 'Y', 'Z', 'E'];
+        }
+
+        const expectedAxes = ['x', 'y', 'z', 'e'];
+        const missing = [];
+
+        expectedAxes.forEach((axisKey) => {
+          const axis = axes[axisKey] ?? axes[axisKey.toUpperCase()] ?? null;
+          const min = coerceFiniteNumber(axis?.travel_min_mm ?? axis?.min ?? axis?.min_mm);
+          const max = coerceFiniteNumber(axis?.travel_max_mm ?? axis?.max ?? axis?.max_mm);
+          if (!axis || min === null || max === null || max < min) {
+            missing.push(axisKey.toUpperCase());
+          }
+        });
+
+        return missing;
+      }
+
       function computeBoundsFromEvents(events) {
         if (!Array.isArray(events) || events.length === 0) {
           return null;
@@ -1590,8 +1621,12 @@
         return `Planner bounds — ${segments.join(' · ')}`;
       }
 
-      function buildMachineProfileEnvelopeText(bounds) {
+      function buildMachineProfileEnvelopeText(bounds, missingAxes = []) {
         if (!bounds) {
+          if (Array.isArray(missingAxes) && missingAxes.length > 0) {
+            const suffix = missingAxes.join(', ');
+            return `${machineProfileEnvelopeMissingAxesPrefix}${suffix}.`;
+          }
           return machineProfileEnvelopeFallbackMessage;
         }
 
@@ -1616,18 +1651,18 @@
         return `Machine profile envelope: ${segments.join(' · ')}`;
       }
 
-      function updateMachineProfileEnvelope(bounds) {
+      function updateMachineProfileEnvelope(bounds, missingAxes = []) {
         if (!machineProfileEnvelopeElement) {
           return;
         }
 
-        const text = buildMachineProfileEnvelopeText(bounds);
+        const text = buildMachineProfileEnvelopeText(bounds, missingAxes);
         machineProfileEnvelopeElement.textContent = text;
         const tone = bounds ? 'info' : 'warning';
         setTone(machineProfileEnvelopeElement, tone);
       }
 
-      updateMachineProfileEnvelope(null);
+      updateMachineProfileEnvelope(null, []);
       updateHeatedBedPanel();
 
       function updateBoundsComparisonPanel(plannerBounds, machineBounds, comparison = null) {
@@ -2763,7 +2798,13 @@
         }
         if (Object.prototype.hasOwnProperty.call(options, 'machineProfileBounds')) {
           machineProfileBounds = normalizeMachineProfileBounds(options.machineProfileBounds);
-          updateMachineProfileEnvelope(machineProfileBounds);
+          machineProfileMissingAxes = Array.isArray(options.machineProfileMissingAxes)
+            ? options.machineProfileMissingAxes.filter((axis) => typeof axis === 'string')
+            : computeMissingMachineProfileAxes(options.machineProfileBounds);
+          currentMachineProfile = Object.prototype.hasOwnProperty.call(options, 'machineProfile')
+            ? options.machineProfile
+            : currentMachineProfile;
+          updateMachineProfileEnvelope(machineProfileBounds, machineProfileMissingAxes);
         }
         updateHomingGuardPanel(plannerDefaults);
         updatePlannerDefaultsPanel(plannerDefaults);
@@ -2870,8 +2911,12 @@
           machineProfileAxesElement.removeChild(machineProfileAxesElement.firstChild);
         }
 
+        currentMachineProfile = machineProfile && typeof machineProfile === 'object'
+          ? machineProfile
+          : null;
+        machineProfileMissingAxes = computeMissingMachineProfileAxes(currentMachineProfile);
         machineProfileBounds = normalizeMachineProfileBounds(machineProfile);
-        updateMachineProfileEnvelope(machineProfileBounds);
+        updateMachineProfileEnvelope(machineProfileBounds, machineProfileMissingAxes);
 
         const axes =
           machineProfile && typeof machineProfile === 'object'
@@ -2951,6 +2996,7 @@
           const defaults = payload?.defaults ?? null;
           const bounds = payload?.bounds ?? null;
           const machineProfile = payload?.machine_profile ?? null;
+          const machineProfileMissingAxes = computeMissingMachineProfileAxes(machineProfile);
           const normalizedMachineProfileBounds =
             normalizeMachineProfileBounds(machineProfile);
           machineProfileBounds = normalizedMachineProfileBounds;
@@ -2967,6 +3013,8 @@
             bounds,
             metadata,
             machineProfileBounds: machineProfile,
+            machineProfileMissingAxes,
+            machineProfile,
           });
           updateMachineProfilePanel(machineProfile);
           if (statusElement) {
@@ -2981,6 +3029,9 @@
               units: 'millimeters',
               source: 'Fallback preview',
             },
+            machineProfileBounds: null,
+            machineProfileMissingAxes: [],
+            machineProfile: null,
           });
           machineProfileBounds = null;
           updateMachineProfilePanel(null);
@@ -8721,6 +8772,7 @@
             const defaults = payload?.defaults ?? null;
             const bounds = payload?.bounds ?? null;
             const machineProfile = payload?.machine_profile ?? null;
+            const machineProfileMissingAxes = computeMissingMachineProfileAxes(machineProfile);
             const normalizedMachineProfileBounds =
               normalizeMachineProfileBounds(machineProfile);
             machineProfileBounds = normalizedMachineProfileBounds;
@@ -8738,6 +8790,8 @@
               bounds,
               metadata,
               machineProfileBounds: machineProfile,
+              machineProfileMissingAxes,
+              machineProfile,
             });
             updateMachineProfilePanel(machineProfile);
             updateStatus(`Planner upload loaded: ${file.name}`);
