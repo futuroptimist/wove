@@ -1178,7 +1178,7 @@
       function createSpoolCountdownLabel() {
         const canvas = document.createElement('canvas');
         canvas.width = 512;
-        canvas.height = 160;
+        canvas.height = 200;
         const context = canvas.getContext('2d');
         if (!context) {
           return null;
@@ -1195,7 +1195,7 @@
         });
 
         const sprite = new THREE.Sprite(material);
-        sprite.scale.set(1.62, 0.48, 1);
+        sprite.scale.set(1.62, 0.58, 1);
         sprite.center.set(0.5, 0);
         sprite.renderOrder = 8;
 
@@ -1206,10 +1206,9 @@
           neutral: { accent: '#cfd6ff', text: '#f4f6ff' },
         };
 
-        let lastLine = '';
-        let lastTone = '';
+        let lastKey = '';
 
-        function drawPanel(line, tone) {
+        function drawPanel(lines, tone) {
           const palette = toneStyles[tone] || toneStyles.neutral;
           context.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -1256,24 +1255,32 @@
           context.fillStyle = palette.text;
           context.textAlign = 'center';
           context.textBaseline = 'middle';
-          context.font = '46px "Segoe UI", sans-serif';
-          context.fillText(line, canvas.width / 2, paddingY + height / 2);
+          const baseFontSize = 44;
+          const lineCount = lines.length;
+          const totalHeight = lineCount * baseFontSize + (lineCount - 1) * 10;
+          const startY = paddingY + height / 2 - totalHeight / 2 + baseFontSize / 2;
+          lines.forEach((line, index) => {
+            context.font = `${baseFontSize}px "Segoe UI", sans-serif`;
+            context.fillText(line, canvas.width / 2, startY + index * (baseFontSize + 10));
+          });
 
           context.restore();
           texture.needsUpdate = true;
         }
 
-        function updatePanel({ line, tone }) {
-          const normalizedLine = line ?? spoolProgressCountdownFallbackMessage;
+        function updatePanel({ line, lines, tone }) {
           const normalizedTone = tone ?? 'neutral';
+          const detailLines = Array.isArray(lines)
+            ? lines.map((entry) => String(entry))
+            : [String(line ?? spoolProgressCountdownFallbackMessage)];
 
-          if (normalizedLine === lastLine && normalizedTone === lastTone) {
+          const key = `${detailLines.join('\n')}__${normalizedTone}`;
+          if (key === lastKey) {
             return;
           }
 
-          drawPanel(normalizedLine, normalizedTone);
-          lastLine = normalizedLine;
-          lastTone = normalizedTone;
+          drawPanel(detailLines, normalizedTone);
+          lastKey = key;
         }
 
         updatePanel({ line: spoolProgressCountdownFallbackMessage, tone: 'neutral' });
@@ -2226,7 +2233,7 @@
         }
         if (spoolCountdownLabelController) {
           spoolCountdownLabelController.update({
-            line: spoolProgressCountdownFallbackMessage,
+            lines: [spoolProgressCountdownFallbackMessage, yarnFlowCycleFallbackMessage],
             tone: 'neutral',
           });
         }
@@ -2644,8 +2651,11 @@
             : yarnExtrusionActive
               ? 'ready'
               : 'info';
+          const countdownLines = cycleTimingDetail
+            ? [countdownSummary, cycleTimingDetail]
+            : [countdownSummary];
           spoolCountdownLabelController.update({
-            line: countdownSummary,
+            lines: countdownLines,
             tone: countdownTone,
           });
         }
