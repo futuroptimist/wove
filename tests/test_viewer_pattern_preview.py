@@ -149,7 +149,7 @@ def test_spool_progress_ring_pauses_without_target() -> None:
 
 
 def test_spool_countdown_ribbon_surfaces_cycle_pacing() -> None:
-    """The countdown ribbon should stack cycle pacing beside feed timing."""
+    """The countdown ribbon should stack cycle pacing beneath feed timing."""
 
     html = (PROJECT_ROOT / "viewer" / "index.html").read_text(encoding="utf-8")
 
