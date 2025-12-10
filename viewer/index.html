@@ -659,7 +659,7 @@
       let plannerBounds = null;
       let machineProfileBounds = null;
       let machineProfileMissingAxes = [];
-      let machineProfileProfile = null;
+      let currentMachineProfile = null;
       let tensionCalibration = null;
       let patternPreviewDurationSeconds = defaultPatternPreviewDurationSeconds;
       let lastPatternStepIndex = -1;
@@ -2789,10 +2789,10 @@
           machineProfileBounds = normalizeMachineProfileBounds(options.machineProfileBounds);
           machineProfileMissingAxes = Array.isArray(options.machineProfileMissingAxes)
             ? options.machineProfileMissingAxes.filter((axis) => typeof axis === 'string')
-            : machineProfileMissingAxes;
-          machineProfileProfile = Object.prototype.hasOwnProperty.call(options, 'machineProfile')
+            : computeMissingMachineProfileAxes(options.machineProfileBounds);
+          currentMachineProfile = Object.prototype.hasOwnProperty.call(options, 'machineProfile')
             ? options.machineProfile
-            : machineProfileProfile;
+            : currentMachineProfile;
           updateMachineProfileEnvelope(machineProfileBounds, machineProfileMissingAxes);
         }
         updateHomingGuardPanel(plannerDefaults);
@@ -2900,10 +2900,10 @@
           machineProfileAxesElement.removeChild(machineProfileAxesElement.firstChild);
         }
 
-        machineProfileProfile = machineProfile && typeof machineProfile === 'object'
+        currentMachineProfile = machineProfile && typeof machineProfile === 'object'
           ? machineProfile
           : null;
-        machineProfileMissingAxes = computeMissingMachineProfileAxes(machineProfileProfile);
+        machineProfileMissingAxes = computeMissingMachineProfileAxes(currentMachineProfile);
         machineProfileBounds = normalizeMachineProfileBounds(machineProfile);
         updateMachineProfileEnvelope(machineProfileBounds, machineProfileMissingAxes);
 
