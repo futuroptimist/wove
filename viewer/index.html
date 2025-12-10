@@ -579,6 +579,7 @@
       const automationLightOffset = new THREE.Vector3(0, 0.18, 0);
       const stepBadgeControllers = [];
       const anchorPulseControllers = [];
+      let travelEnvelopeController = null;
       let activeCluster = null;
       const selectionRingHeight = 0.06;
       const selectionSweepSpeed = 0.9;
@@ -1712,6 +1713,92 @@
         setTone(patternBoundsElement, 'info');
       }
 
+      function buildTravelEnvelopeDimensions(bounds, fallbackSpan) {
+        if (!bounds) {
+          return {
+            width: fallbackSpan.x,
+            depth: fallbackSpan.y,
+            height: fallbackSpan.z,
+          };
+        }
+
+        const width = Math.max((bounds.x?.max ?? 0) - (bounds.x?.min ?? 0), 0.0001);
+        const depth = Math.max((bounds.y?.max ?? 0) - (bounds.y?.min ?? 0), 0.0001);
+        const height = Math.max((bounds.z?.max ?? 0) - (bounds.z?.min ?? 0), 0.0001);
+
+        return {
+          width: width < 0.001 ? fallbackSpan.x : width,
+          depth: depth < 0.001 ? fallbackSpan.y : depth,
+          height: height < 0.001 ? fallbackSpan.z : height,
+        };
+      }
+
+      function updateTravelEnvelope(planner, machine, comparisonDetails = null) {
+        if (!travelEnvelopeController) {
+          return;
+        }
+
+        const {
+          mmToScene,
+          fallbackSpan,
+          plannerOutline,
+          plannerLabel,
+          machineOutline,
+          machineFill,
+          machineLabel,
+          group,
+        } = travelEnvelopeController;
+
+        const machineDimensions = machine
+          ? buildTravelEnvelopeDimensions(machine, fallbackSpan)
+          : null;
+        const plannerDimensions = planner
+          ? buildTravelEnvelopeDimensions(planner, fallbackSpan)
+          : null;
+
+        const machineVisible = Boolean(machineDimensions);
+        const plannerVisible = Boolean(plannerDimensions);
+
+        machineOutline.visible = machineVisible;
+        machineFill.visible = machineVisible;
+        machineLabel.visible = machineVisible;
+        plannerOutline.visible = plannerVisible;
+        plannerLabel.visible = plannerVisible;
+        group.visible = machineVisible || plannerVisible;
+
+        if (!machineVisible && !plannerVisible) {
+          return;
+        }
+
+        const warningTone = comparisonDetails?.exceedingAxes?.length > 0;
+        const machineColor = warningTone ? 0xffc27d : 0x5fffd2;
+        const machineFillColor = warningTone ? 0xffb173 : 0x2cf9c5;
+        machineOutline.material.color.setHex(machineColor);
+        machineFill.material.color.setHex(machineFillColor);
+        machineFill.material.opacity = warningTone ? 0.18 : 0.12;
+
+        if (machineDimensions) {
+          const width = Math.max(machineDimensions.width * mmToScene, 0.02);
+          const depth = Math.max(machineDimensions.depth * mmToScene, 0.02);
+          const height = Math.max(machineDimensions.height * mmToScene, 0.08);
+          machineOutline.scale.set(width, height, depth);
+          machineFill.scale.set(width, height, depth);
+          const machineY = height / 2;
+          machineOutline.position.set(0, machineY, 0);
+          machineFill.position.set(0, machineY, 0);
+          machineLabel.position.set(0, height + 0.16, 0);
+        }
+
+        if (plannerDimensions) {
+          const width = Math.max(plannerDimensions.width * mmToScene, 0.02);
+          const depth = Math.max(plannerDimensions.depth * mmToScene, 0.02);
+          const height = Math.max(plannerDimensions.height * mmToScene, 0.08);
+          plannerOutline.scale.set(width * 0.98, height * 0.98, depth * 0.98);
+          plannerOutline.position.set(0, height / 2 + 0.04, 0);
+          plannerLabel.position.set(0, height + 0.2, 0);
+        }
+      }
+
       function updatePlannerDefaultsPanel(defaults) {
         if (!patternDefaultsStatusElement || !patternDefaultsListElement) {
           return;
@@ -2711,6 +2798,7 @@
         }
         updatePatternBoundsOverlay(plannerBounds);
         updateBoundsComparisonPanel(plannerBounds, machineProfileBounds, boundsComparison);
+        updateTravelEnvelope(plannerBounds, machineProfileBounds, boundsComparison);
 
         if (patternPreviewContainer) {
           if (patternPreviewGroup) {
@@ -2752,6 +2840,7 @@
           resetYarnFlowPanel();
           boundsComparison = null;
           updateBoundsComparisonPanel(null, null);
+          updateTravelEnvelope(null, null);
         }
       }
 
@@ -4201,6 +4290,127 @@
         return group;
       }
 
+      function createTravelEnvelopeVolumes({ center, bedSize }) {
+        const group = new THREE.Group();
+        group.name = 'travel-envelope-volumes';
+        group.position.copy(center.clone().add(new THREE.Vector3(0, 0.08, 0)));
+
+        const baseBoxGeometry = new THREE.BoxGeometry(1, 1, 1);
+        const edgeGeometry = new THREE.EdgesGeometry(baseBoxGeometry);
+
+        const plannerOutlineMaterial = new THREE.LineDashedMaterial({
+          color: 0x9ee5ff,
+          linewidth: 1,
+          dashSize: 0.18,
+          gapSize: 0.1,
+          transparent: true,
+          opacity: 0.86,
+          depthTest: false,
+        });
+
+        const plannerOutline = new THREE.LineSegments(edgeGeometry, plannerOutlineMaterial);
+        plannerOutline.computeLineDistances();
+        plannerOutline.name = 'planner-travel-envelope-cage';
+        group.add(plannerOutline);
+
+        const machineOutlineMaterial = new THREE.LineDashedMaterial({
+          color: 0x5fffd2,
+          linewidth: 1,
+          dashSize: 0.16,
+          gapSize: 0.12,
+          transparent: true,
+          opacity: 0.82,
+          depthTest: false,
+        });
+        const machineOutline = new THREE.LineSegments(edgeGeometry.clone(), machineOutlineMaterial);
+        machineOutline.computeLineDistances();
+        machineOutline.name = 'machine-profile-travel-envelope-cage';
+        group.add(machineOutline);
+
+        const machineFill = new THREE.Mesh(
+          baseBoxGeometry.clone(),
+          new THREE.MeshBasicMaterial({
+            color: 0x2cf9c5,
+            transparent: true,
+            opacity: 0.12,
+            depthTest: false,
+            depthWrite: false,
+          }),
+        );
+        machineFill.name = 'machine-profile-travel-envelope-fill';
+        group.add(machineFill);
+
+        const plannerLabel = buildLabel('Planner travel envelope', '#d9f4ff');
+        plannerLabel.position.set(0, 0.7, 0);
+        plannerLabel.scale.multiplyScalar(0.32);
+        group.add(plannerLabel);
+
+        const machineLabel = buildLabel('Machine profile travel envelope', '#ccfff0');
+        machineLabel.position.set(0, 0.82, 0);
+        machineLabel.scale.multiplyScalar(0.32);
+        group.add(machineLabel);
+
+        addHoverInfo(
+          plannerOutline,
+          'Planner travel envelope cage — projects planner bounds above the gantry for quick checks.',
+          { passthrough: true },
+        );
+        addHoverInfo(
+          machineFill,
+          'Machine profile travel envelope — mirrors travel_min_mm and travel_max_mm from the machine profile. Travel envelope cage stays aligned to the gantry bed.',
+          { passthrough: true },
+        );
+
+        boundsCageControllers.push(
+          {
+            material: plannerOutlineMaterial,
+            baseOpacity: plannerOutlineMaterial.opacity ?? 0.86,
+            opacityAmplitude: 0.14,
+            speed: 1.5,
+            phaseOffset: 0.35,
+          },
+          {
+            material: machineOutlineMaterial,
+            baseOpacity: machineOutlineMaterial.opacity ?? 0.82,
+            opacityAmplitude: 0.12,
+            speed: 1.2,
+            phaseOffset: 0.18,
+          },
+          {
+            material: machineFill.material,
+            baseOpacity: machineFill.material.opacity ?? 0.12,
+            opacityAmplitude: 0.06,
+            speed: 1.8,
+            phaseOffset: 0.42,
+          },
+        );
+
+        const mmToScene = 0.01;
+        const fallbackSpan = {
+          x: Math.max(bedSize.width / mmToScene, 1),
+          y: Math.max(bedSize.depth / mmToScene, 1),
+          z: 120,
+        };
+
+        plannerOutline.visible = false;
+        plannerLabel.visible = false;
+        machineOutline.visible = false;
+        machineFill.visible = false;
+        machineLabel.visible = false;
+        group.visible = false;
+
+        return {
+          group,
+          mmToScene,
+          fallbackSpan,
+          plannerOutline,
+          plannerLabel,
+          machineOutline,
+          machineFill,
+          machineLabel,
+        };
+      }
+
       function createElectronicsBay() {
         const group = new THREE.Group();
         group.name = 'electronics-bay';
@@ -5070,6 +5280,8 @@
           'Workpiece support bed: removable build plate with magnetic anchors for swatch staging.',
         );
 
+        const bedTopY = bed.position.y + bedThickness / 2;
+
         const electronicsBay = createElectronicsBay();
         electronicsBay.position.set(-2.1, 0.4, -1.4);
         group.add(electronicsBay);
@@ -5084,7 +5296,13 @@
         tensionAssembly.position.set(-1.5, 0.92, -1.32);
         group.add(tensionAssembly);
 
-        const bedTopY = bed.position.y + bedThickness / 2;
+        const travelEnvelope = createTravelEnvelopeVolumes({
+          center: new THREE.Vector3(bed.position.x, bedTopY, bed.position.z),
+          bedSize: { width: 4.8, depth: 3.2 },
+        });
+        travelEnvelopeController = travelEnvelope;
+        group.add(travelEnvelope.group);
+
         const anchorsGroup = new THREE.Group();
         anchorsGroup.name = 'magnetic-anchors';
         const anchorBaseMaterial = new THREE.MeshStandardMaterial({
