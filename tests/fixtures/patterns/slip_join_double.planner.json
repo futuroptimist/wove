@@ -30,6 +30,10 @@
           85.0
         ]
       ]
+    },
+    "heated_bed_conduit": {
+      "status": "Reserved for heater upgrade",
+      "route": "Bay-to-bed thermistor channel illuminated for wiring prep."
     }
   },
   "bounds": {

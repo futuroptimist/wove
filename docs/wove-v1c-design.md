@@ -259,6 +259,9 @@ that runs the same rail so the automation cadence reads clearly from the plaza o
   hardware. Floating step badges bob above each footprint and cant toward the
   doorway so crews can rehearse the left/right cadence before approaching the
   enclosure.
+- Heated-bed conduit status now rides in planner defaults (`heated_bed_conduit`),
+  letting the viewer mirror the same bay-to-bed thermistor run in the Heated Bed
+  Conduit panel whenever a planner payload is loaded.
 
 ## Electronics and Control
 ### Control Board
