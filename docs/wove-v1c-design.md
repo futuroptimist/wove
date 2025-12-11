@@ -261,7 +261,9 @@ that runs the same rail so the automation cadence reads clearly from the plaza o
   enclosure.
 - Heated-bed conduit status now rides in planner defaults (`heated_bed_conduit`),
   letting the viewer mirror the same bay-to-bed thermistor run in the Heated Bed
-  Conduit panel whenever a planner payload is loaded.
+  Conduit panel whenever a planner payload is loaded. The conduit glow now
+  responds to that status so heater-ready exports brighten the thermistor channel
+  and warning states pulse amber inside the hologram.
 
 ## Electronics and Control
 ### Control Board

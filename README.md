@@ -200,7 +200,9 @@ lands. The overlay now includes a Heated Bed Conduit panel that mirrors the
 illuminated thermistor run and keeps the bay-to-bed wiring path visible while
 walking through planner previews. The conduit now shimmers and brightens as
 yarn feed countdowns approach so the heater wiring route stays obvious whenever
-the spool choreography spins up.
+the spool choreography spins up. Planner metadata now also steers the glow so
+ready exports brighten the thermistor channel while warning states pulse amber
+inside the hologram.
 
 The overlay now includes a Pattern Studio preview panel that cycles through the
 current `wove.pattern_cli --format planner` comment while a progress bar tracks

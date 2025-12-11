@@ -143,6 +143,15 @@ def test_heated_bed_conduit_panel_present() -> None:
     assert "bay-to-bed run" in html
 
 
+def test_heated_bed_conduit_glow_tracks_status() -> None:
+    """Planner metadata should steer the thermistor conduit glow."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "planner status drives the glow" in html
+    assert "applyHeatedBedConduitTone" in html
+
+
 def test_yarn_flow_surface_feed_rate_copy() -> None:
     """Yarn flow telemetry should include live feed-rate messaging."""
 
