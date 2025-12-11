@@ -512,7 +512,8 @@ def test_tension_lab_traces_calibration_path() -> None:
     html = VIEWER_HTML.read_text(encoding="utf-8")
 
     assert (
-        "Automation sweep — traces the load-cell carriage path across the calibration rail" in html
+        "Automation sweep — traces the load-cell carriage path across the "
+        "calibration rail" in html
     )
     assert "accelerates as yarn feed pulses approach" in html
     assert "tensionLabPathControllers" in html
@@ -525,7 +526,10 @@ def test_tension_lab_sweep_uses_feed_countdown() -> None:
 
     assert "previewHighlight = yarnExtrusionActive ? 1 : upcomingFeedUrgency" in html
     assert "THREE.MathUtils.lerp(idleSpeed, activeSpeed, previewHighlight)" in html
-    assert "Automation sweep — traces the load-cell carriage path across the calibration rail" in html
+    assert (
+        "Automation sweep — traces the load-cell carriage path across the "
+        "calibration rail" in html
+    )
 
 
 def test_heated_bed_conduit_shimmers_with_feed_pulses() -> None:
