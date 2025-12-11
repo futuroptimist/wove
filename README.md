@@ -99,8 +99,10 @@ panel and billboard. Feed pulses that finish, hit 100%, or run without a declare
 up in the hologram before you even glance at the overlay.
 
 The dashed calibration rail sweeping across the tension lab now slides even faster whenever yarn
-feed pulses approach, keeping pace with the tracer orb that leads the same path. The animation makes
-it easy to rehearse the bench automation stroke from the plaza overview before wiring any sensors.
+feed pulses approach, keeping pace with the tracer orb that leads the same path. The sweep now also
+reacts to the Yarn Flow countdown, ramping up as the next feed nears so crews can see the automation
+cadence before extrusion starts. The animation makes it easy to rehearse the bench automation
+stroke from the plaza overview before wiring any sensors.
 
 Pulsing magnetic anchor pucks now mark the removable workpiece bed so crews can
 practice swapping swatch plates into position before the gantry starts tracing
