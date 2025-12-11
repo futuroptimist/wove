@@ -6579,7 +6579,8 @@
         group.add(automationLine);
         addHoverInfo(
           automationLine,
-          'Automation sweep — traces the load-cell carriage path across the calibration rail.',
+          'Automation sweep — traces the load-cell carriage path across the calibration rail and '
+            + 'accelerates as yarn feed pulses approach.',
           { passthrough: true },
         );
         automationSweepControllers.push({
@@ -8337,7 +8338,8 @@
             return;
           }
 
-          const speed = yarnExtrusionActive ? activeSpeed : idleSpeed;
+          const previewHighlight = yarnExtrusionActive ? 1 : upcomingFeedUrgency;
+          const speed = THREE.MathUtils.lerp(idleSpeed, activeSpeed, previewHighlight);
           const travel = typeof controller.travel === 'number' ? controller.travel : 0;
           const updatedTravel = (travel + delta * speed) % 1;
           controller.travel = updatedTravel;
@@ -8348,7 +8350,11 @@
             light.position.copy(automationTracerPoint).add(automationLightOffset);
           }
 
-          const targetIntensity = yarnExtrusionActive ? activeIntensity : restIntensity;
+          const targetIntensity = THREE.MathUtils.lerp(
+            restIntensity,
+            activeIntensity,
+            previewHighlight,
+          );
           controller.currentIntensity = THREE.MathUtils.damp(
             controller.currentIntensity ?? restIntensity,
             targetIntensity,
@@ -8357,7 +8363,7 @@
           );
           tracer.material.emissiveIntensity = controller.currentIntensity;
 
-          const targetOpacity = yarnExtrusionActive ? activeOpacity : restOpacity;
+          const targetOpacity = THREE.MathUtils.lerp(restOpacity, activeOpacity, previewHighlight);
           controller.currentOpacity = THREE.MathUtils.damp(
             controller.currentOpacity ?? restOpacity,
             targetOpacity,
@@ -8367,7 +8373,11 @@
           tracer.material.opacity = controller.currentOpacity;
 
           if (light) {
-            const targetLight = yarnExtrusionActive ? activeLightIntensity : restLightIntensity;
+            const targetLight = THREE.MathUtils.lerp(
+              restLightIntensity,
+              activeLightIntensity,
+              previewHighlight,
+            );
             light.intensity = THREE.MathUtils.damp(
               controller.currentLight ?? restLightIntensity,
               targetLight,
