@@ -2123,6 +2123,18 @@
 
         thermistorConduitControllers.forEach((controller) => {
           const defaults = controller.defaults ?? {};
+          const baseline =
+            controller.baseline ??
+            (controller.baseline = {
+              baseIntensity: controller.baseIntensity ?? 0,
+              activeIntensity: controller.activeIntensity ?? 0,
+              baseOpacity: controller.baseOpacity ?? 0,
+              activeOpacity: controller.activeOpacity ?? 0,
+              baseLight: controller.baseLight ?? 0,
+              activeLight: controller.activeLight ?? 0,
+              shimmerSpeed: controller.shimmerSpeed ?? 1,
+              countdownBias: controller.countdownBias,
+            });
           const color = settings.color ?? defaults.color;
           const emissive = settings.emissive ?? defaults.emissive;
 
@@ -2144,15 +2156,15 @@
           const lightScale = settings.lightScale ?? 1.0;
           const shimmerScale = settings.shimmerScale ?? 1.0;
 
-          controller.baseIntensity = (defaults.baseIntensity ?? 0) * intensityScale;
-          controller.activeIntensity = (defaults.activeIntensity ?? 0) * intensityScale;
-          controller.baseOpacity = defaults.baseOpacity ?? controller.baseOpacity;
-          controller.activeOpacity = defaults.activeOpacity ?? controller.activeOpacity;
-          controller.baseLight = (defaults.baseLight ?? 0) * lightScale;
-          controller.activeLight = (defaults.activeLight ?? 0) * lightScale;
-          controller.shimmerSpeed = (defaults.shimmerSpeed ?? 1) * shimmerScale;
+          controller.baseIntensity = baseline.baseIntensity * intensityScale;
+          controller.activeIntensity = baseline.activeIntensity * intensityScale;
+          controller.baseOpacity = baseline.baseOpacity;
+          controller.activeOpacity = baseline.activeOpacity;
+          controller.baseLight = baseline.baseLight * lightScale;
+          controller.activeLight = baseline.activeLight * lightScale;
+          controller.shimmerSpeed = baseline.shimmerSpeed * shimmerScale;
           controller.countdownBias =
-            settings.countdownBias ?? defaults.countdownBias ?? controller.countdownBias;
+            settings.countdownBias ?? baseline.countdownBias ?? controller.countdownBias;
         });
       }
 
@@ -4870,14 +4882,6 @@
           countdownBias: 0.6,
           damping: 4.8,
           defaults: {
-            baseIntensity: 0.55,
-            activeIntensity: 1.4,
-            baseOpacity: 0.82,
-            activeOpacity: 1.0,
-            baseLight: thermistorGlow.intensity,
-            activeLight: 1.6,
-            shimmerSpeed: 2.4,
-            countdownBias: 0.6,
             color: thermistorMaterial.color.getHex(),
             emissive: thermistorMaterial.emissive.getHex(),
           },
