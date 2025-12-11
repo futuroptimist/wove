@@ -1819,7 +1819,9 @@
           return;
         }
 
-        const warningTone = comparisonDetails?.exceedingAxes?.length > 0;
+        const missingMachineEnvelope = Boolean(comparisonDetails?.missingMachine);
+        const warningTone =
+          missingMachineEnvelope || (comparisonDetails?.exceedingAxes?.length > 0);
         const machineColor = warningTone ? 0xffc27d : 0x5fffd2;
         const machineFillColor = warningTone ? 0xffb173 : 0x2cf9c5;
         machineOutline.material.color.setHex(machineColor);
@@ -3388,7 +3390,11 @@
           const profileWidth = THREE.MathUtils.clamp(profileXSpan / xSpan, 0, 1) * usableWidth;
           const profileHeight = THREE.MathUtils.clamp(profileYSpan / ySpan, 0, 1) * usableHeight;
 
-          const profileIsSafe = !(options.boundsComparison?.exceedingAxes?.length);
+          const profileHasMissingAxes = Array.isArray(options.machineProfileMissingAxes)
+            ? options.machineProfileMissingAxes.length > 0
+            : false;
+          const profileIsSafe =
+            !(options.boundsComparison?.exceedingAxes?.length) && !profileHasMissingAxes;
           const outlineColor = profileIsSafe ? 0x5fffd2 : 0xffc27d;
           const fillColor = profileIsSafe ? 0x2cf9c5 : 0xffb173;
           const fillOpacity = profileIsSafe ? 0.08 : 0.14;
