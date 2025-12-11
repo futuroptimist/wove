@@ -504,7 +504,8 @@
       <div id="heated-bed-panel">
         <h2>Heated Bed Conduit</h2>
         <p id="heated-bed-status" data-tone="info">
-          Thermistor conduit reserved for the heater upgrade — glowing channel marks the wiring path.
+          Thermistor conduit reserved for the heater upgrade — planner status drives the glow along the
+          wiring path.
         </p>
         <p id="heated-bed-route" data-tone="neutral">
           Conduit status: Illuminating the bay-to-bed run so heater wiring stays obvious during dry runs.
@@ -576,6 +577,7 @@
       const footstepControllers = [];
       const filamentSensorControllers = [];
       const thermistorConduitControllers = [];
+      let thermistorConduitTone = 'info';
       const cableChainPulseControllers = [];
       const cableChainChaseControllers = [];
       const automationSweepControllers = [];
@@ -682,7 +684,8 @@
       const homingGuardPositionFallbackMessage =
         'Coordinates: Awaiting planner coordinates…';
       const heatedBedStatusFallbackMessage =
-        'Thermistor conduit reserved for the heater upgrade — glowing channel marks the wiring path.';
+        'Thermistor conduit reserved for the heater upgrade — planner status drives the '
+        + 'glow along the wiring path.';
       const heatedBedRouteFallbackMessage =
         'Conduit status: Illuminating the bay-to-bed run so heater wiring stays obvious during dry runs.';
       const patternBoundsFallbackMessage =
@@ -2077,12 +2080,80 @@
               ? 'warning'
               : 'info';
           setTone(heatedBedStatusElement, tone);
+          applyHeatedBedConduitTone(tone);
         }
 
         if (heatedBedRouteElement) {
           heatedBedRouteElement.textContent = routeLine || heatedBedRouteFallbackMessage;
           setTone(heatedBedRouteElement, 'neutral');
         }
+      }
+
+      function applyHeatedBedConduitTone(tone) {
+        thermistorConduitTone = tone || 'info';
+
+        const toneSettings = {
+          ready: {
+            intensityScale: 1.25,
+            lightScale: 1.2,
+            shimmerScale: 1.15,
+            countdownBias: 0.9,
+            color: 0x9cf1ff,
+            emissive: 0x45cbe2,
+          },
+          warning: {
+            intensityScale: 1.1,
+            lightScale: 1.4,
+            shimmerScale: 0.9,
+            countdownBias: 0.4,
+            color: 0xffc38a,
+            emissive: 0xff9b5f,
+          },
+          info: {
+            intensityScale: 1.0,
+            lightScale: 1.0,
+            shimmerScale: 1.0,
+            countdownBias: null,
+            color: null,
+            emissive: null,
+          },
+        };
+
+        const settings = toneSettings[thermistorConduitTone] || toneSettings.info;
+
+        thermistorConduitControllers.forEach((controller) => {
+          const defaults = controller.defaults ?? {};
+          const color = settings.color ?? defaults.color;
+          const emissive = settings.emissive ?? defaults.emissive;
+
+          if (controller.material) {
+            if (color !== undefined && color !== null && controller.material.color) {
+              controller.material.color.setHex(color);
+            } else if (defaults.color !== undefined && controller.material.color) {
+              controller.material.color.setHex(defaults.color);
+            }
+
+            if (emissive !== undefined && emissive !== null && controller.material.emissive) {
+              controller.material.emissive.setHex(emissive);
+            } else if (defaults.emissive !== undefined && controller.material.emissive) {
+              controller.material.emissive.setHex(defaults.emissive);
+            }
+          }
+
+          const intensityScale = settings.intensityScale ?? 1.0;
+          const lightScale = settings.lightScale ?? 1.0;
+          const shimmerScale = settings.shimmerScale ?? 1.0;
+
+          controller.baseIntensity = (defaults.baseIntensity ?? 0) * intensityScale;
+          controller.activeIntensity = (defaults.activeIntensity ?? 0) * intensityScale;
+          controller.baseOpacity = defaults.baseOpacity ?? controller.baseOpacity;
+          controller.activeOpacity = defaults.activeOpacity ?? controller.activeOpacity;
+          controller.baseLight = (defaults.baseLight ?? 0) * lightScale;
+          controller.activeLight = (defaults.activeLight ?? 0) * lightScale;
+          controller.shimmerSpeed = (defaults.shimmerSpeed ?? 1) * shimmerScale;
+          controller.countdownBias =
+            settings.countdownBias ?? defaults.countdownBias ?? controller.countdownBias;
+        });
       }
 
       function applySpoolProgressTone(tone) {
@@ -4798,12 +4869,26 @@
           shimmerSpeed: 2.4,
           countdownBias: 0.6,
           damping: 4.8,
+          defaults: {
+            baseIntensity: 0.55,
+            activeIntensity: 1.4,
+            baseOpacity: 0.82,
+            activeOpacity: 1.0,
+            baseLight: thermistorGlow.intensity,
+            activeLight: 1.6,
+            shimmerSpeed: 2.4,
+            countdownBias: 0.6,
+            color: thermistorMaterial.color.getHex(),
+            emissive: thermistorMaterial.emissive.getHex(),
+          },
         });
 
         const thermistorLabel = buildLabel('Thermistor Channel', '#ffd9c2');
         thermistorLabel.position.set(0.28, 0.92, 0.94);
         thermistorLabel.scale.multiplyScalar(0.34);
         group.add(thermistorLabel);
+
+        applyHeatedBedConduitTone(thermistorConduitTone);
 
         const statusLed = new THREE.Mesh(
           new THREE.SphereGeometry(0.08, 16, 16),
