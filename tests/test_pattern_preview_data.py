@@ -139,3 +139,24 @@ def test_load_viewer_events_ignores_non_dict_payload(monkeypatch) -> None:
     monkeypatch.setattr(Path, "read_text", patched_read_text)
 
     assert load_viewer_events() == []
+
+
+def test_heated_bed_conduit_metadata_present() -> None:
+    """The sample planner should steer the heated bed conduit glow."""
+
+    asset_path = ROOT / "viewer" / "assets" / "base_chain_row.planner.json"
+    payload = json.loads(asset_path.read_text(encoding="utf-8"))
+
+    defaults = payload.get("defaults") if isinstance(payload, dict) else {}
+    if not isinstance(defaults, dict):
+        defaults = {}
+    conduit = defaults.get("heated_bed_conduit") or {}
+    if not isinstance(conduit, dict):
+        conduit = {}
+
+    status = conduit.get("status", "")
+    route = conduit.get("route", "")
+
+    assert status
+    assert "ready" in status.lower()
+    assert route

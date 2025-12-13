@@ -521,8 +521,14 @@ def _planner_payload(
                 "pairs": [list(pair) for pair in TENSION_SENSOR_CALIBRATION]
             },
             "heated_bed_conduit": {
-                "status": "Reserved for heater upgrade",
-                "route": "Bay-to-bed thermistor channel illuminated for wiring prep.",
+                "status": (
+                    "Ready — thermistor conduit illuminated for the bay-to-bed "
+                    "wiring run"
+                ),
+                "route": (
+                    "Bay-to-bed thermistor channel glows when planner metadata "
+                    "is ready."
+                ),
             },
         },
         "bounds": {
