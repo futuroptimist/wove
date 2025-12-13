@@ -144,7 +144,9 @@ teal dashed outline, making it obvious when planner bounds sit inside the
 configured machine profile limits. If a planner export exceeds those limits on
 any axis, the browser overlay now calls out the offending axes and the preview
 highlights the machine envelope in amber so you know to tighten the bounds
-before committing a dry run. The main scene now floats paired travel-envelope
+before committing a dry run. If the machine profile omits any axis travel
+limits, the Machine Profile envelope banner lists the missing axes so you know
+which values to restore. The main scene now floats paired travel-envelope
 cages above the gantry too, mirroring both envelopes above the printed bed so
 operators get a spatial warning in the hologram as soon as bounds drift past
 the machine profile. Include ``tension_sensor_calibration`` metadata and

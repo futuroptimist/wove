@@ -335,6 +335,19 @@ def test_viewer_highlights_machine_profile_panel() -> None:
     )
 
 
+def test_machine_profile_envelope_warns_when_axes_missing() -> None:
+    """Envelope panel should call out missing machine profile axes."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    missing_axes_prompt = (
+        "Machine profile envelope unavailable — add travel_min_mm and travel_max_mm "
+        "for:"
+    )
+
+    assert missing_axes_prompt in html
+
+
 def test_spool_billboard_tracks_following_feed() -> None:
     """The spool billboard should echo next and following feed countdowns."""
 
