@@ -41,6 +41,24 @@ def load_viewer_events() -> list[dict[str, object]]:
     return events
 
 
+def load_heated_bed_conduit(asset_path: Path) -> dict[str, str]:
+    """Return the heated bed conduit metadata with sensible defaults."""
+
+    payload = json.loads(asset_path.read_text(encoding="utf-8"))
+
+    defaults = payload.get("defaults") if isinstance(payload, dict) else {}
+    if not isinstance(defaults, dict):
+        defaults = {}
+    conduit = defaults.get("heated_bed_conduit") or {}
+    if not isinstance(conduit, dict):
+        conduit = {}
+
+    return {
+        "status": conduit.get("status", ""),
+        "route": conduit.get("route", ""),
+    }
+
+
 def normalize_event(event) -> dict[str, object]:
     """Return a simplified snapshot used for viewer assertions."""
 
@@ -145,14 +163,7 @@ def test_heated_bed_conduit_metadata_present() -> None:
     """The sample planner should steer the heated bed conduit glow."""
 
     asset_path = ROOT / "viewer" / "assets" / "base_chain_row.planner.json"
-    payload = json.loads(asset_path.read_text(encoding="utf-8"))
-
-    defaults = payload.get("defaults") if isinstance(payload, dict) else {}
-    if not isinstance(defaults, dict):
-        defaults = {}
-    conduit = defaults.get("heated_bed_conduit") or {}
-    if not isinstance(conduit, dict):
-        conduit = {}
+    conduit = load_heated_bed_conduit(asset_path)
 
     status = conduit.get("status", "")
     route = conduit.get("route", "")
@@ -160,3 +171,35 @@ def test_heated_bed_conduit_metadata_present() -> None:
     assert status
     assert "ready" in status.lower()
     assert route
+
+
+def test_load_heated_bed_conduit_handles_non_dict_defaults(monkeypatch) -> None:
+    """Gracefully handle unexpected defaults payloads."""
+
+    asset_path = ROOT / "viewer" / "assets" / "base_chain_row.planner.json"
+
+    def patched_read_text(self: Path, *args: object, **kwargs: object) -> str:
+        assert self == asset_path
+        return json.dumps({"defaults": ["unexpected", "list"]})
+
+    monkeypatch.setattr(Path, "read_text", patched_read_text)
+
+    conduit = load_heated_bed_conduit(asset_path)
+
+    assert conduit == {"status": "", "route": ""}
+
+
+def test_load_heated_bed_conduit_handles_non_dict_conduit(monkeypatch) -> None:
+    """Reset conduit metadata when it is not a mapping."""
+
+    asset_path = ROOT / "viewer" / "assets" / "base_chain_row.planner.json"
+
+    def patched_read_text(self: Path, *args: object, **kwargs: object) -> str:
+        assert self == asset_path
+        return json.dumps({"defaults": {"heated_bed_conduit": "invalid"}})
+
+    monkeypatch.setattr(Path, "read_text", patched_read_text)
+
+    conduit = load_heated_bed_conduit(asset_path)
+
+    assert conduit == {"status": "", "route": ""}
