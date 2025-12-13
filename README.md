@@ -269,7 +269,9 @@ the hologram advances.
 The overlay also surfaces a **Machine Profile** panel that lists axis
 microstepping, steps-per-millimeter, and travel ranges whenever planner exports
 embed machine metadata via `--machine-profile`. Verify the browser preview is
-aligned with the configured gantry before rehearsing motion sequences.
+aligned with the configured gantry before rehearsing motion sequences. When
+travel limits are missing for any axis, the Machine Profile envelope now calls
+out the absent axes so you can correct the profile before running a dry run.
 
 A **Planner Metadata** panel now lists the export's schema version, declared
 units, and total planner steps so contributors can confirm the viewer is

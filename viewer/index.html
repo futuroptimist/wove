@@ -1625,11 +1625,15 @@
       }
 
       function buildMachineProfileEnvelopeText(bounds, missingAxes = []) {
+        const missingAxisList = Array.isArray(missingAxes)
+          ? missingAxes.filter((axis) => typeof axis === 'string' && axis.trim().length > 0)
+          : [];
+
+        if (missingAxisList.length > 0) {
+          return `${machineProfileEnvelopeMissingAxesPrefix}${missingAxisList.join(', ')}.`;
+        }
+
         if (!bounds) {
-          if (Array.isArray(missingAxes) && missingAxes.length > 0) {
-            const suffix = missingAxes.join(', ');
-            return `${machineProfileEnvelopeMissingAxesPrefix}${suffix}.`;
-          }
           return machineProfileEnvelopeFallbackMessage;
         }
 
@@ -1661,7 +1665,8 @@
 
         const text = buildMachineProfileEnvelopeText(bounds, missingAxes);
         machineProfileEnvelopeElement.textContent = text;
-        const tone = bounds ? 'info' : 'warning';
+        const hasMissingAxes = Array.isArray(missingAxes) && missingAxes.length > 0;
+        const tone = bounds && !hasMissingAxes ? 'info' : 'warning';
         setTone(machineProfileEnvelopeElement, tone);
       }
 
