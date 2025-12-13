@@ -84,3 +84,33 @@ export function comparePlannerToMachineBounds(plannerBounds, machineBounds) {
     details,
   };
 }
+
+export function buildTravelEnvelopeBox(bounds, fallbackSpan) {
+  if (!bounds) {
+    return {
+      width: fallbackSpan.x,
+      depth: fallbackSpan.y,
+      height: fallbackSpan.z,
+      centerX: 0,
+      centerY: 0,
+      centerZ: 0,
+    };
+  }
+
+  const width = Math.max((bounds.x?.max ?? 0) - (bounds.x?.min ?? 0), 0.0001);
+  const depth = Math.max((bounds.y?.max ?? 0) - (bounds.y?.min ?? 0), 0.0001);
+  const height = Math.max((bounds.z?.max ?? 0) - (bounds.z?.min ?? 0), 0.0001);
+
+  const centerX = ((bounds.x?.max ?? 0) + (bounds.x?.min ?? 0)) / 2;
+  const centerY = ((bounds.y?.max ?? 0) + (bounds.y?.min ?? 0)) / 2;
+  const centerZ = ((bounds.z?.max ?? 0) + (bounds.z?.min ?? 0)) / 2;
+
+  return {
+    width: width < 0.001 ? fallbackSpan.x : width,
+    depth: depth < 0.001 ? fallbackSpan.y : depth,
+    height: height < 0.001 ? fallbackSpan.z : height,
+    centerX: Number.isFinite(centerX) ? centerX : 0,
+    centerY: Number.isFinite(centerY) ? centerY : 0,
+    centerZ: Number.isFinite(centerZ) ? centerZ : 0,
+  };
+}

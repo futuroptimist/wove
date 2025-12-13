@@ -147,11 +147,13 @@ highlights the machine envelope in amber so you know to tighten the bounds
 before committing a dry run. The main scene now floats paired travel-envelope
 cages above the gantry too, mirroring both envelopes above the printed bed so
 operators get a spatial warning in the hologram as soon as bounds drift past
-the machine profile. Include ``tension_sensor_calibration`` metadata and
-per-command ``tension_sensor_reading`` samples in planner exports to feed the
-viewer live hall-effect telemetry; the overlay converts those readings into
-grams, notes when samples are clamped to the calibrated span, and falls back to
-feed-rate estimates when calibration is absent.
+the machine profile. The cages align to the planner min/max centers, so
+off-center patterns lift into the hologram exactly where the coordinates place
+them instead of sitting at the bed midpoint. Include ``tension_sensor_calibration``
+metadata and per-command ``tension_sensor_reading`` samples in planner exports to
+feed the viewer live hall-effect telemetry; the overlay converts those readings
+into grams, notes when samples are clamped to the calibrated span, and falls
+back to feed-rate estimates when calibration is absent.
 
 ## Embedding the parser in automation
 
