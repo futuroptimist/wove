@@ -10,6 +10,21 @@ export function normalizeAxisBounds(bounds) {
   return { min, max };
 }
 
+function buildCaseInsensitiveLookup(source) {
+  const lookup = new Map();
+  if (!source || typeof source !== 'object') {
+    return lookup;
+  }
+  Object.entries(source).forEach(([key, value]) => {
+    lookup.set(key, value);
+    const lower = key.toLowerCase();
+    if (!lookup.has(lower)) {
+      lookup.set(lower, value);
+    }
+  });
+  return lookup;
+}
+
 export function comparePlannerToMachineBounds(plannerBounds, machineBounds) {
   const axes = [
     { key: 'x' },
@@ -17,29 +32,28 @@ export function comparePlannerToMachineBounds(plannerBounds, machineBounds) {
     { key: 'z' },
     { key: 'e', plannerKeys: ['e', 'extrusion'], machineKeys: ['e', 'extrusion'] },
   ];
+  const plannerLookup = buildCaseInsensitiveLookup(plannerBounds);
+  const machineLookup = buildCaseInsensitiveLookup(machineBounds);
   const normalizedPlanner = {};
   const normalizedMachine = {};
   const missingPlannerAxes = [];
   const missingMachineAxes = [];
 
   const resolveAxisBounds = (source, keys, axisKey) => {
-    if (!source || typeof source !== 'object') {
-      return null;
-    }
     const candidates = Array.isArray(keys) && keys.length > 0 ? keys : [axisKey];
     for (let index = 0; index < candidates.length; index += 1) {
-      const candidate = normalizeAxisBounds(source?.[candidates[index]]);
-      if (candidate) {
-        return candidate;
-      }
+      const candidate = candidates[index];
+      const value = source.get(candidate) ?? source.get(candidate.toLowerCase());
+      const normalized = normalizeAxisBounds(value);
+      if (normalized) return normalized;
     }
     return null;
   };
 
   axes.forEach((axis) => {
     const { key, plannerKeys, machineKeys } = axis;
-    normalizedPlanner[key] = resolveAxisBounds(plannerBounds, plannerKeys, key);
-    normalizedMachine[key] = resolveAxisBounds(machineBounds, machineKeys, key);
+    normalizedPlanner[key] = resolveAxisBounds(plannerLookup, plannerKeys, key);
+    normalizedMachine[key] = resolveAxisBounds(machineLookup, machineKeys, key);
     if (!normalizedPlanner[key]) {
       missingPlannerAxes.push(key);
     }

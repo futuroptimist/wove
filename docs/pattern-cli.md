@@ -138,7 +138,10 @@ control to rehearse your own pattern_cli exports inside the Pattern Studio holog
 When a machine profile was provided, the `machine_profile.axes`
 mapping mirrors the JSON/YAML schema
 loaded by `--machine-profile` so downstream planners can respect the same
-travel envelope without re-reading the original file.
+travel envelope without re-reading the original file. Axis bounds are matched
+case-insensitively in the Three.js viewer, so profiles that spell axes as
+`X`, `Y`, `Z`, or `E` still compare correctly against planner exports that use
+lowercase keys.
 The viewer now also sketches that travel envelope inside the hologram using a
 teal dashed outline, making it obvious when planner bounds sit inside the
 configured machine profile limits. If a planner export exceeds those limits on
