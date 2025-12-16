@@ -2721,10 +2721,18 @@
             tensionLabel =
               `Tension telemetry: ${sensorEstimate.grams.toFixed(1)} g (hall sensor${suffix}).`;
             tensionTone = yarnExtrusionActive ? 'ready' : 'info';
-          } else if (tensionReading !== null && !sensorEstimate) {
-            tensionLabel =
-              'Tension telemetry: Include tension_sensor_calibration to convert hall sensor readings.';
-            tensionTone = 'warning';
+          } else if (tensionReading !== null) {
+            if (feedRateMmPerSec !== null) {
+              tensionLabel =
+                `Tension telemetry: Uncalibrated hall sensor (${tensionReading.toFixed(
+                  1,
+                )} reading) — falling back to feed-rate estimate ${feedRateMmPerSec.toFixed(1)} mm/s.`;
+              tensionTone = 'info';
+            } else {
+              tensionLabel =
+                'Tension telemetry: Include tension_sensor_calibration to convert hall sensor readings.';
+              tensionTone = 'warning';
+            }
           } else if (feedRateMmPerSec !== null) {
             // Tension estimation calibrated to documented profiles:
             // - Lace: 20g @ 45mm/s
