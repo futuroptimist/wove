@@ -43,7 +43,7 @@ export function comparePlannerToMachineBounds(plannerBounds, machineBounds) {
     const candidates = Array.isArray(keys) && keys.length > 0 ? keys : [axisKey];
     for (let index = 0; index < candidates.length; index += 1) {
       const candidate = candidates[index];
-      const value = source.get(candidate) ?? source.get(candidate.toLowerCase());
+      const value = source.get(candidate.toLowerCase());
       const normalized = normalizeAxisBounds(value);
       if (normalized) return normalized;
     }

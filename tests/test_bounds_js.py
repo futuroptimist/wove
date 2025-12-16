@@ -6,12 +6,11 @@ import textwrap
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-BOUNDS_JS = PROJECT_ROOT / "viewer" / "bounds.js"
 
 
 def run_node(script: str) -> dict:
     result = subprocess.run(
-        ["node", "-e", script],
+        ["node", "--input-type=module", "-e", script],
         capture_output=True,
         text=True,
         cwd=PROJECT_ROOT,
