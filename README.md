@@ -108,9 +108,8 @@ Pulsing magnetic anchor pucks now mark the removable workpiece bed so crews can
 practice swapping swatch plates into position before the gantry starts tracing
 calibration paths. A sequential glow now sweeps clockwise across the anchors to
 rehearse the recommended swap order at a glance. Hover the cluster to confirm the
-rear-left puck kicks off the sweep before the halos orbit clockwise around the bed.
-The pulse begins at the rear-left puck before circling the bed, matching the
-production floor plate-swap choreography.
+rear-left puck kicks off the clockwise sweep, matching the production floor
+plate-swap choreography as the halos orbit the bed.
 
 Peek through the tinted electronics bay under the work bed to see the SKR Mini
 controller stack, cooling fan, and glowing status LED that route motion power up
