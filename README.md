@@ -107,7 +107,8 @@ stroke from the plaza overview before wiring any sensors.
 Pulsing magnetic anchor pucks now mark the removable workpiece bed so crews can
 practice swapping swatch plates into position before the gantry starts tracing
 calibration paths. A sequential glow now sweeps clockwise across the anchors to
-rehearse the recommended swap order at a glance.
+rehearse the recommended swap order at a glance. Hover the cluster to confirm the
+rear-left puck kicks off the sweep before the halos orbit clockwise around the bed.
 The pulse begins at the rear-left puck before circling the bed, matching the
 production floor plate-swap choreography.
 

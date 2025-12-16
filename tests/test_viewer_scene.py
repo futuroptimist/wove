@@ -40,7 +40,7 @@ def test_anchor_pulse_sequence_runs_clockwise() -> None:
     pairs = re.findall(anchor_pattern, match.group(1))
     offsets = [(float(x), float(z)) for x, z in pairs]
 
-    assert offsets == [(-1.8, 1.2), (1.8, 1.2), (1.8, -1.0), (-1.8, -1.0)]
+    assert offsets == [(-1.8, -1.0), (-1.8, 1.2), (1.8, 1.2), (1.8, -1.0)]
 
 
 def test_hall_effect_sensor_is_documented() -> None:
@@ -250,9 +250,7 @@ def test_anchor_pucks_sequence_glow() -> None:
 
     html = VIEWER_HTML.read_text(encoding="utf-8")
 
-    swap_copy = (
-        "Anchor swap order sweep — follow the clockwise halo " "to swap plates safely."
-    )
+    swap_copy = "Anchor swap order sweep — rear-left puck kicks off the clockwise halo"
 
     assert "anchorPulseControllers = []" in html
     assert swap_copy in html
