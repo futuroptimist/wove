@@ -155,6 +155,13 @@ viewer live hall-effect telemetry; the overlay converts those readings into
 grams, notes when samples are clamped to the calibrated span, and falls back to
 feed-rate estimates when calibration is absent.
 
+When planner exports include raw ``tension_sensor_reading`` samples but omit a
+calibration block, the Yarn Flow panel now falls back to the measured feed rate
+instead of leaving the tension line empty. The overlay surfaces the uncalibrated
+sensor reading and the feed-rate estimate together so dry-run rehearsals still
+communicate how quickly yarn is moving even before hall-effect probes are
+bench-calibrated.
+
 ## Embedding the parser in automation
 
 Automation helpers can reuse the CLI parser without shelling out. Import the
