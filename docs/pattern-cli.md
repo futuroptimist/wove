@@ -149,7 +149,9 @@ limits, the Machine Profile envelope banner lists the missing axes so you know
 which values to restore. The main scene now floats paired travel-envelope
 cages above the gantry too, mirroring both envelopes above the printed bed so
 operators get a spatial warning in the hologram as soon as bounds drift past
-the machine profile. Include ``tension_sensor_calibration`` metadata and
+the machine profile. Twin mint halos now pulse at the planner envelope's min
+and max Z heights so the clearance band stands out even when the overlay is
+hidden. Include ``tension_sensor_calibration`` metadata and
 per-command ``tension_sensor_reading`` samples in planner exports to feed the
 viewer live hall-effect telemetry; the overlay converts those readings into
 grams, notes when samples are clamped to the calibrated span, and falls back to

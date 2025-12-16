@@ -14,3 +14,10 @@ def test_travel_envelope_warns_on_missing_machine_axes():
 
     assert "comparisonDetails?.missingMachine" in html
     assert "machineProfileMissingAxes" in html
+
+
+def test_travel_envelope_z_span_halos_present():
+    html = Path("viewer/index.html").read_text(encoding="utf-8")
+
+    assert "planner-z-span-halos" in html
+    assert "Planner Z-span halos" in html

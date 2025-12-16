@@ -641,6 +641,7 @@
         phaseOffset: Math.PI / 10,
       };
       const boundsCageControllers = [];
+      const travelEnvelopeHaloControllers = [];
       const boundsZMarkerControllers = [];
       let spoolProgressLabelController = null;
       let spoolCountdownLabelController = null;
@@ -1806,6 +1807,7 @@
           machineOutline,
           machineFill,
           machineLabel,
+          plannerZHalos,
           group,
         } = travelEnvelopeController;
 
@@ -1824,6 +1826,9 @@
         machineLabel.visible = machineVisible;
         plannerOutline.visible = plannerVisible;
         plannerLabel.visible = plannerVisible;
+        if (plannerZHalos?.group) {
+          plannerZHalos.group.visible = plannerVisible;
+        }
         group.visible = machineVisible || plannerVisible;
 
         if (!machineVisible && !plannerVisible) {
@@ -1858,6 +1863,17 @@
           plannerOutline.scale.set(width * 0.98, height * 0.98, depth * 0.98);
           plannerOutline.position.set(0, height / 2 + 0.04, 0);
           plannerLabel.position.set(0, height + 0.2, 0);
+
+          if (plannerZHalos?.group && plannerZHalos.min && plannerZHalos.max) {
+            const haloScaleX = Math.max(width * 0.52, 0.08);
+            const haloScaleZ = Math.max(depth * 0.52, 0.08);
+            plannerZHalos.min.scale.set(haloScaleX, haloScaleZ, 1);
+            plannerZHalos.max.scale.set(haloScaleX, haloScaleZ, 1);
+            plannerZHalos.min.userData.baseScale = { x: haloScaleX, y: haloScaleZ, z: 1 };
+            plannerZHalos.max.userData.baseScale = { x: haloScaleX, y: haloScaleZ, z: 1 };
+            plannerZHalos.min.position.set(0, 0.05, 0);
+            plannerZHalos.max.position.set(0, Math.max(height - 0.05, 0.05), 0);
+          }
         }
       }
 
@@ -4540,6 +4556,41 @@
         machineLabel.scale.multiplyScalar(0.32);
         group.add(machineLabel);
 
+        const zHaloMaterial = new THREE.MeshStandardMaterial({
+          color: 0x9ee5ff,
+          emissive: 0x69f9ff,
+          emissiveIntensity: 0.9,
+          metalness: 0.35,
+          roughness: 0.32,
+          transparent: true,
+          opacity: 0.78,
+          depthTest: false,
+        });
+        const zHaloGeometry = new THREE.RingGeometry(0.42, 0.56, 72, 1);
+        const zHaloGroup = new THREE.Group();
+        zHaloGroup.name = 'planner-z-span-halos';
+        zHaloGroup.visible = false;
+
+        const minZHalo = new THREE.Mesh(zHaloGeometry, zHaloMaterial.clone());
+        minZHalo.rotation.x = -Math.PI / 2;
+        zHaloGroup.add(minZHalo);
+        addHoverInfo(
+          minZHalo,
+          'Planner Z-span halos — rings mark the min and max Z heights for the planner envelope.',
+          { passthrough: true },
+        );
+
+        const maxZHalo = new THREE.Mesh(zHaloGeometry, zHaloMaterial.clone());
+        maxZHalo.rotation.x = -Math.PI / 2;
+        zHaloGroup.add(maxZHalo);
+        addHoverInfo(
+          maxZHalo,
+          'Planner Z-span halos — rings mark the min and max Z heights for the planner envelope.',
+          { passthrough: true },
+        );
+
+        group.add(zHaloGroup);
+
         addHoverInfo(
           plannerOutline,
           'Planner travel envelope cage — projects planner bounds above the gantry for quick checks.',
@@ -4575,6 +4626,31 @@
           },
         );
 
+        travelEnvelopeHaloControllers.push(
+          {
+            mesh: minZHalo,
+            material: minZHalo.material,
+            baseOpacity: minZHalo.material.opacity ?? 0.78,
+            opacityAmplitude: 0.16,
+            baseIntensity: minZHalo.material.emissiveIntensity ?? 0.9,
+            intensityAmplitude: 0.55,
+            scaleAmplitude: 0.18,
+            speed: 2.0,
+            phaseOffset: 0.3,
+          },
+          {
+            mesh: maxZHalo,
+            material: maxZHalo.material,
+            baseOpacity: maxZHalo.material.opacity ?? 0.78,
+            opacityAmplitude: 0.16,
+            baseIntensity: maxZHalo.material.emissiveIntensity ?? 0.9,
+            intensityAmplitude: 0.55,
+            scaleAmplitude: 0.22,
+            speed: 2.3,
+            phaseOffset: 1.2,
+          },
+        );
+
         const mmToScene = 0.01;
         const fallbackSpan = {
           x: Math.max(bedSize.width / mmToScene, 1),
@@ -4598,6 +4674,11 @@
           machineOutline,
           machineFill,
           machineLabel,
+          plannerZHalos: {
+            group: zHaloGroup,
+            min: minZHalo,
+            max: maxZHalo,
+          },
         };
       }
 
@@ -7904,6 +7985,48 @@
             1,
           );
           material.opacity = opacity;
+        });
+        travelEnvelopeHaloControllers.forEach((controller) => {
+          const {
+            mesh,
+            material,
+            baseOpacity = 0,
+            opacityAmplitude = 0,
+            baseIntensity = 0,
+            intensityAmplitude = 0,
+            scaleAmplitude = 0,
+            speed = 1,
+            phaseOffset = 0,
+          } = controller;
+          const swing = Math.sin(elapsed * speed + phaseOffset);
+          const pulse = 0.5 + 0.5 * swing;
+
+          if (material) {
+            if (typeof material.opacity === 'number') {
+              const opacity = THREE.MathUtils.clamp(
+                baseOpacity + swing * opacityAmplitude,
+                0,
+                1,
+              );
+              material.opacity = opacity;
+            }
+            if (typeof material.emissiveIntensity === 'number') {
+              material.emissiveIntensity = Math.max(
+                0,
+                baseIntensity + intensityAmplitude * pulse,
+              );
+            }
+          }
+
+          if (mesh && scaleAmplitude) {
+            const scale = 1 + scaleAmplitude * pulse;
+            const baseScale = mesh.userData.baseScale || {
+              x: mesh.scale.x,
+              y: mesh.scale.y,
+              z: mesh.scale.z,
+            };
+            mesh.scale.set(baseScale.x * scale, baseScale.y * scale, baseScale.z);
+          }
         });
         boundsZMarkerControllers.forEach((controller) => {
           const {
