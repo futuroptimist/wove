@@ -1867,10 +1867,10 @@
           if (plannerZHalos?.group && plannerZHalos.min && plannerZHalos.max) {
             const haloScaleX = Math.max(width * 0.52, 0.08);
             const haloScaleZ = Math.max(depth * 0.52, 0.08);
-            plannerZHalos.min.scale.set(haloScaleX, haloScaleZ, 1);
-            plannerZHalos.max.scale.set(haloScaleX, haloScaleZ, 1);
-            plannerZHalos.min.userData.baseScale = { x: haloScaleX, y: haloScaleZ, z: 1 };
-            plannerZHalos.max.userData.baseScale = { x: haloScaleX, y: haloScaleZ, z: 1 };
+            plannerZHalos.min.scale.set(haloScaleX, 1, haloScaleZ);
+            plannerZHalos.max.scale.set(haloScaleX, 1, haloScaleZ);
+            plannerZHalos.min.userData.baseScale = { x: haloScaleX, y: 1, z: haloScaleZ };
+            plannerZHalos.max.userData.baseScale = { x: haloScaleX, y: 1, z: haloScaleZ };
             plannerZHalos.min.position.set(0, 0.05, 0);
             plannerZHalos.max.position.set(0, Math.max(height - 0.05, 0.05), 0);
           }
@@ -8019,13 +8019,12 @@
           }
 
           if (mesh && scaleAmplitude) {
+            const baseScale = mesh.userData.baseScale;
+            if (!baseScale) {
+              return;
+            }
             const scale = 1 + scaleAmplitude * pulse;
-            const baseScale = mesh.userData.baseScale || {
-              x: mesh.scale.x,
-              y: mesh.scale.y,
-              z: mesh.scale.z,
-            };
-            mesh.scale.set(baseScale.x * scale, baseScale.y * scale, baseScale.z);
+            mesh.scale.set(baseScale.x * scale, baseScale.y, baseScale.z * scale);
           }
         });
         boundsZMarkerControllers.forEach((controller) => {
