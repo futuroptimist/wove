@@ -5607,10 +5607,10 @@
           emissiveIntensity: 0.45,
         });
         const anchorOffsets = [
+          [-1.8, -1.0],
           [-1.8, 1.2],
           [1.8, 1.2],
           [1.8, -1.0],
-          [-1.8, -1.0],
         ];
         anchorOffsets.forEach(([x, z], index) => {
           const anchorGroup = new THREE.Group();
@@ -5691,7 +5691,7 @@
 
         addHoverInfo(
           anchorsGroup,
-          'Anchor swap order sweep — follow the clockwise halo to swap plates safely.',
+          'Anchor swap order sweep — rear-left puck kicks off the clockwise halo so swaps match the floor choreography.',
           { passthrough: true },
         );
 
