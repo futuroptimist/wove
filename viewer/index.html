@@ -124,6 +124,27 @@
         font-size: 0.84rem;
       }
 
+      #pattern-pause-toggle {
+        margin: 0.2rem 0 0.4rem;
+        padding: 0.45rem 0.75rem;
+        border-radius: 0.5rem;
+        border: 1px solid rgba(255, 194, 125, 0.6);
+        background: rgba(255, 226, 182, 0.1);
+        color: #ffe7c9;
+        font-size: 0.86rem;
+        letter-spacing: 0.02em;
+        cursor: pointer;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+      }
+
+      #pattern-pause-toggle:hover,
+      #pattern-pause-toggle:focus-visible {
+        border-color: #ffd8a2;
+        box-shadow: 0 0 12px rgba(255, 194, 125, 0.6);
+        outline: none;
+        transform: translateY(-1px);
+      }
+
       #pattern-position {
         margin: 0.6rem 0 0;
         font-size: 0.86rem;
@@ -393,6 +414,10 @@
           when the preview is paused so the next pulses stay visible from the plaza overview.
         </li>
         <li>
+          Tap Space or the Pause preview control to freeze the Pattern Studio loop while the spool
+          countdown ribbon and yarn flow panels stay visible.
+        </li>
+        <li>
           Upload a planner export from <code>wove.pattern_cli</code> to rehearse your own motion
           envelope inside the Pattern Studio hologram.
         </li>
@@ -422,6 +447,10 @@
         <div id="pattern-progress">
           <div id="pattern-progress-bar"></div>
         </div>
+        <button id="pattern-pause-toggle" type="button">Pause preview</button>
+        <p id="pattern-playback-status" data-tone="info">
+          Playback: Running preview loop.
+        </p>
         <p id="pattern-position" data-tone="info">
           Position: Loading planner coordinates…
         </p>
@@ -533,6 +562,8 @@
       const patternStepElement = document.getElementById('pattern-step');
       const patternStepIndexElement = document.getElementById('pattern-step-index');
       const patternProgressBarElement = document.getElementById('pattern-progress-bar');
+      const patternPauseToggleElement = document.getElementById('pattern-pause-toggle');
+      const patternPlaybackStatusElement = document.getElementById('pattern-playback-status');
       const plannerUploadElement = document.getElementById('planner-upload');
       const plannerUploadLabelElement = document.getElementById('planner-upload-label');
       const plannerUploadHintElement = document.getElementById('planner-upload-hint');
@@ -666,6 +697,8 @@
       let currentMachineProfile = null;
       let tensionCalibration = null;
       let patternPreviewDurationSeconds = defaultPatternPreviewDurationSeconds;
+      let patternPreviewPaused = false;
+      let patternPreviewElapsed = 0;
       let lastPatternStepIndex = -1;
       let lastPatternProgress = -1;
       let spoolProgressRatio = 0;
@@ -2093,6 +2126,33 @@
         }
       }
 
+      function updatePatternPlaybackUi() {
+        if (patternPauseToggleElement) {
+          patternPauseToggleElement.textContent = patternPreviewPaused
+            ? 'Resume preview'
+            : 'Pause preview';
+          patternPauseToggleElement.setAttribute(
+            'aria-pressed',
+            patternPreviewPaused ? 'true' : 'false',
+          );
+        }
+        if (patternPlaybackStatusElement) {
+          const tone = patternPreviewPaused ? 'warning' : 'info';
+          const statusText = patternPreviewPaused
+            ? 'Playback: Paused — spool countdown ribbon stays pinned above the reel.'
+            : 'Playback: Running preview loop.';
+          patternPlaybackStatusElement.textContent = statusText;
+          setTone(patternPlaybackStatusElement, tone);
+        }
+      }
+
+      function setPatternPreviewPaused(paused) {
+        patternPreviewPaused = Boolean(paused);
+        updatePatternPlaybackUi();
+      }
+
+      updatePatternPlaybackUi();
+
       function updateHeatedBedPanel(options = {}) {
         const { statusLine, routeLine } = options;
 
@@ -2974,6 +3034,8 @@
           patternPreviewDurationSeconds =
             durationOverride ?? metadataDuration ?? defaultPatternPreviewDurationSeconds;
         }
+        patternPreviewElapsed = 0;
+        setPatternPreviewPaused(false);
         updatePlannerMetadataPanel(plannerMetadata);
         const providedBounds = Object.prototype.hasOwnProperty.call(options, 'bounds')
           ? normalizeBounds(options.bounds)
@@ -7908,6 +7970,12 @@
           }
         }
 
+        if (event.code === 'Space') {
+          event.preventDefault();
+          setPatternPreviewPaused(!patternPreviewPaused);
+          return;
+        }
+
         if (event.key === 'ArrowRight') {
           event.preventDefault();
           cycleCluster(1);
@@ -7922,6 +7990,9 @@
       function animate() {
         const delta = clock.getDelta();
         const elapsed = clock.elapsedTime;
+        if (!patternPreviewPaused) {
+          patternPreviewElapsed += delta;
+        }
         scene.traverse((object) => {
           if (object.name === 'v1c-assembly') {
             object.rotation.y = Math.sin(elapsed * 0.15) * 0.15;
@@ -8902,7 +8973,7 @@
           selectionSweep.rotation.y =
             (selectionSweep.rotation.y + delta * selectionSweepSpeed) % (Math.PI * 2);
         }
-        updatePatternPreview(elapsed);
+        updatePatternPreview(patternPreviewElapsed);
 
         if (!userIsControllingCamera) {
           currentCameraTarget.x = THREE.MathUtils.damp(
@@ -8995,6 +9066,11 @@
       }
 
       window.addEventListener('pointerdown', onPointerDown);
+      if (patternPauseToggleElement) {
+        patternPauseToggleElement.addEventListener('click', () => {
+          setPatternPreviewPaused(!patternPreviewPaused);
+        });
+      }
       window.addEventListener('keydown', onKeyDown);
 
       function setPlannerUploadHover(active) {
