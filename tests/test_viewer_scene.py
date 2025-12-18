@@ -69,6 +69,17 @@ def test_pattern_preview_overlay_panel_present() -> None:
     assert "Planner preview warming up." in html
 
 
+def test_pattern_preview_pause_toggle_present() -> None:
+    """The Pattern Studio overlay should expose a pause/resume control."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert 'id="pattern-pause-toggle"' in html
+    assert "Playback: Running preview loop." in html
+    assert "setPatternPreviewPaused" in html
+    assert "updatePatternPreview(patternPreviewElapsed)" in html
+
+
 def test_base_chain_row_embeds_machine_profile_axes() -> None:
     """The sample planner asset should include machine profile metadata."""
 

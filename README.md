@@ -173,6 +173,9 @@ overlay and reports how many yarn feed cues remain in the preview loop. Cycle
 pacing now mirrors the Yarn Flow timer on the same billboard, listing the
 elapsed and remaining seconds beside the feed countdowns for a single
 at-a-glance progress pulse.
+Tap Space or use the Pause preview control in the overlay to freeze the Pattern
+Studio hologram while keeping the spool countdown ribbon and Yarn Flow panels
+visible.
 A pair of cooling fans—the electronics bay exhaust and the hook-carriage
 mount—idle with a gentle spin and ramp up whenever the yarn feed engages, so the
 viewer keeps thermal cues in step with spool choreography.
