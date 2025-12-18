@@ -7952,9 +7952,6 @@
         if (!event || typeof event.key !== 'string') {
           return;
         }
-        if (!Array.isArray(productClusters) || productClusters.length === 0) {
-          return;
-        }
 
         const target = event.target;
         if (target) {
@@ -7973,6 +7970,10 @@
         if (event.code === 'Space') {
           event.preventDefault();
           setPatternPreviewPaused(!patternPreviewPaused);
+          return;
+        }
+
+        if (!Array.isArray(productClusters) || productClusters.length === 0) {
           return;
         }
 
