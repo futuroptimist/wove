@@ -414,6 +414,10 @@
           when the preview is paused so the next pulses stay visible from the plaza overview.
         </li>
         <li>
+          A nested cycle clock ring wraps the spool progress halo, filling with Pattern Studio loop
+          progress so plaza viewers can read timing directly from the hologram.
+        </li>
+        <li>
           Tap Space or the Pause preview control to freeze the Pattern Studio loop while the spool
           countdown ribbon and yarn flow panels stay visible.
         </li>
@@ -671,6 +675,7 @@
       const yarnBeadControllers = [];
       const spoolControllers = [];
       const spoolProgressSegments = [];
+      const spoolCycleSegments = [];
       const spoolPrePulseSettings = {
         speed: 2.8,
         phaseOffset: Math.PI / 10,
@@ -710,6 +715,7 @@
       let lastPatternStepIndex = -1;
       let lastPatternProgress = -1;
       let spoolProgressRatio = 0;
+      let spoolCycleProgressRatio = 0;
       let spoolProgressTone = 'neutral';
       let boundsComparison = null;
       const machineProfileFallbackMessage =
@@ -2494,6 +2500,7 @@
           setTone(yarnFlowPositionElement, 'neutral');
         }
         spoolProgressRatio = 0;
+        spoolCycleProgressRatio = 0;
         cableChainNextFeedSeconds = null;
         cableChainFollowingFeedSeconds = null;
         cableChainRemainingFeeds = null;
@@ -3143,6 +3150,7 @@
         patternExtrusionBaseline = extrusionBaseline;
         patternExtrusionTarget = extrusionTarget;
         spoolProgressRatio = 0;
+        spoolCycleProgressRatio = 0;
         if (patternPlannerEvents.length > 0) {
           patternPlannerEvents.forEach((event, index) => {
             const comment =
@@ -3857,6 +3865,7 @@
           lastPatternStepIndex = -1;
           lastPatternProgress = -1;
           spoolProgressRatio = 0;
+          spoolCycleProgressRatio = 0;
           if (patternProgressBarElement) {
             patternProgressBarElement.style.width = '0%';
           }
@@ -6238,7 +6247,8 @@
         addHoverInfo(
           spoolProgressGroup,
           'Spool progress ring — fills as the planner feeds yarn around the supply reel. ' +
-            'A pre-pulse sweep wraps the ring as feed countdowns approach.',
+            'A pre-pulse sweep wraps the ring as feed countdowns approach while the inner ' +
+            'cycle clock marks preview loop progress.',
           { passthrough: true },
         );
         const spoolProgressSegmentCount = 24;
@@ -6272,6 +6282,39 @@
             damping: 5.5,
             currentIntensity: 0.12,
             currentOpacity: 0.2,
+          });
+        }
+        const spoolCycleSegmentCount = 18;
+        const spoolCycleAngle = (Math.PI * 2) / spoolCycleSegmentCount;
+        for (let index = 0; index < spoolCycleSegmentCount; index += 1) {
+          const segmentMaterial = new THREE.MeshStandardMaterial({
+            color: 0x9de2ff,
+            emissive: 0x4a9cff,
+            emissiveIntensity: 0.08,
+            metalness: 0.24,
+            roughness: 0.35,
+            transparent: true,
+            opacity: 0.18,
+            side: THREE.DoubleSide,
+            depthWrite: false,
+          });
+          const segment = new THREE.Mesh(
+            new THREE.TorusGeometry(0.78, 0.028, 10, 14, spoolCycleAngle),
+            segmentMaterial,
+          );
+          segment.rotation.y = Math.PI / 2;
+          segment.rotation.x = index * spoolCycleAngle;
+          spoolProgressGroup.add(segment);
+          spoolCycleSegments.push({
+            mesh: segment,
+            material: segmentMaterial,
+            baseIntensity: 0.08,
+            activeIntensity: 0.8,
+            baseOpacity: 0.18,
+            activeOpacity: 0.85,
+            damping: 5.2,
+            currentIntensity: 0.08,
+            currentOpacity: 0.18,
           });
         }
         spoolControllers.push({
@@ -8821,6 +8864,15 @@
             controller.currentLight = light.intensity;
           }
         });
+        spoolCycleProgressRatio =
+          patternPreviewDurationSeconds > 0
+            ? THREE.MathUtils.clamp(
+                (patternPreviewElapsed % patternPreviewDurationSeconds) /
+                  patternPreviewDurationSeconds,
+                0,
+                1,
+              )
+            : 0;
         if (spoolProgressSegments.length > 0) {
           const normalizedProgress = THREE.MathUtils.clamp(spoolProgressRatio, 0, 1);
           const scaledProgress = normalizedProgress * spoolProgressSegments.length;
@@ -8874,6 +8926,51 @@
             material.emissiveIntensity = controller.currentIntensity;
             const opacityTarget =
               baseOpacity + (activeOpacity - baseOpacity) * highlightedStrength;
+            controller.currentOpacity = THREE.MathUtils.damp(
+              controller.currentOpacity ?? baseOpacity,
+              opacityTarget,
+              damping,
+              delta,
+            );
+            material.opacity = controller.currentOpacity;
+          });
+        }
+        if (spoolCycleSegments.length > 0) {
+          const cycleProgress = THREE.MathUtils.clamp(spoolCycleProgressRatio, 0, 1);
+          const scaledCycle = cycleProgress * spoolCycleSegments.length;
+          const fullCycleSegments = Math.floor(scaledCycle);
+          const partialCycleStrength = scaledCycle - fullCycleSegments;
+          const cyclePulse = 0.4 + 0.6 * Math.sin(elapsed * 2.6);
+          spoolCycleSegments.forEach((controller, index) => {
+            const {
+              mesh,
+              material,
+              baseIntensity = 0,
+              activeIntensity = baseIntensity,
+              baseOpacity = 0,
+              activeOpacity = baseOpacity,
+              damping = 5.0,
+            } = controller;
+            if (!mesh || !material) {
+              return;
+            }
+            let targetStrength = 0;
+            if (index < fullCycleSegments) {
+              targetStrength = 1;
+            } else if (index === fullCycleSegments) {
+              targetStrength = partialCycleStrength;
+            }
+            const highlighted = THREE.MathUtils.clamp(targetStrength + cyclePulse * 0.35, 0, 1);
+            const intensityTarget =
+              baseIntensity + (activeIntensity - baseIntensity) * highlighted;
+            controller.currentIntensity = THREE.MathUtils.damp(
+              controller.currentIntensity ?? baseIntensity,
+              intensityTarget,
+              damping,
+              delta,
+            );
+            material.emissiveIntensity = controller.currentIntensity;
+            const opacityTarget = baseOpacity + (activeOpacity - baseOpacity) * highlighted;
             controller.currentOpacity = THREE.MathUtils.damp(
               controller.currentOpacity ?? baseOpacity,
               opacityTarget,
