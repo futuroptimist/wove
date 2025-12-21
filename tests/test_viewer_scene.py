@@ -584,6 +584,17 @@ def test_spool_billboard_mirrors_cycle_pacing() -> None:
     )
 
 
+def test_spool_countdown_stays_visible_when_paused() -> None:
+    """The countdown ribbon should keep signaling while the preview is paused."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert (
+        "Countdown ribbon pinned while the preview is paused — resume to advance timing."
+        in html
+    )
+
+
 def test_viewer_builds_spool_progress_ring() -> None:
     """The 3D scene should describe the spool progress indicator."""
 
