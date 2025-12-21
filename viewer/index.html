@@ -2750,9 +2750,8 @@
           if (Array.isArray(tensionCalibration) && tensionCalibration.length >= 2) {
             const minReading = tensionCalibration[0].reading;
             const maxReading = tensionCalibration[tensionCalibration.length - 1].reading;
-            const gramValues = tensionCalibration.map((point) => point.grams);
-            const minGrams = Math.min(...gramValues);
-            const maxGrams = Math.max(...gramValues);
+            const minGrams = tensionCalibration[0].grams;
+            const maxGrams = tensionCalibration[tensionCalibration.length - 1].grams;
 
             calibrationLabel =
               `Calibration: ${minReading.toFixed(1)}–${maxReading.toFixed(1)} reading → ` +
