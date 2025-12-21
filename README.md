@@ -137,6 +137,9 @@ before wiring hardware.
 The Yarn Flow overlay now mirrors that hall-effect telemetry, translating feed
 bursts into estimated grams so operators can read tension directly from the
 planner preview without juggling calculator scripts.
+The panel also spotlights the calibrated sensor span and warns when a planner
+sample falls outside the recorded range so technicians can flag hardware
+issues before a dry run.
 Live feed-rate estimates now sit beside those tension callouts so yarn flow
 changes remain obvious even when extrusion targets are absent from the planner
 payload.
