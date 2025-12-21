@@ -173,7 +173,6 @@ def test_spool_countdown_ribbon_surfaces_cycle_pacing() -> None:
 
     assert "spoolProgressCountdownFallbackMessage" in html
     assert "yarnFlowCycleFallbackMessage" in html
-    assert (
-        "lines: [spoolProgressCountdownFallbackMessage, "
-        "yarnFlowCycleFallbackMessage]" in html
-    )
+    assert "const countdownLines = [lastSpoolCountdownSummary];" in html
+    assert "countdownLines.push(lastSpoolCycleTimingDetail);" in html
+    assert "lastSpoolCycleTimingDetail = yarnFlowCycleFallbackMessage;" in html
