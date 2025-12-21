@@ -593,6 +593,7 @@ def test_spool_countdown_stays_visible_when_paused() -> None:
         "Countdown ribbon pinned while the preview is paused — resume to advance timing."
         in html
     )
+    assert "if (patternPreviewPaused)" in html
 
 
 def test_viewer_builds_spool_progress_ring() -> None:
