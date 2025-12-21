@@ -65,8 +65,8 @@ python scripts/serve_viewer.py
 Drag-and-drop a `--format planner` JSON onto the viewer to swap the Pattern Studio preview without
 clicking the upload control.
 
-The Planner Metadata panel now records the uploaded file name and size so you can confirm which
-payload is driving the Pattern Studio preview before rehearsing motion.
+The Planner Metadata panel now records the uploaded file size alongside the existing file name so you
+can confirm which payload is driving the Pattern Studio preview before rehearsing motion.
 
 Each contribution should leave the viewer a little better—add new assets,
 improve lighting, or enhance interactivity—so that future operators can preview
