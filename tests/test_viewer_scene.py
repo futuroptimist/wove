@@ -163,6 +163,15 @@ def test_heated_bed_conduit_glow_tracks_status() -> None:
     assert "applyHeatedBedConduitTone" in html
 
 
+def test_planner_travel_envelope_warns_when_exceeded() -> None:
+    """The travel cage should warn when planner bounds exceed the machine envelope."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "planner-travel-envelope-fill" in html
+    assert "flashes amber when bounds exceed" in html
+
+
 def test_yarn_flow_surface_feed_rate_copy() -> None:
     """Yarn flow telemetry should include live feed-rate messaging."""
 
