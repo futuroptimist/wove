@@ -328,7 +328,9 @@ that runs the same rail so the automation cadence reads clearly from the plaza o
   companion Machine Profile panel lists the
   microstepping, steps-per-millimeter, and travel bounds from planner exports so
   technicians can confirm the browser preview mirrors the configured gantry
-  before committing motion to hardware. The Homing Guard overlay highlights the
+  before committing motion to hardware, and the planner travel volume flashes
+  amber whenever the planner bounds exceed the machine envelope so the hologram
+  echoes the overlay warning. The Homing Guard overlay highlights the
   `require_home` setting and recorded `home_state`, switching to green when the
   export captured a verified homing cycle and calling attention to plans that
   need a fresh homing run. The Yarn Flow monitor also surfaces the upcoming feed

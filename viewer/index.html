@@ -1836,6 +1836,7 @@
           mmToScene,
           fallbackSpan,
           plannerOutline,
+          plannerFill,
           plannerLabel,
           machineOutline,
           machineFill,
@@ -1855,6 +1856,7 @@
         const plannerVisible = Boolean(plannerDimensions);
 
         machineOutline.visible = machineVisible;
+        plannerFill.visible = plannerVisible;
         machineFill.visible = machineVisible;
         machineLabel.visible = machineVisible;
         plannerOutline.visible = plannerVisible;
@@ -1869,13 +1871,20 @@
         }
 
         const missingMachineEnvelope = Boolean(comparisonDetails?.missingMachine);
-        const warningTone =
-          missingMachineEnvelope || (comparisonDetails?.exceedingAxes?.length > 0);
+        const plannerExceedsMachine = Boolean(comparisonDetails?.exceedingAxes?.length);
+        const warningTone = missingMachineEnvelope || plannerExceedsMachine;
+
         const machineColor = warningTone ? 0xffc27d : 0x5fffd2;
         const machineFillColor = warningTone ? 0xffb173 : 0x2cf9c5;
         machineOutline.material.color.setHex(machineColor);
         machineFill.material.color.setHex(machineFillColor);
         machineFill.material.opacity = warningTone ? 0.18 : 0.12;
+
+        const plannerColor = plannerExceedsMachine ? 0xff9b6b : 0x9ee5ff;
+        const plannerFillColor = plannerExceedsMachine ? 0xffc58f : 0x4fb2ff;
+        plannerOutline.material.color.setHex(plannerColor);
+        plannerFill.material.color.setHex(plannerFillColor);
+        plannerFill.material.opacity = plannerExceedsMachine ? 0.14 : 0.08;
 
         if (machineDimensions) {
           const width = Math.max(machineDimensions.width * mmToScene, 0.02);
@@ -1895,6 +1904,8 @@
           const height = Math.max(plannerDimensions.height * mmToScene, 0.08);
           plannerOutline.scale.set(width * 0.98, height * 0.98, depth * 0.98);
           plannerOutline.position.set(0, height / 2 + 0.04, 0);
+          plannerFill.scale.set(width * 0.98, height * 0.98, depth * 0.98);
+          plannerFill.position.set(0, height / 2 + 0.04, 0);
           plannerLabel.position.set(0, height + 0.2, 0);
 
           if (plannerZHalos?.group && plannerZHalos.min && plannerZHalos.max) {
@@ -4603,6 +4614,19 @@
         machineOutline.name = 'machine-profile-travel-envelope-cage';
         group.add(machineOutline);
 
+        const plannerFill = new THREE.Mesh(
+          baseBoxGeometry.clone(),
+          new THREE.MeshBasicMaterial({
+            color: 0x4fb2ff,
+            transparent: true,
+            opacity: 0.08,
+            depthTest: false,
+            depthWrite: false,
+          }),
+        );
+        plannerFill.name = 'planner-travel-envelope-fill';
+        group.add(plannerFill);
+
         const machineFill = new THREE.Mesh(
           baseBoxGeometry.clone(),
           new THREE.MeshBasicMaterial({
@@ -4667,6 +4691,11 @@
           { passthrough: true },
         );
         addHoverInfo(
+          plannerFill,
+          'Planner travel volume — flashes amber when bounds exceed the machine profile.',
+          { passthrough: true },
+        );
+        addHoverInfo(
           machineFill,
           'Machine profile travel envelope — mirrors travel_min_mm and travel_max_mm from the machine profile. Travel envelope cage stays aligned to the gantry bed.',
           { passthrough: true },
@@ -4679,6 +4708,13 @@
             opacityAmplitude: 0.14,
             speed: 1.5,
             phaseOffset: 0.35,
+          },
+          {
+            material: plannerFill.material,
+            baseOpacity: plannerFill.material.opacity ?? 0.08,
+            opacityAmplitude: 0.06,
+            speed: 1.4,
+            phaseOffset: 0.22,
           },
           {
             material: machineOutlineMaterial,
@@ -4729,6 +4765,7 @@
         };
 
         plannerOutline.visible = false;
+        plannerFill.visible = false;
         plannerLabel.visible = false;
         machineOutline.visible = false;
         machineFill.visible = false;
@@ -4740,6 +4777,7 @@
           mmToScene,
           fallbackSpan,
           plannerOutline,
+          plannerFill,
           plannerLabel,
           machineOutline,
           machineFill,

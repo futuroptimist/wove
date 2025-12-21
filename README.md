@@ -79,7 +79,9 @@ product pedestal to spotlight its roadmap milestone, watch the glowing ring
 pulse as it tracks which cluster is selected, and let the camera glide to frame
 the scene. A teal sweep now orbits the
 selected pedestal so the active milestone stays obvious from the plaza
-overview. The plaza highlights these milestones today:
+overview, and the planner travel envelope flashes amber whenever planner bounds
+exceed the machine profile so the hologram and overlay agree on envelope
+warnings. The plaza highlights these milestones today:
 
 Follow the glowing cable chain from the electronics bay to the gantry and watch
 the chase orb accelerate whenever planner feed pulses approach, rehearsing safe
