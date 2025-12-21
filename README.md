@@ -160,6 +160,9 @@ how much of the planned payout has completed.
 The ring now also pre-pulses as the next yarn feed approaches, lighting up the
 spool moments before the countdown hits zero so operators can anticipate the
 upcoming draw without leaving the hologram.
+An inner cycle clock ring now fills as the Pattern Studio loop advances so
+visitors can read the preview's timing directly from the hologram without
+checking the overlay timers.
 An always-on countdown ribbon now sits above the spool progress billboard,
 pinning the next two feed pulses beside the reel so plaza visitors keep the
 upcoming extrusion timing in view even when the overlay is hidden.

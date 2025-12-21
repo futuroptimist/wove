@@ -624,6 +624,15 @@ def test_viewer_builds_spool_progress_ring() -> None:
     assert progress_copy in html
 
 
+def test_spool_cycle_clock_tracks_preview_time() -> None:
+    """The spool halo should expose a cycle clock for the preview loop."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "spoolCycleSegments" in html
+    assert "cycle clock ring" in html
+
+
 def test_cable_chain_billboard_surfaces_countdowns() -> None:
     """Cable chain billboard should mirror feed countdowns and queue size."""
 
