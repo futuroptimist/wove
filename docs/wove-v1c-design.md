@@ -341,7 +341,9 @@ that runs the same rail so the automation cadence reads clearly from the plaza o
   elapsed and remain in the preview loop so crews can gauge overall progress
   without pausing the walkthrough. Hall-effect telemetry now appears in the
   Yarn Flow overlay as estimated grams so technicians can sanity-check tension
-  during planner rehearsals.
+  during planner rehearsals. The same panel now advertises the calibrated hall
+  sensor span and flags when a reading falls outside the recorded range so
+  builders know when to revisit wiring or recalibrate the sensor.
 
 ## Bill of Materials (Initial Release)
 | Subsystem | Component | Qty | Notes |

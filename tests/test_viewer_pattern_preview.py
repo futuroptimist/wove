@@ -129,6 +129,16 @@ def test_yarn_flow_panel_mentions_spool_progress() -> None:
     assert "Spool progress:" in html
 
 
+def test_yarn_flow_panel_surfaces_calibration_hint() -> None:
+    """Hall sensor calibration guidance should ride alongside yarn flow cues."""
+
+    html = (PROJECT_ROOT / "viewer" / "index.html").read_text(encoding="utf-8")
+
+    assert "yarn-flow-calibration" in html
+    assert "Calibration: Awaiting tension sensor calibration metadata." in html
+    assert "tension_sensor_calibration" in html
+
+
 def test_planner_metadata_panel_mentions_duration() -> None:
     """The metadata overlay should surface preview duration guidance."""
 

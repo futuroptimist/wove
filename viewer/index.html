@@ -506,6 +506,9 @@
         <p id="yarn-flow-cycle" data-tone="neutral">
           Cycle pacing: Awaiting planner preview…
         </p>
+        <p id="yarn-flow-calibration" data-tone="neutral">
+          Calibration: Awaiting tension sensor calibration metadata.
+        </p>
         <p id="yarn-flow-tension" data-tone="neutral">
           Tension telemetry: Awaiting planner preview…
         </p>
@@ -597,6 +600,7 @@
       const yarnFlowUpcomingElement = document.getElementById('yarn-flow-upcoming');
       const yarnFlowTimingElement = document.getElementById('yarn-flow-timing');
       const yarnFlowCycleElement = document.getElementById('yarn-flow-cycle');
+      const yarnFlowCalibrationElement = document.getElementById('yarn-flow-calibration');
       const yarnFlowTensionElement = document.getElementById('yarn-flow-tension');
       const yarnFlowPositionElement = document.getElementById('yarn-flow-position');
 
@@ -746,6 +750,8 @@
         'Feed timing: Awaiting planner preview…';
       const yarnFlowCycleFallbackMessage =
         'Cycle pacing: Awaiting planner preview…';
+      const yarnFlowCalibrationFallbackMessage =
+        'Calibration: Awaiting tension sensor calibration metadata.';
       const yarnFlowTensionFallbackMessage =
         'Tension telemetry: Awaiting planner preview…';
       const yarnFlowPositionFallbackMessage =
@@ -2441,6 +2447,10 @@
           yarnFlowCycleElement.textContent = yarnFlowCycleFallbackMessage;
           setTone(yarnFlowCycleElement, 'neutral');
         }
+        if (yarnFlowCalibrationElement) {
+          yarnFlowCalibrationElement.textContent = yarnFlowCalibrationFallbackMessage;
+          setTone(yarnFlowCalibrationElement, 'neutral');
+        }
         if (yarnFlowTensionElement) {
           yarnFlowTensionElement.textContent = yarnFlowTensionFallbackMessage;
           setTone(yarnFlowTensionElement, 'neutral');
@@ -2502,6 +2512,10 @@
           Number.isFinite(stepIndex) && Number.isFinite(totalSteps)
             ? ` (step ${stepIndex + 1} of ${totalSteps})`
             : '';
+
+        const tensionGrams = coerceFiniteNumber(event.tensionGrams);
+        const tensionReading = coerceFiniteNumber(event.tensionSensorReading);
+        const sensorEstimate = estimateTensionFromSensor(tensionReading, tensionCalibration);
 
         if (yarnExtrusionActive) {
           yarnFlowStatusElement.textContent = `Yarn feed active${stepLabel}: ${comment}`;
@@ -2729,6 +2743,41 @@
 
         let feedRateMmPerSec = null;
 
+        if (yarnFlowCalibrationElement) {
+          let calibrationLabel = yarnFlowCalibrationFallbackMessage;
+          let calibrationTone = 'neutral';
+
+          if (Array.isArray(tensionCalibration) && tensionCalibration.length >= 2) {
+            const minReading = tensionCalibration[0].reading;
+            const maxReading = tensionCalibration[tensionCalibration.length - 1].reading;
+            const gramValues = tensionCalibration.map((point) => point.grams);
+            const minGrams = Math.min(...gramValues);
+            const maxGrams = Math.max(...gramValues);
+
+            calibrationLabel =
+              `Calibration: ${minReading.toFixed(1)}–${maxReading.toFixed(1)} reading → ` +
+              `${minGrams.toFixed(1)}–${maxGrams.toFixed(1)} g.`;
+            calibrationTone = 'info';
+
+            if (tensionReading !== null) {
+              if (tensionReading < minReading) {
+                calibrationLabel += ' Current reading below range — clamping to sensor floor.';
+                calibrationTone = 'warning';
+              } else if (tensionReading > maxReading) {
+                calibrationLabel += ' Current reading above range — clamping to sensor ceiling.';
+                calibrationTone = 'warning';
+              } else {
+                calibrationLabel +=
+                  ` Current reading ${tensionReading.toFixed(1)} within calibrated span.`;
+                calibrationTone = yarnExtrusionActive ? 'ready' : 'info';
+              }
+            }
+          }
+
+          yarnFlowCalibrationElement.textContent = calibrationLabel;
+          setTone(yarnFlowCalibrationElement, calibrationTone);
+        }
+
         if (yarnFlowTensionElement || yarnFlowRateElement) {
           const previousEvent =
             Number.isFinite(stepIndex) &&
@@ -2764,10 +2813,6 @@
         }
 
         if (yarnFlowTensionElement) {
-          const tensionGrams = coerceFiniteNumber(event.tensionGrams);
-          const tensionReading = coerceFiniteNumber(event.tensionSensorReading);
-          const sensorEstimate = estimateTensionFromSensor(tensionReading, tensionCalibration);
-
           let tensionLabel = yarnFlowTensionFallbackMessage;
           let tensionTone = 'neutral';
 
