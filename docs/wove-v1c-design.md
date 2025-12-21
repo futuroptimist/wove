@@ -73,7 +73,8 @@ when the preview reaches its planned payout and flagging runs that feed fiber wi
 target.
 A combined countdown line now stays pinned above the spool progress billboard, surfacing the next
 two feed pulses even when the preview is paused so plaza observers never lose sight of the upcoming
-extrusion cues.
+extrusion cues. When the preview is paused, the countdown ribbon stays pinned with a reminder so
+operators know timing is frozen until the loop resumes.
 Tap Space or the Pause preview button to freeze the Pattern Studio hologram while leaving the
 spool countdown ribbon and Yarn Flow panels visible, keeping pacing cues handy during reviews.
 A gentle pre-pulse now ramps around the ring whenever a countdown nears the next yarn feed, giving

@@ -675,6 +675,10 @@
         speed: 2.8,
         phaseOffset: Math.PI / 10,
       };
+      let lastSpoolCountdownSummary = spoolProgressCountdownFallbackMessage;
+      let lastSpoolCycleTimingDetail = yarnFlowCycleFallbackMessage;
+      let lastSpoolCountdownToneSource = 'neutral';
+      let lastSpoolCountdownExtrusionActive = false;
       const boundsCageControllers = [];
       const travelEnvelopeHaloControllers = [];
       const boundsZMarkerControllers = [];
@@ -758,6 +762,8 @@
         'Coordinates: Awaiting yarn flow coordinates…';
       const spoolProgressCountdownFallbackMessage =
         'Next feeds: Awaiting Yarn Flow timing…';
+      const spoolCountdownPausedMessage =
+        'Countdown ribbon pinned while the preview is paused — resume to advance timing.';
       const spoolProgressTonePalette = {
         neutral: { color: 0xffb173, emissive: 0xff8c2f },
         info: { color: 0x9ee5ff, emissive: 0x48c2ff },
@@ -2182,6 +2188,7 @@
       function setPatternPreviewPaused(paused) {
         patternPreviewPaused = Boolean(paused);
         updatePatternPlaybackUi();
+        refreshSpoolCountdownLabel();
       }
 
       updatePatternPlaybackUi();
@@ -2499,10 +2506,11 @@
           });
         }
         if (spoolCountdownLabelController) {
-          spoolCountdownLabelController.update({
-            lines: [spoolProgressCountdownFallbackMessage, yarnFlowCycleFallbackMessage],
-            tone: 'neutral',
-          });
+          lastSpoolCountdownSummary = spoolProgressCountdownFallbackMessage;
+          lastSpoolCycleTimingDetail = yarnFlowCycleFallbackMessage;
+          lastSpoolCountdownToneSource = 'neutral';
+          lastSpoolCountdownExtrusionActive = false;
+          refreshSpoolCountdownLabel();
         }
 
         applySpoolProgressTone('neutral');
@@ -2512,6 +2520,31 @@
           remainingFeeds: null,
           cycleTimingDetail: null,
           extrusionActive: false,
+        });
+      }
+
+      function refreshSpoolCountdownLabel() {
+        if (!spoolCountdownLabelController) {
+          return;
+        }
+
+        const countdownTone = patternPreviewPaused
+          ? 'warning'
+          : lastSpoolCountdownToneSource === 'warning'
+            ? 'warning'
+            : lastSpoolCountdownExtrusionActive
+              ? 'ready'
+              : 'info';
+        const countdownLines = [lastSpoolCountdownSummary];
+        if (patternPreviewPaused) {
+          countdownLines.push(spoolCountdownPausedMessage);
+        } else if (lastSpoolCycleTimingDetail) {
+          countdownLines.push(lastSpoolCycleTimingDetail);
+        }
+
+        spoolCountdownLabelController.update({
+          lines: countdownLines,
+          tone: countdownTone,
         });
       }
 
@@ -2949,25 +2982,15 @@
             tone: spoolProgressToneState,
           });
         }
-        if (spoolCountdownLabelController) {
-          const countdownSummary = formatBillboardFeedCountdown(
-            nextFeedCountdown,
-            followingFeedCountdown,
-            remainingFeedCount,
-          );
-          const countdownTone = spoolProgressToneState === 'warning'
-            ? 'warning'
-            : yarnExtrusionActive
-              ? 'ready'
-              : 'info';
-          const countdownLines = cycleTimingDetail
-            ? [countdownSummary, cycleTimingDetail]
-            : [countdownSummary];
-          spoolCountdownLabelController.update({
-            lines: countdownLines,
-            tone: countdownTone,
-          });
-        }
+        lastSpoolCountdownSummary = formatBillboardFeedCountdown(
+          nextFeedCountdown,
+          followingFeedCountdown,
+          remainingFeedCount,
+        );
+        lastSpoolCycleTimingDetail = cycleTimingDetail;
+        lastSpoolCountdownToneSource = spoolProgressToneState;
+        lastSpoolCountdownExtrusionActive = yarnExtrusionActive;
+        refreshSpoolCountdownLabel();
       }
 
       function normalizeHomeState(value) {
