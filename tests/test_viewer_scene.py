@@ -589,10 +589,12 @@ def test_spool_countdown_stays_visible_when_paused() -> None:
 
     html = VIEWER_HTML.read_text(encoding="utf-8")
 
-    assert (
-        "Countdown ribbon pinned while the preview is paused — resume to advance timing."
-        in html
+    paused_countdown_message = (
+        "Countdown ribbon pinned while the preview is paused — resume to "
+        "advance timing."
     )
+
+    assert paused_countdown_message in html
     assert "if (patternPreviewPaused)" in html
 
 
