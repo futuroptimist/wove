@@ -1876,15 +1876,31 @@
 
         const machineColor = warningTone ? 0xffc27d : 0x5fffd2;
         const machineFillColor = warningTone ? 0xffb173 : 0x2cf9c5;
+        const machineBaseOpacity = warningTone ? 0.18 : 0.12;
         machineOutline.material.color.setHex(machineColor);
         machineFill.material.color.setHex(machineFillColor);
-        machineFill.material.opacity = warningTone ? 0.18 : 0.12;
+        machineFill.material.opacity = machineBaseOpacity;
 
         const plannerColor = plannerExceedsMachine ? 0xff9b6b : 0x9ee5ff;
         const plannerFillColor = plannerExceedsMachine ? 0xffc58f : 0x4fb2ff;
+        const plannerBaseOpacity = plannerExceedsMachine ? 0.14 : 0.08;
         plannerOutline.material.color.setHex(plannerColor);
         plannerFill.material.color.setHex(plannerFillColor);
-        plannerFill.material.opacity = plannerExceedsMachine ? 0.14 : 0.08;
+        plannerFill.material.opacity = plannerBaseOpacity;
+
+        if (Array.isArray(boundsCageControllers)) {
+          for (let i = 0; i < boundsCageControllers.length; i++) {
+            const controller = boundsCageControllers[i];
+            if (!controller || !controller.material) {
+              continue;
+            }
+            if (controller.material === machineFill.material) {
+              controller.baseOpacity = machineBaseOpacity;
+            } else if (controller.material === plannerFill.material) {
+              controller.baseOpacity = plannerBaseOpacity;
+            }
+          }
+        }
 
         if (machineDimensions) {
           const width = Math.max(machineDimensions.width * mmToScene, 0.02);
@@ -4711,7 +4727,7 @@
           },
           {
             material: plannerFill.material,
-            baseOpacity: plannerFill.material.opacity ?? 0.08,
+            getBaseOpacity: () => plannerFill.material.opacity ?? 0.08,
             opacityAmplitude: 0.06,
             speed: 1.4,
             phaseOffset: 0.22,
@@ -8091,14 +8107,22 @@
           toe.position.y = baseToeHeight + lift * 0.82;
         });
         boundsCageControllers.forEach((controller) => {
-          const { material, baseOpacity = 0, opacityAmplitude = 0, speed = 1, phaseOffset = 0 } =
-            controller;
+          const {
+            material,
+            baseOpacity = 0,
+            getBaseOpacity,
+            opacityAmplitude = 0,
+            speed = 1,
+            phaseOffset = 0,
+          } = controller;
           if (!material || typeof material.opacity !== 'number') {
             return;
           }
           const swing = Math.sin(elapsed * speed + phaseOffset);
+          const opacityBase =
+            typeof getBaseOpacity === 'function' ? getBaseOpacity() : baseOpacity;
           const opacity = THREE.MathUtils.clamp(
-            baseOpacity + swing * opacityAmplitude,
+            opacityBase + swing * opacityAmplitude,
             0,
             1,
           );
