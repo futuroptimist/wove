@@ -630,6 +630,8 @@ def test_spool_cycle_clock_tracks_preview_time() -> None:
     html = VIEWER_HTML.read_text(encoding="utf-8")
 
     assert "spoolCycleSegments" in html
+    assert "spoolCycleSegments.push" in html
+    assert "spoolCycleSegments.forEach" in html
     assert "cycle clock ring" in html
 
 
