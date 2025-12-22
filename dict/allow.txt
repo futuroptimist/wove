@@ -219,6 +219,7 @@ TensionProfile
 unclamped
 uncalibrated
 realtime
+recalibrate
 mockups
 
 LED

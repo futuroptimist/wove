@@ -2094,6 +2094,12 @@
           if (Number.isFinite(parsedDuration) && parsedDuration > 0) {
             normalized.durationSeconds = parsedDuration;
           }
+
+          const sizeCandidate = source.fileSizeBytes ?? source.file_size_bytes ?? null;
+          const parsedSize = Number(sizeCandidate);
+          if (Number.isFinite(parsedSize) && parsedSize > 0) {
+            normalized.fileSizeBytes = parsedSize;
+          }
         }
 
         const commandCount = Array.isArray(events) ? events.length : 0;
@@ -2132,6 +2138,15 @@
         if (Number.isFinite(data?.commandCount)) {
           const rounded = Math.max(0, Math.round(data.commandCount));
           entries.push({ label: 'Planner steps', value: `${rounded}` });
+        }
+
+        if (Number.isFinite(data?.fileSizeBytes)) {
+          const kilobytes = data.fileSizeBytes / 1024;
+          const megabytes = data.fileSizeBytes / (1024 * 1024);
+          const formatted = data.fileSizeBytes >= 1024 * 1024
+            ? `${megabytes.toFixed(2)} MB`
+            : `${(Math.floor(kilobytes * 10) / 10).toFixed(1)} kB`;
+          entries.push({ label: 'File size', value: formatted });
         }
 
         if (Number.isFinite(data?.durationSeconds)) {
@@ -3310,6 +3325,7 @@
             ...(payload?.metadata && typeof payload.metadata === 'object' ? payload.metadata : {}),
             version: payload?.version ?? null,
             units: typeof payload?.units === 'string' ? payload.units : null,
+            fileSizeBytes: Number(response.headers.get('Content-Length')) || null,
           };
           if (!metadata.source) {
             metadata.source = 'Base chain row asset';
@@ -9351,6 +9367,7 @@
               ...(payload?.metadata && typeof payload.metadata === 'object' ? payload.metadata : {}),
               version: payload?.version ?? null,
               units: typeof payload?.units === 'string' ? payload.units : null,
+              fileSizeBytes: Number(file.size),
             };
             if (!metadata.source) {
               metadata.source = `Upload: ${file.name}`;
