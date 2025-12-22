@@ -2134,14 +2134,14 @@
           entries.push({ label: 'Planner steps', value: `${rounded}` });
         }
 
-          if (Number.isFinite(data?.fileSizeBytes)) {
-            const kilobytes = data.fileSizeBytes / 1024;
-            const megabytes = data.fileSizeBytes / (1024 * 1024);
-            const formatted = data.fileSizeBytes >= 1024 * 1024
-              ? `${megabytes.toFixed(2)} MB`
-              : `${(Math.floor(kilobytes * 10) / 10).toFixed(1)} kB`;
-            entries.push({ label: 'File size', value: formatted });
-          }
+        if (Number.isFinite(data?.fileSizeBytes)) {
+          const kilobytes = data.fileSizeBytes / 1024;
+          const megabytes = data.fileSizeBytes / (1024 * 1024);
+          const formatted = data.fileSizeBytes >= 1024 * 1024
+            ? `${megabytes.toFixed(2)} MB`
+            : `${(Math.floor(kilobytes * 10) / 10).toFixed(1)} kB`;
+          entries.push({ label: 'File size', value: formatted });
+        }
 
         if (Number.isFinite(data?.durationSeconds)) {
           const duration = Math.max(0, data.durationSeconds);
