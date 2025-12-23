@@ -163,6 +163,15 @@ def test_heated_bed_conduit_glow_tracks_status() -> None:
     assert "applyHeatedBedConduitTone" in html
 
 
+def test_heated_bed_conduit_warns_about_missing_metadata() -> None:
+    """The Heated Bed panel should remind contributors to include conduit metadata."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "Heated bed conduit metadata missing" in html
+    assert "Add heated_bed_conduit.status and route" in html
+
+
 def test_planner_travel_envelope_warns_when_exceeded() -> None:
     """The travel cage should warn when planner bounds exceed the machine envelope."""
 
