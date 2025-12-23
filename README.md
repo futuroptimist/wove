@@ -219,6 +219,9 @@ ready exports brighten the thermistor channel while warning states pulse amber
 inside the hologram.
 The bundled Pattern Studio preview already ships with a ready-state heated bed
 conduit block so the thermistor run glows as soon as the viewer loads.
+When a planner omits that metadata, the Heated Bed panel now highlights the
+missing `heated_bed_conduit` block and calls out which fields to include so the
+thermistor channel lights up again.
 
 The overlay now includes a Pattern Studio preview panel that cycles through the
 current `wove.pattern_cli --format planner` comment while a progress bar tracks

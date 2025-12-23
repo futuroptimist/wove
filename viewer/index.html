@@ -734,6 +734,8 @@
       const heatedBedStatusFallbackMessage =
         'Thermistor conduit reserved for the heater upgrade — planner status drives the '
         + 'glow along the wiring path.';
+      const heatedBedMetadataMissingMessage =
+        'Heated bed conduit metadata missing — include heated_bed_conduit defaults to drive the glow.';
       const heatedBedRouteFallbackMessage =
         'Conduit status: Illuminating the bay-to-bed run so heater wiring stays obvious during dry runs.';
       const patternBoundsFallbackMessage =
@@ -2039,6 +2041,7 @@
         updateHeatedBedPanel({
           statusLine: heatedStatus,
           routeLine: heatedRoute,
+          metadataAvailable: Boolean(heatedConduit),
         });
 
         if (entries.length === 0) {
@@ -2215,24 +2218,33 @@
       updatePatternPlaybackUi();
 
       function updateHeatedBedPanel(options = {}) {
-        const { statusLine, routeLine } = options;
+        const { statusLine, routeLine, metadataAvailable = null } = options;
 
         if (heatedBedStatusElement) {
-          const statusText = statusLine || heatedBedStatusFallbackMessage;
+          const hasMetadata = metadataAvailable !== null ? Boolean(metadataAvailable) : Boolean(statusLine);
+          const statusText = hasMetadata
+            ? statusLine || heatedBedStatusFallbackMessage
+            : heatedBedMetadataMissingMessage;
           heatedBedStatusElement.textContent = statusText;
           const normalized = statusText.toLowerCase();
-          const tone = normalized.includes('ready')
-            ? 'ready'
-            : normalized.includes('warn')
-              ? 'warning'
-              : 'info';
+          const tone = hasMetadata
+            ? normalized.includes('ready')
+              ? 'ready'
+              : normalized.includes('warn')
+                ? 'warning'
+                : 'info'
+            : 'warning';
           setTone(heatedBedStatusElement, tone);
           applyHeatedBedConduitTone(tone);
         }
 
         if (heatedBedRouteElement) {
-          heatedBedRouteElement.textContent = routeLine || heatedBedRouteFallbackMessage;
-          setTone(heatedBedRouteElement, 'neutral');
+          const hasMetadata = metadataAvailable !== null ? Boolean(metadataAvailable) : Boolean(routeLine);
+          const routeText = hasMetadata
+            ? routeLine || heatedBedRouteFallbackMessage
+            : 'Add heated_bed_conduit.status and route to planner defaults to drive the thermistor glow.';
+          heatedBedRouteElement.textContent = routeText;
+          setTone(heatedBedRouteElement, hasMetadata ? 'neutral' : 'warning');
         }
       }
 
