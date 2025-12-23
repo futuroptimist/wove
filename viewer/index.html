@@ -2242,9 +2242,7 @@
           const hasMetadata = metadataAvailable !== null ? Boolean(metadataAvailable) : Boolean(routeLine);
           const routeText = hasMetadata
             ? routeLine || heatedBedRouteFallbackMessage
-            :
-              'Add heated_bed_conduit.status and route to planner defaults to drive the thermistor ' +
-                'glow.';
+            : 'Add heated_bed_conduit.status and route to planner defaults to drive the thermistor glow.';
           heatedBedRouteElement.textContent = routeText;
           setTone(heatedBedRouteElement, hasMetadata ? 'neutral' : 'warning');
         }
