@@ -5814,10 +5814,11 @@
           metalness: 0.1,
           roughness: 0.35,
         });
-        const insertGeometry = new THREE.CylinderGeometry(0.055, 0.07, 0.06, 24);
-        const insertGlowGeometry = new THREE.CylinderGeometry(0.11, 0.11, 0.012, 24);
-        const insertSpacingX = 0.8;
-        const insertSpacingZ = 0.75;
+        // Dimensions tuned to match M3 brass insert proportions in scene units (1 unit ≈ 10 cm).
+        const insertGeometry = new THREE.CylinderGeometry(0.055, 0.07, 0.06, 24); // radiusTop, radiusBottom, height
+        const insertGlowGeometry = new THREE.CylinderGeometry(0.11, 0.11, 0.012, 24); // slightly oversized halo disk
+        const insertSpacingX = 0.8; // M3 insert center-to-center spacing in the X direction (~8 cm)
+        const insertSpacingZ = 0.75; // M3 insert center-to-center spacing in the Z direction (~7.5 cm)
         const insertRows = 4;
         const insertCols = 5;
         for (let row = 0; row < insertRows; row += 1) {
@@ -5825,7 +5826,7 @@
             const x = insertSpacingX * (col - (insertCols - 1) / 2);
             const z = insertSpacingZ * (row - (insertRows - 1) / 2);
             const insert = new THREE.Mesh(insertGeometry, insertMaterial.clone());
-            insert.position.set(x, bedTopY + 0.035, z);
+            insert.position.set(x, bedTopY + 0.035, z); // small lift above the bed to match insert head height
             insert.castShadow = true;
             insertGrid.add(insert);
 
@@ -5843,6 +5844,7 @@
               baseOpacity: 0.35,
               opacityAmplitude: 0.25,
               speed: 0.85,
+              // 0.18 rad per index offsets the sine wave by ~10° per insert so the ripple walks diagonally across the grid.
               phaseOffset: (row * insertCols + col) * 0.18,
             });
           }
