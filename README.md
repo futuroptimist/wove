@@ -56,6 +56,8 @@ first crochet robot, and is designed for incremental upgrades as new Codex
 tasks expand the experience. Hover the translucent workpiece support bed to see
 where swatches land while the gantry executes calibration moves. Use the ←/→
 arrow keys to cycle through roadmap milestones without leaving the keyboard.
+The heat-set insert grid now glows to mark the M3 anchor spacing so accessory
+fixtures line up with the removable bed from the hologram alone.
 
 ```bash
 python scripts/serve_viewer.py

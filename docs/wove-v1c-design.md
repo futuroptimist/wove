@@ -215,7 +215,8 @@ that runs the same rail so the automation cadence reads clearly from the plaza o
   beacons hover beside the gantry, projecting glowing arrows that track the positive X, Y, and Z
   directions so calibration runs match the planner coordinate system.
 - **Bed**: Magnetic stainless sheet bonded to a printed base with embedded M3 heat-set inserts for
-  accessory mounting.
+  accessory mounting. The viewer now glows each insert in a grid to highlight the spacing for
+  swap-in fixtures and accessories before printing hardware.
 
 ### Safety Features
 - Full-travel physical end stops on X, Y, and Z with printable housings.

@@ -28,6 +28,17 @@ def test_calibration_rail_sweep_is_documented() -> None:
     assert "dashed calibration rail sweep" in html.lower()
 
 
+def test_heat_set_insert_grid_is_documented() -> None:
+    """The bed should advertise the glowing heat-set insert grid."""
+
+    html = VIEWER_HTML.read_text(encoding="utf-8")
+
+    assert "heat-set insert grid" in html.lower()
+    assert "insertGridControllers.push" in html
+    assert "const insertRows = 4" in html
+    assert "const insertCols = 5" in html
+
+
 def test_anchor_pulse_sequence_runs_clockwise() -> None:
     """The magnetic anchor sweep should follow the clockwise swap order."""
 
