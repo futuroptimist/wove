@@ -396,6 +396,10 @@
           for calibration runs.
         </li>
         <li>
+          The bed's heat-set insert grid glows to mark the M3 anchor spacing used for accessory
+          mounts and swap-in tooling.
+        </li>
+        <li>
           Watch the dashed calibration rail sweep glide faster whenever yarn
           feed pulses approach; the tracer orb runs the same path so you can
           rehearse the automation stroke from the plaza overview.
@@ -617,6 +621,7 @@
       const filamentSensorControllers = [];
       const thermistorConduitControllers = [];
       let thermistorConduitTone = 'info';
+      const insertGridControllers = [];
       const cableChainPulseControllers = [];
       const cableChainChaseControllers = [];
       const automationSweepControllers = [];
@@ -5791,6 +5796,68 @@
 
         const bedTopY = bed.position.y + bedThickness / 2;
 
+        const insertGrid = new THREE.Group();
+        insertGrid.name = 'heat-set-insert-grid';
+        const insertMaterial = new THREE.MeshStandardMaterial({
+          color: 0xf9dca9,
+          emissive: 0xffb347,
+          emissiveIntensity: 0.4,
+          metalness: 0.72,
+          roughness: 0.28,
+        });
+        const insertGlowMaterial = new THREE.MeshStandardMaterial({
+          color: 0x86f5ff,
+          emissive: 0x86f5ff,
+          emissiveIntensity: 0.0,
+          transparent: true,
+          opacity: 0.35,
+          metalness: 0.1,
+          roughness: 0.35,
+        });
+        const insertGeometry = new THREE.CylinderGeometry(0.055, 0.07, 0.06, 24);
+        const insertGlowGeometry = new THREE.CylinderGeometry(0.11, 0.11, 0.012, 24);
+        const insertSpacingX = 0.8;
+        const insertSpacingZ = 0.75;
+        const insertRows = 4;
+        const insertCols = 5;
+        for (let row = 0; row < insertRows; row += 1) {
+          for (let col = 0; col < insertCols; col += 1) {
+            const x = insertSpacingX * (col - (insertCols - 1) / 2);
+            const z = insertSpacingZ * (row - (insertRows - 1) / 2);
+            const insert = new THREE.Mesh(insertGeometry, insertMaterial.clone());
+            insert.position.set(x, bedTopY + 0.035, z);
+            insert.castShadow = true;
+            insertGrid.add(insert);
+
+            const glow = new THREE.Mesh(insertGlowGeometry, insertGlowMaterial.clone());
+            glow.position.set(x, bedTopY + 0.07, z);
+            glow.rotation.x = Math.PI / 2;
+            glow.renderOrder = 3;
+            insertGrid.add(glow);
+
+            insertGridControllers.push({
+              insertMaterial: insert.material,
+              glowMaterial: glow.material,
+              baseIntensity: 0.3,
+              intensityAmplitude: 0.6,
+              baseOpacity: 0.35,
+              opacityAmplitude: 0.25,
+              speed: 0.85,
+              phaseOffset: (row * insertCols + col) * 0.18,
+            });
+          }
+        }
+        insertGrid.position.copy(bed.position);
+        group.add(insertGrid);
+        addHoverInfo(
+          insertGrid,
+          'Heat-set insert grid — glowing M3 anchors map the spacing for accessory plates and fixtures.',
+          {
+            label: 'Insert Grid',
+            panelTone: 'info',
+          },
+        );
+
         const electronicsBay = createElectronicsBay();
         electronicsBay.position.set(-2.1, 0.4, -1.4);
         group.add(electronicsBay);
@@ -8224,6 +8291,38 @@
             const opacityPulse =
               opacityBase + Math.sin(elapsed * speed + phaseOffset) * opacityAmp;
             material.opacity = THREE.MathUtils.clamp(opacityPulse, 0, 1);
+          }
+        });
+        insertGridControllers.forEach((controller) => {
+          const {
+            insertMaterial,
+            glowMaterial,
+            baseIntensity = 0,
+            intensityAmplitude = 0,
+            baseOpacity = 0,
+            opacityAmplitude = 0,
+            speed = 1,
+            phaseOffset = 0,
+          } = controller;
+          const swing = Math.sin(elapsed * speed + phaseOffset);
+          const intensity = Math.max(0, baseIntensity + intensityAmplitude * swing);
+          if (insertMaterial && typeof insertMaterial.emissiveIntensity === 'number') {
+            insertMaterial.emissiveIntensity = intensity;
+          }
+          if (
+            glowMaterial &&
+            typeof glowMaterial.opacity === 'number' &&
+            glowMaterial.transparent
+          ) {
+            const opacity = THREE.MathUtils.clamp(
+              baseOpacity + opacityAmplitude * (0.5 + 0.5 * swing),
+              0,
+              1,
+            );
+            glowMaterial.opacity = opacity;
+          }
+          if (glowMaterial && typeof glowMaterial.emissiveIntensity === 'number') {
+            glowMaterial.emissiveIntensity = Math.max(0, intensity * 1.2);
           }
         });
         footstepControllers.forEach((controller) => {
