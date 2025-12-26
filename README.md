@@ -67,10 +67,10 @@ python scripts/serve_viewer.py
 Drag-and-drop a `--format planner` JSON onto the viewer to swap the Pattern Studio preview without
 clicking the upload control.
 
-The Planner Metadata panel now records the uploaded file size alongside the existing file name
-so you can confirm which payload is driving the Pattern Studio preview before rehearsing motion.
-The viewer now also lists the active planner file name for both the bundled base chain row preview
-and uploaded planner exports. This makes it easy to verify the source driving the hologram.
+The Planner Metadata panel now displays the uploaded planner file’s name and file size so you can
+confirm which payload is driving the Pattern Studio preview before rehearsing motion. The viewer
+lists the active planner file name for both the bundled base chain row preview and uploaded planner
+exports, making it easy to verify the source driving the hologram.
 
 Each contribution should leave the viewer a little better—add new assets,
 improve lighting, or enhance interactivity—so that future operators can preview
