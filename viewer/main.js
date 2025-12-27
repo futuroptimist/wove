@@ -2053,8 +2053,8 @@ function updateYarnFlowPanel(
     : baseline;
   const fedAmount = Math.max(rawExtrusion - baseline, 0);
   const plannedAmount = Math.max(target - baseline, 0);
-  let spoolProgressHeader = 'Yarn Feed Progress';
-  let spoolProgressToneState = 'neutral';
+  let spoolProgressHeader;
+  let spoolProgressToneState;
   let spoolProgress = 0;
   let nextFeedCountdown = null;
   let followingFeedCountdown = null;
@@ -3239,27 +3239,6 @@ function buildPlannerPreview(events, options = {}) {
   };
 
   return group;
-}
-
-function disposePreviewGroup(group) {
-  group.traverse((child) => {
-    if (child.geometry) {
-      child.geometry.dispose();
-    }
-    if (child.material) {
-      const materials = Array.isArray(child.material)
-        ? child.material
-        : [child.material];
-      materials.forEach((material) => {
-        if (material.map && typeof material.map.dispose === 'function') {
-          material.map.dispose();
-        }
-        if (typeof material.dispose === 'function') {
-          material.dispose();
-        }
-      });
-    }
-  });
 }
 
 function interpolatePlannerEventCoordinates(events, index, progress) {
@@ -4474,7 +4453,7 @@ function createElectronicsBay() {
     transparent: true,
     opacity: 0.85,
   });
-  const statusLed = new THREE.Mesh(new THREE.SphereGeometry(0.06, 18, 18), statusLedMaterial);
+  let statusLed = new THREE.Mesh(new THREE.SphereGeometry(0.06, 18, 18), statusLedMaterial);
   statusLed.position.set(0.36, 0.3, 0.32);
   statusLed.castShadow = true;
   controllerStack.add(statusLed);
@@ -4635,7 +4614,7 @@ function createElectronicsBay() {
 
   applyHeatedBedConduitTone(thermistorConduitTone);
 
-  const statusLed = new THREE.Mesh(
+  let statusLed = new THREE.Mesh(
     new THREE.SphereGeometry(0.08, 16, 16),
     new THREE.MeshStandardMaterial({
       color: 0x7dffbe,

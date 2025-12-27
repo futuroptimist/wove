@@ -8,7 +8,7 @@ VIEWER_DIR = Path(__file__).resolve().parents[1] / "viewer"
 
 
 def load_viewer_bundle() -> str:
-    """Return a concatenated view of the viewer HTML and main module."""
+    """Return a concatenated view of the viewer HTML, main module, and constants."""
 
     html = (VIEWER_DIR / "index.html").read_text(encoding="utf-8")
     script = (VIEWER_DIR / "main.js").read_text(encoding="utf-8")
