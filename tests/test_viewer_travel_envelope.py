@@ -1,8 +1,8 @@
-from pathlib import Path
+from tests.viewer_assets import load_viewer_sources
 
 
 def test_travel_envelope_cage_copy_present():
-    html = Path("viewer/index.html").read_text(encoding="utf-8")
+    html = load_viewer_sources()
 
     assert "Planner travel envelope" in html
     assert "Machine profile travel envelope" in html
@@ -10,14 +10,14 @@ def test_travel_envelope_cage_copy_present():
 
 
 def test_travel_envelope_warns_on_missing_machine_axes():
-    html = Path("viewer/index.html").read_text(encoding="utf-8")
+    html = load_viewer_sources()
 
     assert "comparisonDetails?.missingMachine" in html
     assert "machineProfileMissingAxes" in html
 
 
 def test_travel_envelope_z_span_halos_present():
-    html = Path("viewer/index.html").read_text(encoding="utf-8")
+    html = load_viewer_sources()
 
     assert "planner-z-span-halos" in html
     assert "Planner Z-span halos" in html

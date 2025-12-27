@@ -1,8 +1,8 @@
-from pathlib import Path
+from tests.viewer_assets import load_viewer_sources
 
 
 def test_machine_profile_envelope_copy():
-    html = Path("viewer/index.html").read_text(encoding="utf-8")
+    html = load_viewer_sources()
 
     assert 'id="machine-profile-envelope"' in html
     assert "Machine profile envelope warming up…" in html
