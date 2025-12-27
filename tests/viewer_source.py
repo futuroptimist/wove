@@ -11,6 +11,6 @@ def load_viewer_bundle() -> str:
     """Return a concatenated view of the viewer HTML, main module, and constants."""
 
     html = (VIEWER_DIR / "index.html").read_text(encoding="utf-8")
-    script = (VIEWER_DIR / "main.js").read_text(encoding="utf-8")
+    script = (VIEWER_DIR / "src" / "main.js").read_text(encoding="utf-8")
     constants = (VIEWER_DIR / "src" / "constants.js").read_text(encoding="utf-8")
     return html + script + constants

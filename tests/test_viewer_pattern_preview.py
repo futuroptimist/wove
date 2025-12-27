@@ -165,7 +165,7 @@ def test_homing_guard_coordinates_follow_progress() -> None:
 
     assert "homing-guard-position" in html
     assert (
-        "shouldUpdatePosition && (patternPositionElement || homingGuardPositionElement)"
+        "shouldUpdatePosition && (dom.patternPositionElement || dom.homingGuardPositionElement)"
         in html
     )
 

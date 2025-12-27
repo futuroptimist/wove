@@ -1,6 +1,7 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js';
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/controls/OrbitControls.js';
-import { comparePlannerToMachineBounds } from './bounds.js';
+import { comparePlannerToMachineBounds } from '../bounds.js';
+import { getDom } from './dom.js';
 import {
   boundsComparisonFallbackMessage,
   defaultPatternPreviewDurationSeconds,
@@ -36,7 +37,7 @@ import {
   yarnFlowTimingFallbackMessage,
   yarnFlowTotalFallbackMessage,
   yarnFlowUpcomingFallbackMessage,
-} from './src/constants.js';
+} from './constants.js';
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(window.devicePixelRatio);
@@ -46,51 +47,7 @@ document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0b0c13);
-
-const statusElement = document.getElementById('status');
-const roadmapTitleElement = document.getElementById('roadmap-title');
-const roadmapDescriptionElement = document.getElementById('roadmap-description');
-const patternStepElement = document.getElementById('pattern-step');
-const patternStepIndexElement = document.getElementById('pattern-step-index');
-const patternProgressBarElement = document.getElementById('pattern-progress-bar');
-const patternPauseToggleElement = document.getElementById('pattern-pause-toggle');
-const patternPlaybackStatusElement = document.getElementById('pattern-playback-status');
-const plannerUploadElement = document.getElementById('planner-upload');
-const plannerUploadLabelElement = document.getElementById('planner-upload-label');
-const plannerUploadHintElement = document.getElementById('planner-upload-hint');
-const patternPositionElement = document.getElementById('pattern-position');
-const patternBoundsElement = document.getElementById('pattern-bounds');
-const patternDefaultsStatusElement = document.getElementById(
-  'pattern-defaults-status',
-);
-const patternDefaultsListElement = document.getElementById('pattern-defaults-list');
-const plannerMetadataStatusElement = document.getElementById(
-  'planner-metadata-status',
-);
-const plannerMetadataListElement = document.getElementById('planner-metadata-details');
-const machineProfileEnvelopeElement = document.getElementById('machine-profile-envelope');
-const boundsComparisonElement = document.getElementById('bounds-comparison');
-const machineProfileStatusElement = document.getElementById('machine-profile-status');
-const machineProfileAxesElement = document.getElementById('machine-profile-axes');
-const homingGuardStatusElement = document.getElementById('homing-guard-status');
-const homingGuardHomeStateElement = document.getElementById(
-  'homing-guard-home-state',
-);
-const homingGuardPositionElement = document.getElementById('homing-guard-position');
-const heatedBedStatusElement = document.getElementById('heated-bed-status');
-const heatedBedRouteElement = document.getElementById('heated-bed-route');
-const yarnFlowStatusElement = document.getElementById('yarn-flow-status');
-const yarnFlowSpoolElement = document.getElementById('yarn-flow-spool');
-const yarnFlowTotalElement = document.getElementById('yarn-flow-total');
-const yarnFlowProgressElement = document.getElementById('yarn-flow-progress');
-const yarnFlowQueueElement = document.getElementById('yarn-flow-queue');
-const yarnFlowRateElement = document.getElementById('yarn-flow-rate');
-const yarnFlowUpcomingElement = document.getElementById('yarn-flow-upcoming');
-const yarnFlowTimingElement = document.getElementById('yarn-flow-timing');
-const yarnFlowCycleElement = document.getElementById('yarn-flow-cycle');
-const yarnFlowCalibrationElement = document.getElementById('yarn-flow-calibration');
-const yarnFlowTensionElement = document.getElementById('yarn-flow-tension');
-const yarnFlowPositionElement = document.getElementById('yarn-flow-position');
+const dom = getDom();
 
 const pointer = new THREE.Vector2();
 const raycaster = new THREE.Raycaster();
@@ -1057,6 +1014,45 @@ function computeExtrusionSummary(events, bounds) {
   return [normalizedBaseline, normalizedTarget];
 }
 
+function computeYarnFeedIndices(events, baselineExtrusion = null) {
+  if (!Array.isArray(events) || events.length === 0) {
+    return [];
+  }
+
+  const feedIndices = new Set();
+  const feedCommentPattern = /feed/i;
+  const feedDeltaTolerance = 0.01;
+
+  let previousExtrusion = Number.isFinite(baselineExtrusion) ? baselineExtrusion : null;
+
+  events.forEach((event, index) => {
+    if (!event || typeof event !== 'object') {
+      return;
+    }
+
+    const comment = typeof event.comment === 'string' ? event.comment : '';
+    if (comment && feedCommentPattern.test(comment)) {
+      feedIndices.add(index);
+    }
+
+    const extrusion = coerceFiniteNumber(event.extrusion);
+    if (extrusion === null) {
+      return;
+    }
+
+    if (previousExtrusion !== null) {
+      const delta = extrusion - previousExtrusion;
+      if (Number.isFinite(delta) && delta > feedDeltaTolerance) {
+        feedIndices.add(index);
+      }
+    }
+
+    previousExtrusion = extrusion;
+  });
+
+  return Array.from(feedIndices.values());
+}
+
 function buildBoundsHoverText(bounds) {
   if (!bounds) {
     return 'Planner bounds overlay — load a planner export with bounds metadata to preview the motion envelope.';
@@ -1118,25 +1114,25 @@ function buildMachineProfileEnvelopeText(bounds, missingAxes = []) {
 }
 
 function updateMachineProfileEnvelope(bounds, missingAxes = []) {
-  if (!machineProfileEnvelopeElement) {
+  if (!dom.machineProfileEnvelopeElement) {
     return;
   }
 
   const text = buildMachineProfileEnvelopeText(bounds, missingAxes);
-  machineProfileEnvelopeElement.textContent = text;
+  dom.machineProfileEnvelopeElement.textContent = text;
   const missingAxisList = Array.isArray(missingAxes)
     ? missingAxes.filter((axis) => typeof axis === 'string' && axis.trim().length > 0)
     : [];
   const hasMissingAxes = missingAxisList.length > 0;
   const tone = bounds && !hasMissingAxes ? 'info' : 'warning';
-  setTone(machineProfileEnvelopeElement, tone);
+  setTone(dom.machineProfileEnvelopeElement, tone);
 }
 
 updateMachineProfileEnvelope(null, []);
 updateHeatedBedPanel();
 
 function updateBoundsComparisonPanel(plannerBounds, machineBounds, comparison = null) {
-  if (!boundsComparisonElement) {
+  if (!dom.boundsComparisonElement) {
     return;
   }
 
@@ -1144,22 +1140,22 @@ function updateBoundsComparisonPanel(plannerBounds, machineBounds, comparison = 
     comparison ?? comparePlannerToMachineBounds(plannerBounds ?? null, machineBounds ?? null);
 
   if (details.missingPlanner && details.missingMachine) {
-    boundsComparisonElement.textContent = boundsComparisonFallbackMessage;
-    setTone(boundsComparisonElement, 'warning');
+    dom.boundsComparisonElement.textContent = boundsComparisonFallbackMessage;
+    setTone(dom.boundsComparisonElement, 'warning');
     return;
   }
 
   if (details.missingMachine) {
-    boundsComparisonElement.textContent =
+    dom.boundsComparisonElement.textContent =
       'Bounds check unavailable — include machine_profile axis limits to compare envelopes.';
-    setTone(boundsComparisonElement, 'warning');
+    setTone(dom.boundsComparisonElement, 'warning');
     return;
   }
 
   if (details.missingPlanner) {
-    boundsComparisonElement.textContent =
+    dom.boundsComparisonElement.textContent =
       'Bounds check unavailable — planner export missing bounds metadata.';
-    setTone(boundsComparisonElement, 'warning');
+    setTone(dom.boundsComparisonElement, 'warning');
     return;
   }
 
@@ -1184,25 +1180,25 @@ function updateBoundsComparisonPanel(plannerBounds, machineBounds, comparison = 
       }
       return `${axis.toUpperCase()}: ${issues.join(' · ')}`;
     });
-    boundsComparisonElement.textContent =
+    dom.boundsComparisonElement.textContent =
       'Bounds check: Planner exceeds machine envelope — ' + segments.join('; ');
-    setTone(boundsComparisonElement, 'warning');
+    setTone(dom.boundsComparisonElement, 'warning');
     return;
   }
 
-  boundsComparisonElement.textContent =
+  dom.boundsComparisonElement.textContent =
     'Bounds check: Planner fits within the machine profile envelope.';
-  setTone(boundsComparisonElement, 'ready');
+  setTone(dom.boundsComparisonElement, 'ready');
 }
 
 function updatePatternBoundsOverlay(bounds) {
-  if (!patternBoundsElement) {
+  if (!dom.patternBoundsElement) {
     return;
   }
 
   if (!bounds) {
-    patternBoundsElement.textContent = patternBoundsFallbackMessage;
-    setTone(patternBoundsElement, 'warning');
+    dom.patternBoundsElement.textContent = patternBoundsFallbackMessage;
+    setTone(dom.patternBoundsElement, 'warning');
     return;
   }
 
@@ -1223,13 +1219,13 @@ function updatePatternBoundsOverlay(bounds) {
   }
 
   if (segments.length === 0) {
-    patternBoundsElement.textContent = patternBoundsFallbackMessage;
-    setTone(patternBoundsElement, 'warning');
+    dom.patternBoundsElement.textContent = patternBoundsFallbackMessage;
+    setTone(dom.patternBoundsElement, 'warning');
     return;
   }
 
-  patternBoundsElement.textContent = `Bounds: ${segments.join(' · ')}`;
-  setTone(patternBoundsElement, 'info');
+  dom.patternBoundsElement.textContent = `Bounds: ${segments.join(' · ')}`;
+  setTone(dom.patternBoundsElement, 'info');
 }
 
 function buildTravelEnvelopeDimensions(bounds, fallbackSpan) {
@@ -1363,12 +1359,12 @@ function updateTravelEnvelope(planner, machine, comparisonDetails = null) {
 }
 
 function updatePlannerDefaultsPanel(defaults) {
-  if (!patternDefaultsStatusElement || !patternDefaultsListElement) {
+  if (!dom.patternDefaultsStatusElement || !dom.patternDefaultsListElement) {
     return;
   }
 
-  while (patternDefaultsListElement.firstChild) {
-    patternDefaultsListElement.removeChild(patternDefaultsListElement.firstChild);
+  while (dom.patternDefaultsListElement.firstChild) {
+    dom.patternDefaultsListElement.removeChild(dom.patternDefaultsListElement.firstChild);
   }
 
   const data = defaults && typeof defaults === 'object' ? defaults : null;
@@ -1450,18 +1446,18 @@ function updatePlannerDefaultsPanel(defaults) {
   });
 
   if (entries.length === 0) {
-    patternDefaultsStatusElement.textContent = patternDefaultsFallbackMessage;
-    setTone(patternDefaultsStatusElement, 'warning');
+    dom.patternDefaultsStatusElement.textContent = patternDefaultsFallbackMessage;
+    setTone(dom.patternDefaultsStatusElement, 'warning');
     return;
   }
 
-  patternDefaultsStatusElement.textContent = 'Planner defaults:';
-  setTone(patternDefaultsStatusElement, 'info');
+  dom.patternDefaultsStatusElement.textContent = 'Planner defaults:';
+  setTone(dom.patternDefaultsStatusElement, 'info');
 
   entries.forEach(({ label, value }) => {
     const listItem = document.createElement('li');
     listItem.textContent = `${label}: ${value}`;
-    patternDefaultsListElement.appendChild(listItem);
+    dom.patternDefaultsListElement.appendChild(listItem);
   });
 }
 
@@ -1532,12 +1528,12 @@ function buildPlannerMetadata(metadata, events) {
 }
 
 function updatePlannerMetadataPanel(metadata) {
-  if (!plannerMetadataStatusElement || !plannerMetadataListElement) {
+  if (!dom.plannerMetadataStatusElement || !dom.plannerMetadataListElement) {
     return;
   }
 
-  while (plannerMetadataListElement.firstChild) {
-    plannerMetadataListElement.removeChild(plannerMetadataListElement.firstChild);
+  while (dom.plannerMetadataListElement.firstChild) {
+    dom.plannerMetadataListElement.removeChild(dom.plannerMetadataListElement.firstChild);
   }
 
   const data = metadata && typeof metadata === 'object' ? metadata : null;
@@ -1579,18 +1575,18 @@ function updatePlannerMetadataPanel(metadata) {
   }
 
   if (entries.length === 0) {
-    plannerMetadataStatusElement.textContent = plannerMetadataFallbackMessage;
-    setTone(plannerMetadataStatusElement, 'warning');
+    dom.plannerMetadataStatusElement.textContent = plannerMetadataFallbackMessage;
+    setTone(dom.plannerMetadataStatusElement, 'warning');
     return;
   }
 
-  plannerMetadataStatusElement.textContent = 'Planner metadata:';
-  setTone(plannerMetadataStatusElement, 'info');
+  dom.plannerMetadataStatusElement.textContent = 'Planner metadata:';
+  setTone(dom.plannerMetadataStatusElement, 'info');
 
   entries.forEach(({ label, value }) => {
     const listItem = document.createElement('li');
     listItem.textContent = `${label}: ${value}`;
-    plannerMetadataListElement.appendChild(listItem);
+    dom.plannerMetadataListElement.appendChild(listItem);
   });
 }
 
@@ -1607,22 +1603,22 @@ function setTone(element, tone) {
 }
 
 function updatePatternPlaybackUi() {
-  if (patternPauseToggleElement) {
-    patternPauseToggleElement.textContent = patternPreviewPaused
+  if (dom.patternPauseToggleElement) {
+    dom.patternPauseToggleElement.textContent = patternPreviewPaused
       ? 'Resume preview'
       : 'Pause preview';
-    patternPauseToggleElement.setAttribute(
+    dom.patternPauseToggleElement.setAttribute(
       'aria-pressed',
       patternPreviewPaused ? 'true' : 'false',
     );
   }
-  if (patternPlaybackStatusElement) {
+  if (dom.patternPlaybackStatusElement) {
     const tone = patternPreviewPaused ? 'warning' : 'info';
     const statusText = patternPreviewPaused
       ? 'Playback: Paused — spool countdown ribbon stays pinned above the reel.'
       : 'Playback: Running preview loop.';
-    patternPlaybackStatusElement.textContent = statusText;
-    setTone(patternPlaybackStatusElement, tone);
+    dom.patternPlaybackStatusElement.textContent = statusText;
+    setTone(dom.patternPlaybackStatusElement, tone);
   }
 }
 
@@ -1637,12 +1633,12 @@ updatePatternPlaybackUi();
 function updateHeatedBedPanel(options = {}) {
   const { statusLine, routeLine, metadataAvailable = null } = options;
 
-  if (heatedBedStatusElement) {
+  if (dom.heatedBedStatusElement) {
     const hasMetadata = metadataAvailable !== null ? Boolean(metadataAvailable) : Boolean(statusLine);
     const statusText = hasMetadata
       ? statusLine || heatedBedStatusFallbackMessage
       : heatedBedMetadataMissingMessage;
-    heatedBedStatusElement.textContent = statusText;
+    dom.heatedBedStatusElement.textContent = statusText;
     const normalized = statusText.toLowerCase();
     const tone = hasMetadata
       ? normalized.includes('ready')
@@ -1651,17 +1647,17 @@ function updateHeatedBedPanel(options = {}) {
           ? 'warning'
           : 'info'
       : 'warning';
-    setTone(heatedBedStatusElement, tone);
+    setTone(dom.heatedBedStatusElement, tone);
     applyHeatedBedConduitTone(tone);
   }
 
-  if (heatedBedRouteElement) {
+  if (dom.heatedBedRouteElement) {
     const hasMetadata = metadataAvailable !== null ? Boolean(metadataAvailable) : Boolean(routeLine);
     const routeText = hasMetadata
       ? routeLine || heatedBedRouteFallbackMessage
       : 'Add heated_bed_conduit.status and route to planner defaults to drive the thermistor glow.';
-    heatedBedRouteElement.textContent = routeText;
-    setTone(heatedBedRouteElement, hasMetadata ? 'neutral' : 'warning');
+    dom.heatedBedRouteElement.textContent = routeText;
+    setTone(dom.heatedBedRouteElement, hasMetadata ? 'neutral' : 'warning');
   }
 }
 
@@ -1892,56 +1888,56 @@ function formatBillboardFeedCountdown(next, following, remainingFeedCount) {
 }
 
 function resetYarnFlowPanel() {
-  if (!yarnFlowStatusElement || !yarnFlowSpoolElement) {
+  if (!dom.yarnFlowStatusElement || !dom.yarnFlowSpoolElement) {
     return;
   }
 
   patternExtrusionBaseline = 0;
   patternExtrusionTarget = 0;
   yarnFeedStepIndices = [];
-  yarnFlowStatusElement.textContent = yarnFlowStatusFallbackMessage;
-  setTone(yarnFlowStatusElement, 'neutral');
-  yarnFlowSpoolElement.textContent = yarnFlowSpoolFallbackMessage;
-  setTone(yarnFlowSpoolElement, 'neutral');
-  if (yarnFlowTotalElement) {
-    yarnFlowTotalElement.textContent = yarnFlowTotalFallbackMessage;
-    setTone(yarnFlowTotalElement, 'neutral');
+  dom.yarnFlowStatusElement.textContent = yarnFlowStatusFallbackMessage;
+  setTone(dom.yarnFlowStatusElement, 'neutral');
+  dom.yarnFlowSpoolElement.textContent = yarnFlowSpoolFallbackMessage;
+  setTone(dom.yarnFlowSpoolElement, 'neutral');
+  if (dom.yarnFlowTotalElement) {
+    dom.yarnFlowTotalElement.textContent = yarnFlowTotalFallbackMessage;
+    setTone(dom.yarnFlowTotalElement, 'neutral');
   }
-  if (yarnFlowProgressElement) {
-    yarnFlowProgressElement.textContent = yarnFlowProgressFallbackMessage;
-    setTone(yarnFlowProgressElement, 'neutral');
+  if (dom.yarnFlowProgressElement) {
+    dom.yarnFlowProgressElement.textContent = yarnFlowProgressFallbackMessage;
+    setTone(dom.yarnFlowProgressElement, 'neutral');
   }
-  if (yarnFlowQueueElement) {
-    yarnFlowQueueElement.textContent = yarnFlowQueueFallbackMessage;
-    setTone(yarnFlowQueueElement, 'neutral');
+  if (dom.yarnFlowQueueElement) {
+    dom.yarnFlowQueueElement.textContent = yarnFlowQueueFallbackMessage;
+    setTone(dom.yarnFlowQueueElement, 'neutral');
   }
-  if (yarnFlowRateElement) {
-    yarnFlowRateElement.textContent = yarnFlowRateFallbackMessage;
-    setTone(yarnFlowRateElement, 'neutral');
+  if (dom.yarnFlowRateElement) {
+    dom.yarnFlowRateElement.textContent = yarnFlowRateFallbackMessage;
+    setTone(dom.yarnFlowRateElement, 'neutral');
   }
-  if (yarnFlowUpcomingElement) {
-    yarnFlowUpcomingElement.textContent = yarnFlowUpcomingFallbackMessage;
-    setTone(yarnFlowUpcomingElement, 'neutral');
+  if (dom.yarnFlowUpcomingElement) {
+    dom.yarnFlowUpcomingElement.textContent = yarnFlowUpcomingFallbackMessage;
+    setTone(dom.yarnFlowUpcomingElement, 'neutral');
   }
-  if (yarnFlowTimingElement) {
-    yarnFlowTimingElement.textContent = yarnFlowTimingFallbackMessage;
-    setTone(yarnFlowTimingElement, 'neutral');
+  if (dom.yarnFlowTimingElement) {
+    dom.yarnFlowTimingElement.textContent = yarnFlowTimingFallbackMessage;
+    setTone(dom.yarnFlowTimingElement, 'neutral');
   }
-  if (yarnFlowCycleElement) {
-    yarnFlowCycleElement.textContent = yarnFlowCycleFallbackMessage;
-    setTone(yarnFlowCycleElement, 'neutral');
+  if (dom.yarnFlowCycleElement) {
+    dom.yarnFlowCycleElement.textContent = yarnFlowCycleFallbackMessage;
+    setTone(dom.yarnFlowCycleElement, 'neutral');
   }
-  if (yarnFlowCalibrationElement) {
-    yarnFlowCalibrationElement.textContent = yarnFlowCalibrationFallbackMessage;
-    setTone(yarnFlowCalibrationElement, 'neutral');
+  if (dom.yarnFlowCalibrationElement) {
+    dom.yarnFlowCalibrationElement.textContent = yarnFlowCalibrationFallbackMessage;
+    setTone(dom.yarnFlowCalibrationElement, 'neutral');
   }
-  if (yarnFlowTensionElement) {
-    yarnFlowTensionElement.textContent = yarnFlowTensionFallbackMessage;
-    setTone(yarnFlowTensionElement, 'neutral');
+  if (dom.yarnFlowTensionElement) {
+    dom.yarnFlowTensionElement.textContent = yarnFlowTensionFallbackMessage;
+    setTone(dom.yarnFlowTensionElement, 'neutral');
   }
-  if (yarnFlowPositionElement) {
-    yarnFlowPositionElement.textContent = yarnFlowPositionFallbackMessage;
-    setTone(yarnFlowPositionElement, 'neutral');
+  if (dom.yarnFlowPositionElement) {
+    dom.yarnFlowPositionElement.textContent = yarnFlowPositionFallbackMessage;
+    setTone(dom.yarnFlowPositionElement, 'neutral');
   }
   spoolProgressRatio = 0;
   spoolCycleProgressRatio = 0;
@@ -2006,7 +2002,7 @@ function updateYarnFlowPanel(
   progressRatio,
   interpolatedPosition,
 ) {
-  if (!yarnFlowStatusElement || !yarnFlowSpoolElement) {
+  if (!dom.yarnFlowStatusElement || !dom.yarnFlowSpoolElement) {
     return;
   }
 
@@ -2029,17 +2025,17 @@ function updateYarnFlowPanel(
   const sensorEstimate = estimateTensionFromSensor(tensionReading, tensionCalibration);
 
   if (yarnExtrusionActive) {
-    yarnFlowStatusElement.textContent = `Yarn feed active${stepLabel}: ${comment}`;
-    setTone(yarnFlowStatusElement, 'ready');
-    yarnFlowSpoolElement.textContent =
+    dom.yarnFlowStatusElement.textContent = `Yarn feed active${stepLabel}: ${comment}`;
+    setTone(dom.yarnFlowStatusElement, 'ready');
+    dom.yarnFlowSpoolElement.textContent =
       'Spool status: Spinning — matching feed pulses.';
-    setTone(yarnFlowSpoolElement, 'ready');
+    setTone(dom.yarnFlowSpoolElement, 'ready');
   } else {
-    yarnFlowStatusElement.textContent = `Yarn feed idle${stepLabel}: ${comment}`;
-    setTone(yarnFlowStatusElement, 'info');
-    yarnFlowSpoolElement.textContent =
+    dom.yarnFlowStatusElement.textContent = `Yarn feed idle${stepLabel}: ${comment}`;
+    setTone(dom.yarnFlowStatusElement, 'info');
+    dom.yarnFlowSpoolElement.textContent =
       'Spool status: Parked until the next feed event.';
-    setTone(yarnFlowSpoolElement, 'neutral');
+    setTone(dom.yarnFlowSpoolElement, 'neutral');
   }
 
   const baseline = Number.isFinite(patternExtrusionBaseline)
@@ -2061,14 +2057,14 @@ function updateYarnFlowPanel(
   let remainingFeedCount = null;
   let feedRateLabel = yarnFlowRateFallbackMessage;
   let feedRateTone = 'neutral';
-  if (yarnFlowTotalElement) {
+  if (dom.yarnFlowTotalElement) {
     const fedLabel = fedAmount.toFixed(2);
     let summary = `Total yarn fed: ${fedLabel} mm`;
     if (plannedAmount > 0.0001) {
       summary += ` of ${plannedAmount.toFixed(2)} mm`;
     }
-    yarnFlowTotalElement.textContent = `${summary}.`;
-    setTone(yarnFlowTotalElement, yarnExtrusionActive ? 'ready' : 'info');
+    dom.yarnFlowTotalElement.textContent = `${summary}.`;
+    setTone(dom.yarnFlowTotalElement, yarnExtrusionActive ? 'ready' : 'info');
   }
 
   const previewProgressRatio = Number.isFinite(progressRatio)
@@ -2099,9 +2095,9 @@ function updateYarnFlowPanel(
     spoolProgressToneState = progressTone;
   }
 
-  if (yarnFlowProgressElement) {
-    yarnFlowProgressElement.textContent = progressText;
-    setTone(yarnFlowProgressElement, progressTone);
+  if (dom.yarnFlowProgressElement) {
+    dom.yarnFlowProgressElement.textContent = progressText;
+    setTone(dom.yarnFlowProgressElement, progressTone);
   }
 
   spoolProgressRatio = spoolProgress;
@@ -2114,13 +2110,13 @@ function updateYarnFlowPanel(
 
   let cycleTimingDetail = null;
 
-  if (yarnFlowCycleElement) {
+  if (dom.yarnFlowCycleElement) {
     if (previewDuration !== null && previewProgressRatio !== null) {
       const elapsedSeconds = previewProgressRatio * previewDuration;
       const remainingSeconds = Math.max(previewDuration - elapsedSeconds, 0);
       const cycleTimingText =
         `Cycle timing: ${elapsedSeconds.toFixed(1)} s elapsed · ${remainingSeconds.toFixed(1)} s remaining.`;
-      yarnFlowCycleElement.textContent = cycleTimingText;
+      dom.yarnFlowCycleElement.textContent = cycleTimingText;
       cycleTimingDetail =
         `Cycle pacing: ${elapsedSeconds.toFixed(1)} s elapsed · ${remainingSeconds.toFixed(1)} s remaining.`;
       const cycleTone =
@@ -2129,15 +2125,15 @@ function updateYarnFlowPanel(
           : yarnExtrusionActive
             ? 'ready'
             : 'info';
-      setTone(yarnFlowCycleElement, cycleTone);
+      setTone(dom.yarnFlowCycleElement, cycleTone);
     } else {
-      yarnFlowCycleElement.textContent = yarnFlowCycleFallbackMessage;
-      setTone(yarnFlowCycleElement, 'neutral');
+      dom.yarnFlowCycleElement.textContent = yarnFlowCycleFallbackMessage;
+      setTone(dom.yarnFlowCycleElement, 'neutral');
       cycleTimingDetail = yarnFlowCycleFallbackMessage;
     }
   }
 
-  if (yarnFlowQueueElement) {
+  if (dom.yarnFlowQueueElement) {
     const totalFeedSteps = Array.isArray(yarnFeedStepIndices)
       ? yarnFeedStepIndices.length
       : 0;
@@ -2151,17 +2147,17 @@ function updateYarnFlowPanel(
       }
       remainingFeedCount = remainingFeeds;
       const summary = `Remaining feed pulses: ${remainingFeeds} of ${totalFeedSteps}.`;
-      yarnFlowQueueElement.textContent = summary;
-      setTone(yarnFlowQueueElement, remainingFeeds === 0 ? 'ready' : 'info');
+      dom.yarnFlowQueueElement.textContent = summary;
+      setTone(dom.yarnFlowQueueElement, remainingFeeds === 0 ? 'ready' : 'info');
     } else {
-      yarnFlowQueueElement.textContent =
+      dom.yarnFlowQueueElement.textContent =
         'Remaining feed pulses: None in this preview.';
-      setTone(yarnFlowQueueElement, 'neutral');
+      setTone(dom.yarnFlowQueueElement, 'neutral');
       remainingFeedCount = 0;
     }
   }
 
-  if (yarnFlowUpcomingElement) {
+  if (dom.yarnFlowUpcomingElement) {
     const totalFeedSteps = Array.isArray(yarnFeedStepIndices)
       ? yarnFeedStepIndices.length
       : 0;
@@ -2182,21 +2178,21 @@ function updateYarnFlowPanel(
         if (upcomingIndices.length > previewLabels.length) {
           summary += ', …';
         }
-        yarnFlowUpcomingElement.textContent = `${summary}.`;
-        setTone(yarnFlowUpcomingElement, 'info');
+        dom.yarnFlowUpcomingElement.textContent = `${summary}.`;
+        setTone(dom.yarnFlowUpcomingElement, 'info');
       } else {
-        yarnFlowUpcomingElement.textContent =
+        dom.yarnFlowUpcomingElement.textContent =
           'Next feed pulses: None remaining in this preview.';
-        setTone(yarnFlowUpcomingElement, 'ready');
+        setTone(dom.yarnFlowUpcomingElement, 'ready');
       }
     } else {
-      yarnFlowUpcomingElement.textContent =
+      dom.yarnFlowUpcomingElement.textContent =
         'Next feed pulses: None in this preview.';
-      setTone(yarnFlowUpcomingElement, 'neutral');
+      setTone(dom.yarnFlowUpcomingElement, 'neutral');
     }
   }
 
-  if (yarnFlowTimingElement) {
+  if (dom.yarnFlowTimingElement) {
     const preview =
       patternPreviewGroup &&
       patternPreviewGroup.userData &&
@@ -2211,16 +2207,16 @@ function updateYarnFlowPanel(
     );
 
     if (!countdowns) {
-      yarnFlowTimingElement.textContent = yarnFlowTimingFallbackMessage;
-      setTone(yarnFlowTimingElement, 'neutral');
+      dom.yarnFlowTimingElement.textContent = yarnFlowTimingFallbackMessage;
+      setTone(dom.yarnFlowTimingElement, 'neutral');
     } else {
       const { countdowns: entries, next, following } = countdowns;
       nextFeedCountdown = next;
       followingFeedCountdown = following;
       if (!entries || entries.length === 0) {
-        yarnFlowTimingElement.textContent =
+        dom.yarnFlowTimingElement.textContent =
           'Feed timing: No additional feed pulses in this preview.';
-        setTone(yarnFlowTimingElement, 'ready');
+        setTone(dom.yarnFlowTimingElement, 'ready');
       } else {
         const segments = [`Next in ${next.delta.toFixed(1)} s (#${next.step + 1})`];
         if (following) {
@@ -2228,9 +2224,9 @@ function updateYarnFlowPanel(
             `Following: #${following.step + 1} in ${following.delta.toFixed(1)} s`,
           );
         }
-        yarnFlowTimingElement.textContent = `Feed timing: ${segments.join('; ')}.`;
+        dom.yarnFlowTimingElement.textContent = `Feed timing: ${segments.join('; ')}.`;
         setTone(
-          yarnFlowTimingElement,
+          dom.yarnFlowTimingElement,
           yarnExtrusionActive ? 'ready' : 'info',
         );
       }
@@ -2254,7 +2250,7 @@ function updateYarnFlowPanel(
 
   let feedRateMmPerSec = null;
 
-  if (yarnFlowCalibrationElement) {
+  if (dom.yarnFlowCalibrationElement) {
     let calibrationLabel = yarnFlowCalibrationFallbackMessage;
     let calibrationTone = 'neutral';
 
@@ -2284,11 +2280,11 @@ function updateYarnFlowPanel(
       }
     }
 
-    yarnFlowCalibrationElement.textContent = calibrationLabel;
-    setTone(yarnFlowCalibrationElement, calibrationTone);
+    dom.yarnFlowCalibrationElement.textContent = calibrationLabel;
+    setTone(dom.yarnFlowCalibrationElement, calibrationTone);
   }
 
-  if (yarnFlowTensionElement || yarnFlowRateElement) {
+  if (dom.yarnFlowTensionElement || dom.yarnFlowRateElement) {
     const previousEvent =
       Number.isFinite(stepIndex) &&
       stepIndex > 0 &&
@@ -2322,7 +2318,7 @@ function updateYarnFlowPanel(
     }
   }
 
-  if (yarnFlowTensionElement) {
+  if (dom.yarnFlowTensionElement) {
     let tensionLabel = yarnFlowTensionFallbackMessage;
     let tensionTone = 'neutral';
 
@@ -2373,16 +2369,16 @@ function updateYarnFlowPanel(
       tensionTone = yarnExtrusionActive ? 'ready' : 'info';
     }
 
-    yarnFlowTensionElement.textContent = tensionLabel;
-    setTone(yarnFlowTensionElement, tensionTone);
+    dom.yarnFlowTensionElement.textContent = tensionLabel;
+    setTone(dom.yarnFlowTensionElement, tensionTone);
   }
 
-  if (yarnFlowRateElement) {
-    yarnFlowRateElement.textContent = feedRateLabel;
-    setTone(yarnFlowRateElement, feedRateTone);
+  if (dom.yarnFlowRateElement) {
+    dom.yarnFlowRateElement.textContent = feedRateLabel;
+    setTone(dom.yarnFlowRateElement, feedRateTone);
   }
 
-  if (yarnFlowPositionElement) {
+  if (dom.yarnFlowPositionElement) {
     const positionSegments = [
       `X ${formatCoordinate(interpolatedPosition?.x ?? event.x)} mm`,
       `Y ${formatCoordinate(interpolatedPosition?.y ?? event.y)} mm`,
@@ -2391,8 +2387,8 @@ function updateYarnFlowPanel(
         interpolatedPosition?.extrusion ?? event.extrusion,
       )} mm`,
     ];
-    yarnFlowPositionElement.textContent = `Coordinates: ${positionSegments.join(' · ')}`;
-    setTone(yarnFlowPositionElement, yarnExtrusionActive ? 'ready' : 'info');
+    dom.yarnFlowPositionElement.textContent = `Coordinates: ${positionSegments.join(' · ')}`;
+    setTone(dom.yarnFlowPositionElement, yarnExtrusionActive ? 'ready' : 'info');
   }
 
   if (spoolProgressLabelController) {
@@ -2454,7 +2450,7 @@ function normalizeHomeState(value) {
 }
 
 function updateHomingGuardPanel(defaults) {
-  if (!homingGuardStatusElement || !homingGuardHomeStateElement) {
+  if (!dom.homingGuardStatusElement || !dom.homingGuardHomeStateElement) {
     return;
   }
 
@@ -2465,14 +2461,14 @@ function updateHomingGuardPanel(defaults) {
   const hasVerifiedHome = homeState && homeState.toLowerCase() === 'homed';
 
   if (requireHome === null && !homeState) {
-    homingGuardStatusElement.textContent = homingGuardFallbackMessage;
-    setTone(homingGuardStatusElement, 'neutral');
-    homingGuardHomeStateElement.textContent = '';
-    homingGuardHomeStateElement.style.display = 'none';
+    dom.homingGuardStatusElement.textContent = homingGuardFallbackMessage;
+    setTone(dom.homingGuardStatusElement, 'neutral');
+    dom.homingGuardHomeStateElement.textContent = '';
+    dom.homingGuardHomeStateElement.style.display = 'none';
     return;
   }
 
-  homingGuardHomeStateElement.style.display = '';
+  dom.homingGuardHomeStateElement.style.display = '';
 
   if (hasVerifiedHome) {
     const verifiedPrefix =
@@ -2481,19 +2477,19 @@ function updateHomingGuardPanel(defaults) {
         : requireHome === true
           ? 'Homing required'
           : 'Homing status unknown';
-    homingGuardStatusElement.textContent = `${verifiedPrefix} — planner captured a verified homing cycle.`;
-    setTone(homingGuardStatusElement, 'ready');
+    dom.homingGuardStatusElement.textContent = `${verifiedPrefix} — planner captured a verified homing cycle.`;
+    setTone(dom.homingGuardStatusElement, 'ready');
   } else if (requireHome === true) {
-    homingGuardStatusElement.textContent =
+    dom.homingGuardStatusElement.textContent =
       'Requires a homed machine before executing this planner preview.';
-    setTone(homingGuardStatusElement, 'warning');
+    setTone(dom.homingGuardStatusElement, 'warning');
   } else if (requireHome === false) {
-    homingGuardStatusElement.textContent =
+    dom.homingGuardStatusElement.textContent =
       'Homing optional for this planner preview.';
-    setTone(homingGuardStatusElement, 'info');
+    setTone(dom.homingGuardStatusElement, 'info');
   } else {
-    homingGuardStatusElement.textContent = homingGuardFallbackMessage;
-    setTone(homingGuardStatusElement, 'neutral');
+    dom.homingGuardStatusElement.textContent = homingGuardFallbackMessage;
+    setTone(dom.homingGuardStatusElement, 'neutral');
   }
 
   if (homeState) {
@@ -2504,11 +2500,11 @@ function updateHomingGuardPanel(defaults) {
     } else if (requireHome) {
       stateTone = 'warning';
     }
-    homingGuardHomeStateElement.textContent = `Recorded home state: ${homeState}`;
-    setTone(homingGuardHomeStateElement, stateTone);
+    dom.homingGuardHomeStateElement.textContent = `Recorded home state: ${homeState}`;
+    setTone(dom.homingGuardHomeStateElement, stateTone);
   } else {
-    homingGuardHomeStateElement.textContent = 'Recorded home state unavailable.';
-    setTone(homingGuardHomeStateElement, 'warning');
+    dom.homingGuardHomeStateElement.textContent = 'Recorded home state unavailable.';
+    setTone(dom.homingGuardHomeStateElement, 'warning');
   }
 }
 
@@ -2628,22 +2624,22 @@ function applyPatternPlannerEvents(events, options = {}) {
   } else if (options.resetOverlay !== false) {
     lastPatternStepIndex = -1;
     lastPatternProgress = -1;
-    if (patternStepElement) {
-      patternStepElement.textContent = 'Planner preview idle.';
+    if (dom.patternStepElement) {
+      dom.patternStepElement.textContent = 'Planner preview idle.';
     }
-    if (patternStepIndexElement) {
-      patternStepIndexElement.textContent = 'No planner steps loaded';
+    if (dom.patternStepIndexElement) {
+      dom.patternStepIndexElement.textContent = 'No planner steps loaded';
     }
-    if (patternProgressBarElement) {
-      patternProgressBarElement.style.width = '0%';
+    if (dom.patternProgressBarElement) {
+      dom.patternProgressBarElement.style.width = '0%';
     }
-    if (patternPositionElement) {
-      patternPositionElement.textContent = 'Position: Awaiting planner coordinates…';
-      setTone(patternPositionElement, 'neutral');
+    if (dom.patternPositionElement) {
+      dom.patternPositionElement.textContent = 'Position: Awaiting planner coordinates…';
+      setTone(dom.patternPositionElement, 'neutral');
     }
-    if (homingGuardPositionElement) {
-      homingGuardPositionElement.textContent = homingGuardPositionFallbackMessage;
-      setTone(homingGuardPositionElement, 'neutral');
+    if (dom.homingGuardPositionElement) {
+      dom.homingGuardPositionElement.textContent = homingGuardPositionFallbackMessage;
+      setTone(dom.homingGuardPositionElement, 'neutral');
     }
     resetYarnFlowPanel();
     boundsComparison = null;
@@ -2653,12 +2649,12 @@ function applyPatternPlannerEvents(events, options = {}) {
 }
 
 function updateMachineProfilePanel(machineProfile) {
-  if (!machineProfileStatusElement || !machineProfileAxesElement) {
+  if (!dom.machineProfileStatusElement || !dom.machineProfileAxesElement) {
     return;
   }
 
-  while (machineProfileAxesElement.firstChild) {
-    machineProfileAxesElement.removeChild(machineProfileAxesElement.firstChild);
+  while (dom.machineProfileAxesElement.firstChild) {
+    dom.machineProfileAxesElement.removeChild(dom.machineProfileAxesElement.firstChild);
   }
 
   currentMachineProfile = machineProfile && typeof machineProfile === 'object'
@@ -2676,13 +2672,13 @@ function updateMachineProfilePanel(machineProfile) {
     axes && typeof axes === 'object' ? Object.entries(axes).filter(Boolean) : [];
 
   if (!entries || entries.length === 0) {
-    machineProfileStatusElement.textContent = machineProfileFallbackMessage;
-    setTone(machineProfileStatusElement, 'warning');
+    dom.machineProfileStatusElement.textContent = machineProfileFallbackMessage;
+    setTone(dom.machineProfileStatusElement, 'warning');
     return;
   }
 
-  machineProfileStatusElement.textContent = 'Planner-aligned axis settings:';
-  setTone(machineProfileStatusElement, 'info');
+  dom.machineProfileStatusElement.textContent = 'Planner-aligned axis settings:';
+  setTone(dom.machineProfileStatusElement, 'info');
 
   entries
     .sort((a, b) => a[0].localeCompare(b[0]))
@@ -2715,21 +2711,21 @@ function updateMachineProfilePanel(machineProfile) {
       }
 
       listItem.textContent = `${name} axis — ${segments.join(' · ')}`;
-      machineProfileAxesElement.appendChild(listItem);
+      dom.machineProfileAxesElement.appendChild(listItem);
     });
 }
 
 async function loadPlannerPreviewFromSource() {
-  if (patternStepElement) {
-    patternStepElement.textContent = 'Loading base chain row planner preview…';
+  if (dom.patternStepElement) {
+    dom.patternStepElement.textContent = 'Loading base chain row planner preview…';
   }
-  if (patternStepIndexElement) {
-    patternStepIndexElement.textContent = 'Fetching pattern_cli export';
+  if (dom.patternStepIndexElement) {
+    dom.patternStepIndexElement.textContent = 'Fetching pattern_cli export';
   }
-  if (patternProgressBarElement) {
-    patternProgressBarElement.style.width = '0%';
+  if (dom.patternProgressBarElement) {
+    dom.patternProgressBarElement.style.width = '0%';
   }
-  if (statusElement) {
+  if (dom.statusElement) {
     updateStatus('Loading Pattern Studio preview…');
   }
 
@@ -2769,7 +2765,7 @@ async function loadPlannerPreviewFromSource() {
       machineProfile,
     });
     updateMachineProfilePanel(machineProfile);
-    if (statusElement) {
+    if (dom.statusElement) {
       updateStatus('Pattern Studio preview synced with base chain row.');
     }
   } catch (error) {
@@ -2787,7 +2783,7 @@ async function loadPlannerPreviewFromSource() {
     });
     machineProfileBounds = null;
     updateMachineProfilePanel(null);
-    if (statusElement) {
+    if (dom.statusElement) {
       updateStatus('Using fallback planner preview.');
     }
   }
@@ -3280,7 +3276,7 @@ function interpolatePlannerEventCoordinates(events, index, progress) {
 }
 
 function updatePatternOverlay(stepIndex, progressRatio, options = {}) {
-  if (!patternStepElement) {
+  if (!dom.patternStepElement) {
     return;
   }
 
@@ -3291,17 +3287,17 @@ function updatePatternOverlay(stepIndex, progressRatio, options = {}) {
     lastPatternProgress = -1;
     spoolProgressRatio = 0;
     spoolCycleProgressRatio = 0;
-    if (patternProgressBarElement) {
-      patternProgressBarElement.style.width = '0%';
+    if (dom.patternProgressBarElement) {
+      dom.patternProgressBarElement.style.width = '0%';
     }
-    if (patternPositionElement) {
-      patternPositionElement.textContent =
+    if (dom.patternPositionElement) {
+      dom.patternPositionElement.textContent =
         'Position: Awaiting planner coordinates…';
-      setTone(patternPositionElement, 'neutral');
+      setTone(dom.patternPositionElement, 'neutral');
     }
-    if (homingGuardPositionElement) {
-      homingGuardPositionElement.textContent = homingGuardPositionFallbackMessage;
-      setTone(homingGuardPositionElement, 'neutral');
+    if (dom.homingGuardPositionElement) {
+      dom.homingGuardPositionElement.textContent = homingGuardPositionFallbackMessage;
+      setTone(dom.homingGuardPositionElement, 'neutral');
     }
     resetYarnFlowPanel();
     return;
@@ -3326,33 +3322,33 @@ function updatePatternOverlay(stepIndex, progressRatio, options = {}) {
       typeof event.comment === 'string' && event.comment.trim().length > 0
         ? event.comment
         : 'Planner preview event';
-    patternStepElement.textContent = comment;
-    if (patternStepIndexElement) {
-      patternStepIndexElement.textContent = `Step ${clampedIndex + 1} of ${totalSteps}`;
+    dom.patternStepElement.textContent = comment;
+    if (dom.patternStepIndexElement) {
+      dom.patternStepIndexElement.textContent = `Step ${clampedIndex + 1} of ${totalSteps}`;
     }
     yarnExtrusionActive =
       typeof comment === 'string' && comment.toLowerCase().includes('feed yarn');
   }
 
-  if (shouldUpdatePosition && (patternPositionElement || homingGuardPositionElement)) {
+  if (shouldUpdatePosition && (dom.patternPositionElement || dom.homingGuardPositionElement)) {
     const positionSegments = [
       `X ${formatCoordinate(interpolatedPosition.x)} mm`,
       `Y ${formatCoordinate(interpolatedPosition.y)} mm`,
       `Z ${formatCoordinate(interpolatedPosition.z)} mm`,
       `E ${formatCoordinate(interpolatedPosition.extrusion)} mm`,
     ];
-    if (patternPositionElement) {
-      patternPositionElement.textContent = `Position: ${positionSegments.join(' · ')}`;
-      setTone(patternPositionElement, yarnExtrusionActive ? 'ready' : 'info');
+    if (dom.patternPositionElement) {
+      dom.patternPositionElement.textContent = `Position: ${positionSegments.join(' · ')}`;
+      setTone(dom.patternPositionElement, yarnExtrusionActive ? 'ready' : 'info');
     }
-    if (homingGuardPositionElement) {
-      homingGuardPositionElement.textContent = `Coordinates: ${positionSegments.join(' · ')}`;
-      setTone(homingGuardPositionElement, yarnExtrusionActive ? 'ready' : 'info');
+    if (dom.homingGuardPositionElement) {
+      dom.homingGuardPositionElement.textContent = `Coordinates: ${positionSegments.join(' · ')}`;
+      setTone(dom.homingGuardPositionElement, yarnExtrusionActive ? 'ready' : 'info');
     }
   }
 
-  if (progressBarNeedsUpdate && patternProgressBarElement) {
-    patternProgressBarElement.style.width = `${(clampedProgress * 100).toFixed(1)}%`;
+  if (progressBarNeedsUpdate && dom.patternProgressBarElement) {
+    dom.patternProgressBarElement.style.width = `${(clampedProgress * 100).toFixed(1)}%`;
   }
 
   if (clampedIndex !== lastPatternStepIndex || progressChanged) {
@@ -7487,8 +7483,8 @@ populateProductLines();
 loadPlannerPreviewFromSource();
 
 function updateRoadmapPanel(title, description) {
-  roadmapTitleElement.textContent = title;
-  roadmapDescriptionElement.textContent = description;
+  dom.roadmapTitleElement.textContent = title;
+  dom.roadmapDescriptionElement.textContent = description;
 }
 
 function selectCluster(cluster) {
@@ -7592,7 +7588,7 @@ function cycleCluster(direction) {
   cameraWasMovedByControls = false;
   selectCluster(nextCluster);
 
-  if (statusElement) {
+  if (dom.statusElement) {
     const label =
       nextCluster.userData && typeof nextCluster.userData.name === 'string'
         ? nextCluster.userData.name
@@ -8774,7 +8770,7 @@ function animate() {
 renderer.setAnimationLoop(animate);
 
 function updateStatus(message) {
-  statusElement.textContent = message;
+  dom.statusElement.textContent = message;
 }
 
 function onPointerMove(event) {
@@ -8814,25 +8810,25 @@ function onPointerDown(event) {
 }
 
 window.addEventListener('pointerdown', onPointerDown);
-if (patternPauseToggleElement) {
-  patternPauseToggleElement.addEventListener('click', () => {
+if (dom.patternPauseToggleElement) {
+  dom.patternPauseToggleElement.addEventListener('click', () => {
     setPatternPreviewPaused(!patternPreviewPaused);
   });
 }
 window.addEventListener('keydown', onKeyDown);
 
 function setPlannerUploadHover(active) {
-  if (plannerUploadLabelElement) {
-    plannerUploadLabelElement.classList.toggle('upload-active', active);
+  if (dom.plannerUploadLabelElement) {
+    dom.plannerUploadLabelElement.classList.toggle('upload-active', active);
   }
-  if (plannerUploadHintElement) {
-    plannerUploadHintElement.style.opacity = active ? '1' : '';
+  if (dom.plannerUploadHintElement) {
+    dom.plannerUploadHintElement.style.opacity = active ? '1' : '';
   }
 }
 
 function resetPlannerUploadField() {
-  if (plannerUploadElement) {
-    plannerUploadElement.value = '';
+  if (dom.plannerUploadElement) {
+    dom.plannerUploadElement.value = '';
   }
   setPlannerUploadHover(false);
 }
@@ -8962,8 +8958,8 @@ function handlePlannerDrop(event) {
   }
 }
 
-if (plannerUploadElement) {
-  plannerUploadElement.addEventListener('change', handlePlannerUpload);
+if (dom.plannerUploadElement) {
+  dom.plannerUploadElement.addEventListener('change', handlePlannerUpload);
 }
 window.addEventListener('dragover', handlePlannerDragOver);
 window.addEventListener('dragleave', handlePlannerDragLeave);
