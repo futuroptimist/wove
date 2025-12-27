@@ -2,23 +2,110 @@
 
 from __future__ import annotations
 
+import json
+import re
+import subprocess
 from pathlib import Path
 
 
-def test_viewer_computes_feed_indices_from_extrusion() -> None:
-    """The viewer should derive feed pulses from extrusion deltas."""
-
-    html = Path("viewer/index.html").read_text(encoding="utf-8")
-
-    assert "computeYarnFeedIndices" in html
-    assert "extrusionDelta" in html
-    assert "extrusionFeeds || commentFeeds" in html
+HTML_PATH = Path("viewer/index.html")
+_UNDEFINED = object()
 
 
-def test_viewer_applies_feed_index_helper() -> None:
-    """Planner loads should reuse the extrusion-aware feed helper."""
+def extract_function_block(html: str, function_name: str) -> str:
+    """Return the full function definition by slicing to the next function."""
 
-    html = Path("viewer/index.html").read_text(encoding="utf-8")
+    start_token = f"function {function_name}"
+    try:
+        start_index = html.index(start_token)
+    except ValueError as exc:
+        raise AssertionError(f"{function_name} not found in viewer HTML") from exc
 
-    assert "yarnFeedStepIndices = computeYarnFeedIndices(" in html
-    assert "patternExtrusionBaseline" in html
+    remainder_tail = html[start_index + len(start_token) :]
+    next_match = re.search(r"\n\s*function [^(]+\(", remainder_tail, flags=re.MULTILINE)
+    end_index = (
+        start_index + len(start_token) + next_match.start()
+        if next_match is not None
+        else len(html)
+    )
+    return html[start_index:end_index].strip()
+
+
+def compute_yarn_feed_indices(
+    events: list[object], baseline: object = _UNDEFINED
+) -> list[int]:
+    """Execute the viewer helper in Node to validate the detection behavior."""
+
+    html = HTML_PATH.read_text(encoding="utf-8")
+    coerce_fn = extract_function_block(html, "coerceFiniteNumber")
+    compute_fn = extract_function_block(html, "computeYarnFeedIndices")
+    baseline_js = "undefined" if baseline is _UNDEFINED else json.dumps(baseline)
+    script = "\n".join(
+        [
+            coerce_fn,
+            compute_fn,
+            f"const events = {json.dumps(events)};",
+            f"const baseline = {baseline_js};",
+            "const result = computeYarnFeedIndices(events, baseline);",
+            "console.log(JSON.stringify(result));",
+        ],
+    )
+    completed = subprocess.run(
+        ["node", "-e", script],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return json.loads(completed.stdout.strip() or "[]")
+
+
+def test_extrusion_deltas_trigger_feed_pulses() -> None:
+    """Extrusion growth beyond tolerance should mark feed indices."""
+
+    events = [
+        {"extrusion": 0.0},
+        {"extrusion": 0.00005},
+        {"extrusion": 0.1},
+    ]
+
+    assert compute_yarn_feed_indices(events, baseline=0.0) == [2]
+
+
+def test_constant_extrusion_does_not_feed() -> None:
+    """Flat extrusion keeps the feed list empty."""
+
+    events = [{"extrusion": 1.0}, {"extrusion": 1.0}, {"extrusion": 0.99999}]
+
+    assert compute_yarn_feed_indices(events, baseline=1.0) == []
+
+
+def test_comment_only_events_still_register_feeds() -> None:
+    """Comment fallbacks catch feed pulses even without extrusion values."""
+
+    events = [
+        {"comment": "Feed yarn now"},
+        {"comment": "still feed yarn", "extrusion": None},
+        {"comment": "noop"},
+    ]
+
+    assert compute_yarn_feed_indices(events) == [0, 1]
+
+
+def test_mixed_extrusion_and_comments() -> None:
+    """Mixed scenarios should honor both extrusion jumps and textual cues."""
+
+    events = [
+        {"extrusion": 0.0, "comment": "start"},
+        {"comment": "feed yarn during jump"},
+        {"extrusion": 0.00005},
+        {"extrusion": 0.2},
+    ]
+
+    assert compute_yarn_feed_indices(events, baseline=0.0) == [1, 3]
+
+
+def test_empty_or_null_inputs_return_empty_indices() -> None:
+    """Empty planner events or unparseable entries should not throw."""
+
+    assert compute_yarn_feed_indices([], baseline=None) == []
+    assert compute_yarn_feed_indices([None, {}]) == []
