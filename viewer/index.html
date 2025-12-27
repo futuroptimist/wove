@@ -1682,6 +1682,36 @@
         return [normalizedBaseline, normalizedTarget];
       }
 
+      function computeYarnFeedIndices(events, baseline) {
+        if (!Array.isArray(events) || events.length === 0) {
+          return [];
+        }
+
+        const feedIndices = [];
+        const tolerance = 1e-4;
+        let previousExtrusion = Number.isFinite(baseline) ? baseline : null;
+
+        events.forEach((event, index) => {
+          const comment =
+            typeof event?.comment === 'string' ? event.comment.toLowerCase() : '';
+          const extrusionValue = coerceFiniteNumber(event?.extrusion);
+          const extrusionDelta =
+            extrusionValue !== null && previousExtrusion !== null
+              ? extrusionValue - previousExtrusion
+              : 0;
+          const extrusionFeeds = extrusionDelta > tolerance;
+          const commentFeeds = comment.includes('feed yarn');
+          if (extrusionFeeds || commentFeeds) {
+            feedIndices.push(index);
+          }
+          if (extrusionValue !== null) {
+            previousExtrusion = extrusionValue;
+          }
+        });
+
+        return feedIndices;
+      }
+
       function buildBoundsHoverText(bounds) {
         if (!bounds) {
           return 'Planner bounds overlay — load a planner export with bounds metadata to preview the motion envelope.';
@@ -3220,15 +3250,10 @@
         patternExtrusionTarget = extrusionTarget;
         spoolProgressRatio = 0;
         spoolCycleProgressRatio = 0;
-        if (patternPlannerEvents.length > 0) {
-          patternPlannerEvents.forEach((event, index) => {
-            const comment =
-              typeof event?.comment === 'string' ? event.comment.toLowerCase() : '';
-            if (comment.includes('feed yarn')) {
-              yarnFeedStepIndices.push(index);
-            }
-          });
-        }
+        yarnFeedStepIndices = computeYarnFeedIndices(
+          patternPlannerEvents,
+          patternExtrusionBaseline,
+        );
         updatePatternBoundsOverlay(plannerBounds);
         updateBoundsComparisonPanel(plannerBounds, machineProfileBounds, boundsComparison);
         updateTravelEnvelope(plannerBounds, machineProfileBounds, boundsComparison);
