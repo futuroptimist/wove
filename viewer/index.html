@@ -557,6 +557,41 @@
       import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js';
       import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/controls/OrbitControls.js';
       import { comparePlannerToMachineBounds } from './bounds.js';
+      import { createUiElements } from './src/ui-elements.js';
+      import {
+        boundsComparisonFallbackMessage,
+        defaultPatternPreviewDurationSeconds,
+        fallbackPatternDefaults,
+        fallbackPatternPlannerEvents,
+        heatedBedMetadataMissingMessage,
+        heatedBedRouteFallbackMessage,
+        heatedBedStatusFallbackMessage,
+        homingGuardFallbackMessage,
+        homingGuardPositionFallbackMessage,
+        machineProfileEnvelopeFallbackMessage,
+        machineProfileEnvelopeMissingAxesPrefix,
+        machineProfileFallbackMessage,
+        patternBoundsFallbackMessage,
+        patternDefaultsFallbackMessage,
+        patternPreviewSource,
+        plannerMetadataFallbackMessage,
+        spoolCountdownPausedMessage,
+        spoolPrePulseSettings,
+        spoolProgressCountdownFallbackMessage,
+        spoolProgressTonePalette,
+        yarnFlowCalibrationFallbackMessage,
+        yarnFlowCycleFallbackMessage,
+        yarnFlowPositionFallbackMessage,
+        yarnFlowProgressFallbackMessage,
+        yarnFlowQueueFallbackMessage,
+        yarnFlowRateFallbackMessage,
+        yarnFlowSpoolFallbackMessage,
+        yarnFlowStatusFallbackMessage,
+        yarnFlowTensionFallbackMessage,
+        yarnFlowTimingFallbackMessage,
+        yarnFlowTotalFallbackMessage,
+        yarnFlowUpcomingFallbackMessage,
+      } from './src/config.js';
 
       const renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setPixelRatio(window.devicePixelRatio);
@@ -567,50 +602,46 @@
       const scene = new THREE.Scene();
       scene.background = new THREE.Color(0x0b0c13);
 
-      const statusElement = document.getElementById('status');
-      const roadmapTitleElement = document.getElementById('roadmap-title');
-      const roadmapDescriptionElement = document.getElementById('roadmap-description');
-      const patternStepElement = document.getElementById('pattern-step');
-      const patternStepIndexElement = document.getElementById('pattern-step-index');
-      const patternProgressBarElement = document.getElementById('pattern-progress-bar');
-      const patternPauseToggleElement = document.getElementById('pattern-pause-toggle');
-      const patternPlaybackStatusElement = document.getElementById('pattern-playback-status');
-      const plannerUploadElement = document.getElementById('planner-upload');
-      const plannerUploadLabelElement = document.getElementById('planner-upload-label');
-      const plannerUploadHintElement = document.getElementById('planner-upload-hint');
-      const patternPositionElement = document.getElementById('pattern-position');
-      const patternBoundsElement = document.getElementById('pattern-bounds');
-      const patternDefaultsStatusElement = document.getElementById(
-        'pattern-defaults-status',
-      );
-      const patternDefaultsListElement = document.getElementById('pattern-defaults-list');
-      const plannerMetadataStatusElement = document.getElementById(
-        'planner-metadata-status',
-      );
-      const plannerMetadataListElement = document.getElementById('planner-metadata-details');
-      const machineProfileEnvelopeElement = document.getElementById('machine-profile-envelope');
-      const boundsComparisonElement = document.getElementById('bounds-comparison');
-      const machineProfileStatusElement = document.getElementById('machine-profile-status');
-      const machineProfileAxesElement = document.getElementById('machine-profile-axes');
-      const homingGuardStatusElement = document.getElementById('homing-guard-status');
-      const homingGuardHomeStateElement = document.getElementById(
-        'homing-guard-home-state',
-      );
-      const homingGuardPositionElement = document.getElementById('homing-guard-position');
-      const heatedBedStatusElement = document.getElementById('heated-bed-status');
-      const heatedBedRouteElement = document.getElementById('heated-bed-route');
-      const yarnFlowStatusElement = document.getElementById('yarn-flow-status');
-      const yarnFlowSpoolElement = document.getElementById('yarn-flow-spool');
-      const yarnFlowTotalElement = document.getElementById('yarn-flow-total');
-      const yarnFlowProgressElement = document.getElementById('yarn-flow-progress');
-      const yarnFlowQueueElement = document.getElementById('yarn-flow-queue');
-      const yarnFlowRateElement = document.getElementById('yarn-flow-rate');
-      const yarnFlowUpcomingElement = document.getElementById('yarn-flow-upcoming');
-      const yarnFlowTimingElement = document.getElementById('yarn-flow-timing');
-      const yarnFlowCycleElement = document.getElementById('yarn-flow-cycle');
-      const yarnFlowCalibrationElement = document.getElementById('yarn-flow-calibration');
-      const yarnFlowTensionElement = document.getElementById('yarn-flow-tension');
-      const yarnFlowPositionElement = document.getElementById('yarn-flow-position');
+      const {
+        boundsComparisonElement,
+        heatedBedRouteElement,
+        heatedBedStatusElement,
+        homingGuardHomeStateElement,
+        homingGuardPositionElement,
+        homingGuardStatusElement,
+        machineProfileAxesElement,
+        machineProfileEnvelopeElement,
+        machineProfileStatusElement,
+        patternBoundsElement,
+        patternDefaultsListElement,
+        patternDefaultsStatusElement,
+        patternPlaybackStatusElement,
+        patternPositionElement,
+        patternProgressBarElement,
+        patternStepElement,
+        patternStepIndexElement,
+        patternPauseToggleElement,
+        plannerMetadataListElement,
+        plannerMetadataStatusElement,
+        plannerUploadElement,
+        plannerUploadHintElement,
+        plannerUploadLabelElement,
+        roadmapDescriptionElement,
+        roadmapTitleElement,
+        statusElement,
+        yarnFlowCalibrationElement,
+        yarnFlowCycleElement,
+        yarnFlowPositionElement,
+        yarnFlowProgressElement,
+        yarnFlowQueueElement,
+        yarnFlowRateElement,
+        yarnFlowSpoolElement,
+        yarnFlowStatusElement,
+        yarnFlowTensionElement,
+        yarnFlowTimingElement,
+        yarnFlowTotalElement,
+        yarnFlowUpcomingElement,
+      } = createUiElements(document);
 
       const pointer = new THREE.Vector2();
       const raycaster = new THREE.Raycaster();
@@ -636,55 +667,12 @@
       let activeCluster = null;
       const selectionRingHeight = 0.06;
       const selectionSweepSpeed = 0.9;
-      const patternPreviewSource = 'assets/base_chain_row.planner.json';
-      const defaultPatternPreviewDurationSeconds = 14;
-      const fallbackPatternPlannerEvents = [
-        { comment: 'use millimeters', x: 0.0, y: 0.0, z: 4.0, extrusion: 0.0 },
-        { comment: 'absolute positioning', x: 0.0, y: 0.0, z: 4.0, extrusion: 0.0 },
-        { comment: 'zero axes', x: 0.0, y: 0.0, z: 4.0, extrusion: 0.0 },
-        { comment: 'chain stitch 1 of 3: plunge', x: 0.0, y: 0.0, z: -1.5, extrusion: 0.0 },
-        { comment: 'chain stitch 1 of 3: feed yarn', x: 0.0, y: 0.0, z: -1.5, extrusion: 0.5 },
-        { comment: 'chain stitch 1 of 3: raise', x: 0.0, y: 0.0, z: 4.0, extrusion: 0.5 },
-        { comment: 'chain stitch 1 of 3: advance', x: 5.0, y: 0.0, z: 4.0, extrusion: 0.5 },
-        { comment: 'chain stitch 2 of 3: plunge', x: 5.0, y: 0.0, z: -1.5, extrusion: 0.5 },
-        { comment: 'chain stitch 2 of 3: feed yarn', x: 5.0, y: 0.0, z: -1.5, extrusion: 1.0 },
-        { comment: 'chain stitch 2 of 3: raise', x: 5.0, y: 0.0, z: 4.0, extrusion: 1.0 },
-        { comment: 'chain stitch 2 of 3: advance', x: 10.0, y: 0.0, z: 4.0, extrusion: 1.0 },
-        { comment: 'chain stitch 3 of 3: plunge', x: 10.0, y: 0.0, z: -1.5, extrusion: 1.0 },
-        { comment: 'chain stitch 3 of 3: feed yarn', x: 10.0, y: 0.0, z: -1.5, extrusion: 1.5 },
-        { comment: 'chain stitch 3 of 3: raise', x: 10.0, y: 0.0, z: 4.0, extrusion: 1.5 },
-        { comment: 'chain stitch 3 of 3: advance', x: 15.0, y: 0.0, z: 4.0, extrusion: 1.5 },
-        { comment: 'pause for 0.400 s', x: 15.0, y: 0.0, z: 4.0, extrusion: 1.5 },
-        { comment: 'reposition', x: 18.0, y: 5.0, z: 4.0, extrusion: 1.5 },
-        { comment: 'turn to next row', x: 0.0, y: 12.0, z: 4.0, extrusion: 1.5 },
-        { comment: 'single stitch 1 of 1: plunge', x: 0.0, y: 12.0, z: -2.0, extrusion: 1.5 },
-        { comment: 'single stitch 1 of 1: feed yarn', x: 0.0, y: 12.0, z: -2.0, extrusion: 2.1 },
-        { comment: 'single stitch 1 of 1: raise', x: 0.0, y: 12.0, z: 4.0, extrusion: 2.1 },
-        { comment: 'single stitch 1 of 1: advance', x: 4.5, y: 12.0, z: 4.0, extrusion: 2.1 },
-      ];
-      const fallbackPatternDefaults = {
-        safe_z_mm: 4.0,
-        fabric_plane_z_mm: 0.0,
-        travel_feed_rate_mm_min: 1200,
-        plunge_feed_rate_mm_min: 600,
-        yarn_feed_rate_mm_min: 300,
-        default_row_height_mm: 6.0,
-        row_spacing_mm: 6.0,
-        require_home: false,
-        home_state: 'unknown',
-      };
-      Object.freeze(fallbackPatternPlannerEvents);
-      Object.freeze(fallbackPatternDefaults);
       const yarnFlowControllers = [];
       const yarnPulseControllers = [];
       const yarnBeadControllers = [];
       const spoolControllers = [];
       const spoolProgressSegments = [];
       const spoolCycleSegments = [];
-      const spoolPrePulseSettings = {
-        speed: 2.8,
-        phaseOffset: Math.PI / 10,
-      };
       let lastSpoolCountdownSummary = spoolProgressCountdownFallbackMessage;
       let lastSpoolCycleTimingDetail = yarnFlowCycleFallbackMessage;
       let lastSpoolCountdownToneSource = 'neutral';
@@ -723,66 +711,6 @@
       let spoolCycleProgressRatio = 0;
       let spoolProgressTone = 'neutral';
       let boundsComparison = null;
-      const machineProfileFallbackMessage =
-        'Machine profile metadata unavailable. Export with --machine-profile to surface axis settings.';
-      const machineProfileEnvelopeFallbackMessage =
-        'Machine profile envelope unavailable. Include travel_min_mm and '
-        + 'travel_max_mm for each axis.';
-      const machineProfileEnvelopeMissingAxesPrefix =
-        'Machine profile envelope unavailable — add travel_min_mm and travel_max_mm for: ';
-      const boundsComparisonFallbackMessage =
-        'Bounds comparison unavailable. Export planner bounds and machine profile limits to compare.';
-      const homingGuardFallbackMessage =
-        'Homing guard metadata unavailable. Export planner defaults.require_home and defaults.home_state.';
-      const homingGuardPositionFallbackMessage =
-        'Coordinates: Awaiting planner coordinates…';
-      const heatedBedStatusFallbackMessage =
-        'Thermistor conduit reserved for the heater upgrade — planner status drives the '
-        + 'glow along the wiring path.';
-      const heatedBedMetadataMissingMessage =
-        'Heated bed conduit metadata missing — include heated_bed_conduit defaults to drive the glow.';
-      const heatedBedRouteFallbackMessage =
-        'Conduit status: Illuminating the bay-to-bed run so heater wiring stays obvious during dry runs.';
-      const patternBoundsFallbackMessage =
-        'Planner bounds unavailable. Export --format planner payloads with bounds to preview the motion envelope.';
-      const patternDefaultsFallbackMessage =
-        'Planner defaults unavailable. Export planner payloads with defaults metadata to surface feed and height settings.';
-      const plannerMetadataFallbackMessage =
-        'Planner metadata unavailable. Export planner payloads with version and units fields to surface schema details.';
-      const yarnFlowStatusFallbackMessage =
-        'Yarn flow monitor idle — load a planner preview to track feed events.';
-      const yarnFlowSpoolFallbackMessage =
-        'Spool status: Parked until planner preview loads.';
-      const yarnFlowTotalFallbackMessage =
-        'Total yarn fed: Awaiting planner preview…';
-      const yarnFlowProgressFallbackMessage =
-        'Spool progress: Awaiting planner preview…';
-      const yarnFlowRateFallbackMessage =
-        'Feed rate: Awaiting yarn feed telemetry…';
-      const yarnFlowQueueFallbackMessage =
-        'Remaining feed pulses: Awaiting planner preview…';
-      const yarnFlowUpcomingFallbackMessage =
-        'Next feed pulses: Awaiting planner preview…';
-      const yarnFlowTimingFallbackMessage =
-        'Feed timing: Awaiting planner preview…';
-      const yarnFlowCycleFallbackMessage =
-        'Cycle pacing: Awaiting planner preview…';
-      const yarnFlowCalibrationFallbackMessage =
-        'Calibration: Awaiting tension sensor calibration metadata.';
-      const yarnFlowTensionFallbackMessage =
-        'Tension telemetry: Awaiting planner preview…';
-      const yarnFlowPositionFallbackMessage =
-        'Coordinates: Awaiting yarn flow coordinates…';
-      const spoolProgressCountdownFallbackMessage =
-        'Next feeds: Awaiting Yarn Flow timing…';
-      const spoolCountdownPausedMessage =
-        'Countdown ribbon pinned while the preview is paused — resume to advance timing.';
-      const spoolProgressTonePalette = {
-        neutral: { color: 0xffb173, emissive: 0xff8c2f },
-        info: { color: 0x9ee5ff, emissive: 0x48c2ff },
-        ready: { color: 0x9fffd7, emissive: 0x36e2ad },
-        warning: { color: 0xffc27d, emissive: 0xff8c2f },
-      };
 
       function formatCoordinate(value) {
         return Number.isFinite(value) ? value.toFixed(1) : '—';
