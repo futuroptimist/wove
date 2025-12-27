@@ -3,16 +3,14 @@
 from __future__ import annotations
 
 import re
-from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-VIEWER_HTML = PROJECT_ROOT / "viewer" / "index.html"
+from tests.viewer_utils import load_viewer_source
 
 
 def test_exhaust_blades_render_and_spin() -> None:
     """Exhaust fan exposes spinning blades linked to extrusion."""
 
-    html = VIEWER_HTML.read_text(encoding="utf-8")
+    html = load_viewer_source()
 
     assert "electronics-bay-exhaust-blades" in html
     assert "Electronics bay exhaust blades" in html

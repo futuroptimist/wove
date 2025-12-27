@@ -1,14 +1,12 @@
 """Safety interlock regression checks for the v1c roadmap."""
 
 import re
-from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-VIEWER_HTML = PROJECT_ROOT / "viewer" / "index.html"
+from tests.viewer_utils import load_viewer_source
 
 
 def test_viewer_mentions_emergency_stop_and_end_stops():
-    html = VIEWER_HTML.read_text(encoding="utf-8")
+    html = load_viewer_source()
 
     assert "Emergency stop switch — instantly cuts power" in html
 
@@ -18,12 +16,12 @@ def test_viewer_mentions_emergency_stop_and_end_stops():
 
 
 def test_overlay_guides_users_to_safety_interlocks():
-    html = VIEWER_HTML.read_text(encoding="utf-8")
+    html = load_viewer_source()
     assert "The glowing safety interlocks mark physical end stops" in html
 
 
 def test_end_stop_glow_annotations_present():
-    html = VIEWER_HTML.read_text(encoding="utf-8")
+    html = load_viewer_source()
 
     assert "end-stop-${axisLabel.toLowerCase()}-indicator" in html
     assert "end-stop-${axisLabel.toLowerCase()}-halo" in html
