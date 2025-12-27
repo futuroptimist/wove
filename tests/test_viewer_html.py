@@ -1,9 +1,8 @@
-from pathlib import Path
+from .viewer_source import load_viewer_bundle
 
 
 def _load_viewer_html() -> str:
-    viewer_path = Path(__file__).resolve().parents[1] / "viewer" / "index.html"
-    return viewer_path.read_text(encoding="utf-8")
+    return load_viewer_bundle()
 
 
 def test_viewer_exposes_roadmap_panel() -> None:

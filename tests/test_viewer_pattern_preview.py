@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from .viewer_source import load_viewer_bundle
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 PREVIEW_NAME = "base_chain_row.planner.json"
 VIEWER_PREVIEW_ROOT = PROJECT_ROOT / "viewer" / "assets"
@@ -79,7 +81,7 @@ def test_viewer_planner_preview_includes_heated_bed_conduit() -> None:
 def test_viewer_exposes_planner_defaults_panel() -> None:
     """The overlay should advertise the planner defaults list."""
 
-    html = (PROJECT_ROOT / "viewer" / "index.html").read_text(encoding="utf-8")
+    html = load_viewer_bundle()
 
     assert "pattern-defaults-status" in html
     assert "Loading planner defaults…" in html
@@ -89,7 +91,7 @@ def test_viewer_exposes_planner_defaults_panel() -> None:
 def test_viewer_ships_fallback_pattern_defaults() -> None:
     """Ensure fallback planner defaults include feed rate metadata."""
 
-    html = (PROJECT_ROOT / "viewer" / "index.html").read_text(encoding="utf-8")
+    html = load_viewer_bundle()
 
     assert "fallbackPatternDefaults" in html
     assert "travel_feed_rate_mm_min" in html
@@ -102,7 +104,7 @@ def test_viewer_ships_fallback_pattern_defaults() -> None:
 def test_planner_defaults_panel_mentions_homing_guard() -> None:
     """The planner defaults overlay should echo homing guard metadata."""
 
-    html = (PROJECT_ROOT / "viewer" / "index.html").read_text(encoding="utf-8")
+    html = load_viewer_bundle()
 
     assert "Homing guard" in html
     assert "Optional for this planner preview" in html
@@ -112,7 +114,7 @@ def test_planner_defaults_panel_mentions_homing_guard() -> None:
 def test_planner_defaults_panel_highlights_row_spacing() -> None:
     """Row spacing should appear alongside other planner defaults."""
 
-    html = (PROJECT_ROOT / "viewer" / "index.html").read_text(encoding="utf-8")
+    html = load_viewer_bundle()
 
     assert "Row spacing" in html
     assert "row_spacing_mm" in html
@@ -121,7 +123,7 @@ def test_planner_defaults_panel_highlights_row_spacing() -> None:
 def test_yarn_flow_panel_mentions_spool_progress() -> None:
     """Ensure the Yarn Flow overlay advertises spool progress guidance."""
 
-    html = (PROJECT_ROOT / "viewer" / "index.html").read_text(encoding="utf-8")
+    html = load_viewer_bundle()
 
     assert "yarn-flow-progress" in html
     assert "Spool progress: Awaiting planner preview…" in html
@@ -132,7 +134,7 @@ def test_yarn_flow_panel_mentions_spool_progress() -> None:
 def test_yarn_flow_panel_surfaces_calibration_hint() -> None:
     """Hall sensor calibration guidance should ride alongside yarn flow cues."""
 
-    html = (PROJECT_ROOT / "viewer" / "index.html").read_text(encoding="utf-8")
+    html = load_viewer_bundle()
 
     assert "yarn-flow-calibration" in html
     assert "Calibration: Awaiting tension sensor calibration metadata." in html
@@ -142,7 +144,7 @@ def test_yarn_flow_panel_surfaces_calibration_hint() -> None:
 def test_planner_metadata_panel_mentions_duration() -> None:
     """The metadata overlay should surface preview duration guidance."""
 
-    html = (PROJECT_ROOT / "viewer" / "index.html").read_text(encoding="utf-8")
+    html = load_viewer_bundle()
 
     assert "Preview duration" in html
 
@@ -150,7 +152,7 @@ def test_planner_metadata_panel_mentions_duration() -> None:
 def test_planner_bounds_cage_highlights_z_span() -> None:
     """The planner overlay should expose the 3D bounds cage for Z coverage."""
 
-    html = (PROJECT_ROOT / "viewer" / "index.html").read_text(encoding="utf-8")
+    html = load_viewer_bundle()
 
     assert "planner-bounds-cage" in html
     assert "displayZMin" in html
@@ -159,7 +161,7 @@ def test_planner_bounds_cage_highlights_z_span() -> None:
 def test_homing_guard_coordinates_follow_progress() -> None:
     """The homing guard panel should track interpolated coordinates."""
 
-    html = (PROJECT_ROOT / "viewer" / "index.html").read_text(encoding="utf-8")
+    html = load_viewer_bundle()
 
     assert "homing-guard-position" in html
     assert (
@@ -171,7 +173,7 @@ def test_homing_guard_coordinates_follow_progress() -> None:
 def test_spool_progress_ring_pauses_without_target() -> None:
     """When no target is supplied, the progress ring should pause and warn viewers."""
 
-    html = (PROJECT_ROOT / "viewer" / "index.html").read_text(encoding="utf-8")
+    html = load_viewer_bundle()
 
     assert "progress ring paused until planner target provided" in html
 
@@ -179,7 +181,7 @@ def test_spool_progress_ring_pauses_without_target() -> None:
 def test_spool_countdown_ribbon_surfaces_cycle_pacing() -> None:
     """The countdown ribbon should stack cycle pacing beneath feed timing."""
 
-    html = (PROJECT_ROOT / "viewer" / "index.html").read_text(encoding="utf-8")
+    html = load_viewer_bundle()
 
     assert "spoolProgressCountdownFallbackMessage" in html
     assert "yarnFlowCycleFallbackMessage" in html
