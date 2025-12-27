@@ -153,6 +153,17 @@ def test_viewer_surfaces_planner_metadata_panel() -> None:
     assert "Planner metadata unavailable." in viewer_html
 
 
+def test_planner_metadata_surfaces_file_details() -> None:
+    """Planner metadata panel should surface file name and size callouts."""
+
+    viewer_html = _load_viewer_html()
+
+    assert 'id="planner-file-name"' in viewer_html
+    assert "Planner file: Awaiting planner preview…" in viewer_html
+    assert 'id="planner-file-size"' in viewer_html
+    assert "Planner size: Awaiting planner metadata…" in viewer_html
+
+
 def test_viewer_patterns_surface_position_overlay() -> None:
     """Ensure the Pattern Studio panel advertises live coordinate updates."""
 

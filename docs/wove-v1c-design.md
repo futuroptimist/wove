@@ -328,7 +328,10 @@ that runs the same rail so the automation cadence reads clearly from the plaza o
   remaining feed pulses so crews can pace dry runs without guessing when the
   next extrusion event lands. A Planner Metadata panel lists the export's
   schema version, declared units, and planner step count so contributors can
-  confirm the viewer is consuming the expected payload before dry runs. A
+  confirm the viewer is consuming the expected payload before dry runs. File
+  name and size callouts now sit above that metadata list so reviewers can
+  confirm which planner asset is driving the hologram before skimming schema
+  details. A
   companion Machine Profile panel lists the
   microstepping, steps-per-millimeter, and travel bounds from planner exports so
   technicians can confirm the browser preview mirrors the configured gantry

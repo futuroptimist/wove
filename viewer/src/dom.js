@@ -24,6 +24,8 @@ export function getDom() {
   const patternDefaultsListElement = requireEl('pattern-defaults-list');
   const plannerMetadataStatusElement = requireEl('planner-metadata-status');
   const plannerMetadataListElement = requireEl('planner-metadata-details');
+  const plannerFileNameElement = requireEl('planner-file-name');
+  const plannerFileSizeElement = requireEl('planner-file-size');
   const machineProfileEnvelopeElement = requireEl('machine-profile-envelope');
   const boundsComparisonElement = requireEl('bounds-comparison');
   const machineProfileStatusElement = requireEl('machine-profile-status');
@@ -64,6 +66,8 @@ export function getDom() {
     patternDefaultsListElement,
     plannerMetadataStatusElement,
     plannerMetadataListElement,
+    plannerFileNameElement,
+    plannerFileSizeElement,
     machineProfileEnvelopeElement,
     boundsComparisonElement,
     machineProfileStatusElement,
