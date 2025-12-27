@@ -18,6 +18,8 @@ import {
   patternBoundsFallbackMessage,
   patternDefaultsFallbackMessage,
   patternPreviewSource,
+  plannerFileNameFallbackMessage,
+  plannerFileSizeFallbackMessage,
   plannerMetadataFallbackMessage,
   selectionRingHeight,
   selectionSweepSpeed,
@@ -143,6 +145,18 @@ function deriveFileNameFromSource(value) {
   }
   const afterColon = trimmed.includes(':') ? trimmed.split(':').pop() : trimmed;
   return normalizeFileName(afterColon);
+}
+
+function formatFileSize(bytes) {
+  const numeric = Number(bytes);
+  if (!Number.isFinite(numeric) || numeric <= 0) {
+    return null;
+  }
+  const kilobytes = numeric / 1024;
+  if (numeric >= 1024 * 1024) {
+    return `${(numeric / (1024 * 1024)).toFixed(2)} MB`;
+  }
+  return `${(Math.floor(kilobytes * 10) / 10).toFixed(1)} kB`;
 }
 let plannerDefaults = null;
 let patternExtrusionBaseline = 0;
@@ -1538,6 +1552,18 @@ function updatePlannerMetadataPanel(metadata) {
 
   const data = metadata && typeof metadata === 'object' ? metadata : null;
   const entries = [];
+  const fileName = typeof data?.fileName === 'string' ? data.fileName.trim() : '';
+  const formattedFileSize = formatFileSize(data?.fileSizeBytes);
+
+  if (dom.plannerFileNameElement) {
+    dom.plannerFileNameElement.textContent = plannerFileNameFallbackMessage;
+    setTone(dom.plannerFileNameElement, 'neutral');
+  }
+
+  if (dom.plannerFileSizeElement) {
+    dom.plannerFileSizeElement.textContent = plannerFileSizeFallbackMessage;
+    setTone(dom.plannerFileSizeElement, 'neutral');
+  }
 
   if (typeof data?.version === 'string' && data.version.trim().length > 0) {
     entries.push({ label: 'Schema version', value: data.version.trim() });
@@ -1553,16 +1579,12 @@ function updatePlannerMetadataPanel(metadata) {
   }
 
   if (Number.isFinite(data?.fileSizeBytes)) {
-    const kilobytes = data.fileSizeBytes / 1024;
-    const megabytes = data.fileSizeBytes / (1024 * 1024);
-    const formatted = data.fileSizeBytes >= 1024 * 1024
-      ? `${megabytes.toFixed(2)} MB`
-      : `${(Math.floor(kilobytes * 10) / 10).toFixed(1)} kB`;
+    const formatted = formattedFileSize ?? `${data.fileSizeBytes.toFixed(0)} B`;
     entries.push({ label: 'File size', value: formatted });
   }
 
-  if (typeof data?.fileName === 'string' && data.fileName.trim().length > 0) {
-    entries.push({ label: 'File name', value: data.fileName.trim() });
+  if (fileName) {
+    entries.push({ label: 'File name', value: fileName });
   }
 
   if (Number.isFinite(data?.durationSeconds)) {
@@ -1582,6 +1604,22 @@ function updatePlannerMetadataPanel(metadata) {
 
   dom.plannerMetadataStatusElement.textContent = 'Planner metadata:';
   setTone(dom.plannerMetadataStatusElement, 'info');
+
+  if (dom.plannerFileNameElement && fileName) {
+    dom.plannerFileNameElement.textContent = `Planner file: ${fileName}`;
+    setTone(dom.plannerFileNameElement, 'info');
+  }
+
+  if (dom.plannerFileSizeElement) {
+    if (formattedFileSize) {
+      dom.plannerFileSizeElement.textContent = `Planner size: ${formattedFileSize}`;
+      setTone(dom.plannerFileSizeElement, 'info');
+    } else if (fileName) {
+      dom.plannerFileSizeElement.textContent =
+        'Planner size: Not provided — Content-Length missing.';
+      setTone(dom.plannerFileSizeElement, 'warning');
+    }
+  }
 
   entries.forEach(({ label, value }) => {
     const listItem = document.createElement('li');

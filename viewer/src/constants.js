@@ -112,6 +112,10 @@ export const patternDefaultsFallbackMessage =
 export const plannerMetadataFallbackMessage =
   'Planner metadata unavailable. Export planner payloads with version and units fields to surface '
   + 'schema details.';
+export const plannerFileNameFallbackMessage =
+  'Planner file: Awaiting planner preview…';
+export const plannerFileSizeFallbackMessage =
+  'Planner size: Awaiting planner metadata…';
 export const yarnFlowStatusFallbackMessage =
   'Yarn flow monitor idle — load a planner preview to track feed events.';
 export const yarnFlowSpoolFallbackMessage =

@@ -70,7 +70,9 @@ clicking the upload control.
 The Planner Metadata panel now displays the uploaded planner file’s name and file size so you can
 confirm which payload is driving the Pattern Studio preview before rehearsing motion. The viewer
 lists the active planner file name for both the bundled base chain row preview and uploaded planner
-exports, making it easy to verify the source driving the hologram.
+exports, making it easy to verify the source driving the hologram. The panel now pins those file
+callouts above the metadata list so operators can spot the source without wading through schema
+details.
 
 Each contribution should leave the viewer a little better—add new assets,
 improve lighting, or enhance interactivity—so that future operators can preview
