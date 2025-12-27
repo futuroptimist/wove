@@ -37,6 +37,7 @@ tension
 learn/pattern-recipes/base-chain-row
 learning-resources
 plans/polish-work-plan
+viewer-refactor-plan
 testing
 repository-overview
 glossary
