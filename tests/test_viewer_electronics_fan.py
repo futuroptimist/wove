@@ -3,22 +3,20 @@
 from __future__ import annotations
 
 import re
-from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-VIEWER_HTML = PROJECT_ROOT / "viewer" / "index.html"
+from .viewer_source import load_viewer_bundle
 
 
 def test_exhaust_blades_render_and_spin() -> None:
     """Exhaust fan exposes spinning blades linked to extrusion."""
 
-    html = VIEWER_HTML.read_text(encoding="utf-8")
+    viewer_source = load_viewer_bundle()
 
-    assert "electronics-bay-exhaust-blades" in html
-    assert "Electronics bay exhaust blades" in html
+    assert "electronics-bay-exhaust-blades" in viewer_source
+    assert "Electronics bay exhaust blades" in viewer_source
     assert re.search(
         r"fanControllers\.push\(\s*\{[\s\S]*?mesh:\s*fanBlades",
-        html,
+        viewer_source,
         flags=re.DOTALL,
     )
-    assert "linkedToExtrusion: true" in html
+    assert "linkedToExtrusion: true" in viewer_source

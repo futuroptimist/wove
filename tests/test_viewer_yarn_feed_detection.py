@@ -5,11 +5,11 @@ from __future__ import annotations
 import json
 import re
 import subprocess
-from pathlib import Path
 
 import pytest
 
-HTML_PATH = Path("viewer/index.html")
+from .viewer_source import load_viewer_bundle
+
 _UNDEFINED = object()
 
 
@@ -38,7 +38,7 @@ def compute_yarn_feed_indices(
 ) -> list[int]:
     """Execute the viewer helper in Node to validate the detection behavior."""
 
-    html = HTML_PATH.read_text(encoding="utf-8")
+    html = load_viewer_bundle()
     coerce_fn = extract_function_block(html, "coerceFiniteNumber")
     compute_fn = extract_function_block(html, "computeYarnFeedIndices")
     baseline_js = "undefined" if baseline is _UNDEFINED else json.dumps(baseline)
@@ -116,6 +116,6 @@ def test_empty_or_null_inputs_return_empty_indices() -> None:
 def test_extract_function_block_reports_missing_symbol() -> None:
     """The helper should surface a clear assertion when functions go missing."""
 
-    html = HTML_PATH.read_text(encoding="utf-8")
+    html = load_viewer_bundle()
     with pytest.raises(AssertionError, match="missingFunctionNotPresent"):
         extract_function_block(html, "missingFunctionNotPresent")

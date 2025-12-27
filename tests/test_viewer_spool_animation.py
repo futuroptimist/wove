@@ -2,49 +2,46 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-VIEWER_HTML = PROJECT_ROOT / "viewer" / "index.html"
+from .viewer_source import load_viewer_bundle
 
 
 def test_viewer_animates_spools_during_yarn_feed() -> None:
     """The viewer should animate spools with extrusion-aware speed changes."""
 
-    html = VIEWER_HTML.read_text(encoding="utf-8")
+    viewer_source = load_viewer_bundle()
 
-    assert "const spoolControllers" in html
-    assert "spoolControllers.push" in html
-    assert "linkedToExtrusion" in html
-    assert "rotationDelta = delta * currentSpeed" in html
+    assert "const spoolControllers" in viewer_source
+    assert "spoolControllers.push" in viewer_source
+    assert "linkedToExtrusion" in viewer_source
+    assert "rotationDelta = delta * currentSpeed" in viewer_source
 
 
 def test_spool_progress_billboard_tracks_planner_totals() -> None:
     """The yarn-feed billboard should mirror spool progress updates."""
 
-    html = VIEWER_HTML.read_text(encoding="utf-8")
+    viewer_source = load_viewer_bundle()
 
-    assert "spoolProgressLabelController.update" in html
-    assert "header: spoolProgressHeader" in html
-    assert "formatBillboardFeedCountdown" in html
-    assert "Next feeds: Awaiting Yarn Flow timing…" in html
+    assert "spoolProgressLabelController.update" in viewer_source
+    assert "header: spoolProgressHeader" in viewer_source
+    assert "formatBillboardFeedCountdown" in viewer_source
+    assert "Next feeds: Awaiting Yarn Flow timing…" in viewer_source
 
 
 def test_spool_progress_ring_pre_pulses_for_upcoming_feed() -> None:
     """The spool progress ring should glow ahead of the next feed pulse."""
 
-    html = VIEWER_HTML.read_text(encoding="utf-8")
+    viewer_source = load_viewer_bundle()
 
-    assert "feedPulseHighlight" in html
-    assert "cableChainNextFeedSeconds" in html
-    assert "feedPulseWave" in html
+    assert "feedPulseHighlight" in viewer_source
+    assert "cableChainNextFeedSeconds" in viewer_source
+    assert "feedPulseWave" in viewer_source
 
 
 def test_spool_progress_countdown_ribbon_stays_pinned() -> None:
     """The spool billboard should keep a countdown ribbon above the reel."""
 
-    html = VIEWER_HTML.read_text(encoding="utf-8")
+    viewer_source = load_viewer_bundle()
 
-    assert "createSpoolCountdownLabel" in html
-    assert "spoolCountdownLabelController" in html
-    assert "Countdown ribbon" in html
+    assert "createSpoolCountdownLabel" in viewer_source
+    assert "spoolCountdownLabelController" in viewer_source
+    assert "Countdown ribbon" in viewer_source
