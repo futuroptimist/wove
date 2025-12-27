@@ -164,10 +164,11 @@ def test_homing_guard_coordinates_follow_progress() -> None:
     html = load_viewer_bundle()
 
     assert "homing-guard-position" in html
-    assert (
-        "shouldUpdatePosition && (dom.patternPositionElement || dom.homingGuardPositionElement)"
-        in html
+    expected_update_check = (
+        "shouldUpdatePosition && (dom.patternPositionElement || "
+        "dom.homingGuardPositionElement)"
     )
+    assert expected_update_check in html
 
 
 def test_spool_progress_ring_pauses_without_target() -> None:
