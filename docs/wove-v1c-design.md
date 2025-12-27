@@ -78,7 +78,9 @@ operators know timing is frozen until the loop resumes.
 Tap Space or the Pause preview button to freeze the Pattern Studio hologram while leaving the
 spool countdown ribbon and Yarn Flow panels visible, keeping pacing cues handy during reviews.
 A gentle pre-pulse now ramps around the ring whenever a countdown nears the next yarn feed, giving
-operators a visible heads-up in the hologram before the spool spins.
+operators a visible heads-up in the hologram before the spool spins. Countdown cues now read yarn
+feed pulses from extrusion deltas so the ribbon, overlay, and hologram stay aligned even when feed
+comments change between planner exports.
 A floating yarn-feed progress billboard now hangs above the spool, echoing the fed-versus-planned
 totals directly inside the hologram so visitors can read the numbers without shifting back to the
 overlay. It now also surfaces the next yarn feed countdown so operators can time the upcoming pulse
