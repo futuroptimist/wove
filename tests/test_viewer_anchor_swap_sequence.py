@@ -3,16 +3,14 @@
 from __future__ import annotations
 
 import re
-from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-VIEWER_HTML = PROJECT_ROOT / "viewer" / "index.html"
+from tests.viewer_utils import load_viewer_source
 
 
 def test_anchor_sweep_starts_from_rear_left_and_moves_clockwise() -> None:
     """The anchor halos should start at the rear-left puck and sweep clockwise."""
 
-    html = VIEWER_HTML.read_text(encoding="utf-8")
+    html = load_viewer_source()
     match = re.search(r"const anchorOffsets = \[(.*?)\];", html, re.DOTALL)
 
     assert match, "anchorOffsets block missing"
@@ -30,7 +28,7 @@ def test_anchor_sweep_starts_from_rear_left_and_moves_clockwise() -> None:
 def test_anchor_hover_callout_matches_sweep_story() -> None:
     """The hover text should explain the clockwise swap choreography."""
 
-    html = VIEWER_HTML.read_text(encoding="utf-8")
+    html = load_viewer_source()
 
     assert (
         "rear-left puck kicks off the clockwise halo" in html
