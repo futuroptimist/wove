@@ -7,6 +7,8 @@ import re
 import subprocess
 from pathlib import Path
 
+import pytest
+
 
 HTML_PATH = Path("viewer/index.html")
 _UNDEFINED = object()
@@ -21,7 +23,8 @@ def extract_function_block(html: str, function_name: str) -> str:
     except ValueError as exc:
         raise AssertionError(f"{function_name} not found in viewer HTML") from exc
 
-    remainder_tail = html[start_index + len(start_token) :]
+    start_of_remainder = start_index + len(start_token)
+    remainder_tail = html[start_of_remainder:]
     next_match = re.search(r"\n\s*function [^(]+\(", remainder_tail, flags=re.MULTILINE)
     end_index = (
         start_index + len(start_token) + next_match.start()
@@ -109,3 +112,11 @@ def test_empty_or_null_inputs_return_empty_indices() -> None:
 
     assert compute_yarn_feed_indices([], baseline=None) == []
     assert compute_yarn_feed_indices([None, {}]) == []
+
+
+def test_extract_function_block_reports_missing_symbol() -> None:
+    """The helper should surface a clear assertion when functions go missing."""
+
+    html = HTML_PATH.read_text(encoding="utf-8")
+    with pytest.raises(AssertionError, match="missingFunctionNotPresent"):
+        extract_function_block(html, "missingFunctionNotPresent")
