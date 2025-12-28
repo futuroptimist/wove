@@ -1855,8 +1855,35 @@ function applyHeatedBedConduitTone(tone) {
 }
 
 function updateCalibrationCards(calibration) {
+  const normalizeCardPoint = (entry) => {
+    if (Array.isArray(entry) && entry.length >= 2) {
+      const [reading, grams] = entry;
+      const normalizedReading = coerceFiniteNumber(reading);
+      const normalizedGrams = coerceFiniteNumber(grams);
+      if (normalizedReading !== null && normalizedGrams !== null && normalizedGrams >= 0) {
+        return { reading: normalizedReading, grams: normalizedGrams };
+      }
+    }
+
+    if (entry && typeof entry === 'object') {
+      const normalizedReading = coerceFiniteNumber(entry.reading);
+      const normalizedGrams = coerceFiniteNumber(entry.grams);
+      if (normalizedReading !== null && normalizedGrams !== null && normalizedGrams >= 0) {
+        return { reading: normalizedReading, grams: normalizedGrams };
+      }
+    }
+
+    return null;
+  };
+
+  const normalizedCandidates =
+    Array.isArray(calibration) && calibration.length >= 2
+      ? calibration
+          .map((entry) => normalizeCardPoint(entry))
+          .filter((point) => point !== null)
+      : null;
   const normalized =
-    Array.isArray(calibration) && calibration.length >= 2 ? calibration : null;
+    normalizedCandidates && normalizedCandidates.length >= 2 ? normalizedCandidates : null;
   calibrationCardControllers.forEach((controller) => {
     if (!controller || !controller.mesh) {
       return;
