@@ -9,8 +9,8 @@ const filteredArgs = process.argv.slice(2).filter((arg) => arg !== '--coverage')
 
 const result = spawnSync(
   process.execPath,
-  ['--test', ...filteredArgs, resolve(projectRoot, 'viewer/tests')],
-  { stdio: 'inherit' },
+  ['--test', ...filteredArgs],
+  { stdio: 'inherit', cwd: projectRoot },
 );
 
 if (result.error) {
