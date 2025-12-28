@@ -85,7 +85,8 @@ A floating yarn-feed progress billboard now hangs above the spool, echoing the f
 totals directly inside the hologram so visitors can read the numbers without shifting back to the
 overlay. It now also surfaces the next yarn feed countdown so operators can time the upcoming pulse
 from inside the hologram without checking the overlay timers and reports how many feed cues remain
-in the preview loop for quick progress checks.
+in the preview loop for quick progress checks. The billboard now mirrors Yarn Flow feed-rate
+telemetry so mm/s pacing remains visible inside the hologram.
 
 #### Tension Profiles and Bench Tests
 

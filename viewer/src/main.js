@@ -2575,6 +2575,8 @@ function updateYarnFlowPanel(
       detailLines.push('Awaiting planner preview…');
     }
 
+    detailLines.push(feedRateLabel);
+
     const remainingFeedLabel =
       typeof remainingFeedCount === 'number'
         ? remainingFeedCount > 0

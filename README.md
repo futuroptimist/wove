@@ -192,7 +192,8 @@ so crews can see the upcoming and following pulses without leaving the scene
 overlay and reports how many yarn feed cues remain in the preview loop. Cycle
 pacing now mirrors the Yarn Flow timer on the same billboard, listing the
 elapsed and remaining seconds beside the feed countdowns for a single
-at-a-glance progress pulse.
+at-a-glance progress pulse. The billboard now mirrors the Yarn Flow feed-rate
+line so mm/s pacing stays visible directly from the hologram.
 Tap Space or use the Pause preview control in the overlay to freeze the Pattern
 Studio hologram while keeping the spool countdown ribbon and Yarn Flow panels
 visible.
