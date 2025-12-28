@@ -708,6 +708,15 @@ def test_spool_billboard_reports_remaining_feeds() -> None:
     assert "Remaining feeds: Queue clear." in html
 
 
+def test_spool_billboard_surfaces_feed_rate() -> None:
+    """The spool billboard should mirror Yarn Flow feed-rate telemetry."""
+
+    html = load_viewer_bundle()
+
+    assert "detailLines.push(feedRateLabel);" in html
+    assert "Feed rate: Awaiting yarn feed telemetry…" in html
+
+
 def test_viewer_mentions_z_axis_leadscrew() -> None:
     """The scene should describe the Z-axis leadscrew lift assembly."""
 
