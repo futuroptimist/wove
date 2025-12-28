@@ -245,7 +245,10 @@ that runs the same rail so the automation cadence reads clearly from the plaza o
   glowing console so crews can visualize how hall sensors and force probes are
   validated before production runs. Reference cards beside the bench capture
   target pull force and offset data so calibration workflows stay obvious in
-  the walkthrough. The Pattern Studio hologram loops a base chain
+  the walkthrough. The cards now pull their ranges from ``tension_sensor_calibration``
+  pairs baked into planner defaults so the hologram mirrors the hall-sensor span
+  recorded on the bench before teams wire the real probes. The Pattern Studio
+  hologram loops a base chain
   row exported from `wove.pattern_cli --format planner`, previewing how planner
   payloads animate across the workspace before firmware executes them. The
   viewer streams that sample directly from

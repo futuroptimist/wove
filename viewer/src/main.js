@@ -66,6 +66,7 @@ const insertGridControllers = [];
 const cableChainPulseControllers = [];
 const cableChainChaseControllers = [];
 const automationSweepControllers = [];
+const calibrationCardControllers = [];
 const zLiftGlowControllers = [];
 let cableChainBillboardController = null;
 const tensionLabPathControllers = [];
@@ -717,6 +718,129 @@ function createSpoolCountdownLabel() {
     sprite,
     update: updatePanel,
   };
+}
+
+function buildInfoCardMaterial(options = {}) {
+  const {
+    width = 512,
+    height = 704,
+    title = 'Reference Card',
+    subtitle = '',
+    lines = [],
+    accentColor = '#7bf0c7',
+    textColor = '#e9fdf4',
+    backgroundColor = 'rgba(10, 20, 22, 0.9)',
+    borderColor = '#52e2a7',
+  } = options;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+
+  const context = canvas.getContext('2d');
+  if (!context) {
+    return null;
+  }
+
+  const paddingX = 32;
+  const paddingY = 32;
+  const radius = 28;
+  const cardWidth = width - paddingX * 2;
+  const cardHeight = height - paddingY * 2;
+
+  function drawRoundedRect() {
+    context.beginPath();
+    context.moveTo(paddingX + radius, paddingY);
+    context.lineTo(paddingX + cardWidth - radius, paddingY);
+    context.quadraticCurveTo(
+      paddingX + cardWidth,
+      paddingY,
+      paddingX + cardWidth,
+      paddingY + radius,
+    );
+    context.lineTo(paddingX + cardWidth, paddingY + cardHeight - radius);
+    context.quadraticCurveTo(
+      paddingX + cardWidth,
+      paddingY + cardHeight,
+      paddingX + cardWidth - radius,
+      paddingY + cardHeight,
+    );
+    context.lineTo(paddingX + radius, paddingY + cardHeight);
+    context.quadraticCurveTo(
+      paddingX,
+      paddingY + cardHeight,
+      paddingX,
+      paddingY + cardHeight - radius,
+    );
+    context.lineTo(paddingX, paddingY + radius);
+    context.quadraticCurveTo(
+      paddingX,
+      paddingY,
+      paddingX + radius,
+      paddingY,
+    );
+    context.closePath();
+  }
+
+  context.save();
+  drawRoundedRect();
+  context.fillStyle = backgroundColor;
+  context.fill();
+  context.lineWidth = 6;
+  context.strokeStyle = borderColor;
+  context.stroke();
+
+  // Header bar
+  context.fillStyle = accentColor;
+  context.fillRect(paddingX, paddingY, cardWidth, 86);
+
+  context.fillStyle = textColor;
+  context.textAlign = 'left';
+  context.textBaseline = 'middle';
+  context.font = '700 60px "Segoe UI", sans-serif';
+  context.fillText(title, paddingX + 22, paddingY + 44);
+
+  if (subtitle) {
+    context.font = '400 38px "Segoe UI", sans-serif';
+    context.globalAlpha = 0.9;
+    context.fillText(subtitle, paddingX + 22, paddingY + 108);
+    context.globalAlpha = 1;
+  }
+
+  // Bullet rows
+  context.font = '500 40px "Segoe UI", sans-serif';
+  const bulletYStart = paddingY + 160;
+  const bulletSpacing = 60;
+  lines.forEach((line, index) => {
+    const y = bulletYStart + index * bulletSpacing;
+    context.fillStyle = accentColor;
+    context.beginPath();
+    context.arc(paddingX + 24, y, 10, 0, Math.PI * 2);
+    context.fill();
+
+    context.fillStyle = textColor;
+    context.fillText(String(line ?? ''), paddingX + 50, y + 2);
+  });
+
+  context.restore();
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 4;
+
+  const material = new THREE.MeshStandardMaterial({
+    map: texture,
+    transparent: true,
+    opacity: 0.95,
+    color: 0xffffff,
+    emissive: new THREE.Color(accentColor).multiplyScalar(0.18),
+    emissiveIntensity: 0.85,
+    metalness: 0.16,
+    roughness: 0.32,
+    side: THREE.DoubleSide,
+  });
+
+  return material;
 }
 
 function addHoverInfo(mesh, text, options = {}) {
@@ -1730,6 +1854,57 @@ function applyHeatedBedConduitTone(tone) {
   });
 }
 
+function updateCalibrationCards(calibration) {
+  const normalized =
+    Array.isArray(calibration) && calibration.length >= 2 ? calibration : null;
+  calibrationCardControllers.forEach((controller) => {
+    if (!controller || !controller.mesh) {
+      return;
+    }
+
+    const firstPoint = normalized ? normalized[0] : null;
+    const lastPoint = normalized ? normalized[normalized.length - 1] : null;
+    const lines = normalized
+      ? [
+          `Target pull span: ${firstPoint.grams.toFixed(1)}–${lastPoint.grams.toFixed(1)} g`,
+          `Hall readings: ${firstPoint.reading.toFixed(1)}–${lastPoint.reading.toFixed(1)}`,
+          `Interpolation across ${normalized.length} calibration points.`,
+          'Planner defaults drive this card beside the bench.',
+        ]
+      : [
+          'Awaiting tension_sensor_calibration pairs.',
+          'Embed reading→grams pairs in planner defaults.',
+          'Upload planner JSON to refresh this card.',
+        ];
+
+    const material = buildInfoCardMaterial({
+      title: 'Tension Calibration',
+      subtitle: normalized
+        ? 'Hall sensor tuning card — live from planner defaults.'
+        : 'Hall sensor tuning card — load planner defaults.',
+      lines,
+      accentColor: '#7bf0c7',
+      textColor: '#e9fff4',
+      backgroundColor: 'rgba(12, 22, 24, 0.9)',
+      borderColor: '#45e3a3',
+    });
+
+    if (!material) {
+      return;
+    }
+
+    if (controller.material) {
+      if (controller.material.map) {
+        controller.material.map.dispose();
+      }
+      controller.material.dispose();
+    }
+
+    controller.material = material;
+    controller.mesh.material = material;
+  });
+}
+
 function applySpoolProgressTone(tone) {
   if (!tone || !spoolProgressTonePalette[tone]) {
     tone = 'neutral';
@@ -1958,6 +2133,7 @@ function resetYarnFlowPanel() {
     cycleTimingDetail: null,
     extrusionActive: false,
   });
+  updateCalibrationCards(null);
 }
 
 function refreshSpoolCountdownLabel() {
@@ -2528,6 +2704,7 @@ function applyPatternPlannerEvents(events, options = {}) {
         ? options.defaults
         : null;
     tensionCalibration = normalizeTensionCalibration(plannerDefaults);
+    updateCalibrationCards(tensionCalibration);
   }
   if (Object.prototype.hasOwnProperty.call(options, 'machineProfileBounds')) {
     machineProfileBounds = normalizeMachineProfileBounds(options.machineProfileBounds);
@@ -7011,16 +7188,30 @@ function createCalibrationLabDisplay() {
     'Calibration console — visualizes live sensor readings and tuning targets.',
   );
 
+  const referenceCardMaterial = buildInfoCardMaterial({
+    title: 'Tension Calibration',
+    subtitle: 'Hall sensor tuning card — load planner defaults.',
+    lines: [
+      'Awaiting tension_sensor_calibration pairs.',
+      'Embed reading→grams pairs in planner defaults.',
+      'Upload planner JSON to refresh this card.',
+    ],
+    accentColor: '#7bf0c7',
+    textColor: '#e9fff4',
+    backgroundColor: 'rgba(12, 22, 24, 0.9)',
+    borderColor: '#45e3a3',
+  });
   const referenceCard = new THREE.Mesh(
-    new THREE.PlaneGeometry(0.42, 0.3),
-    new THREE.MeshStandardMaterial({
-      color: 0xd9ffe8,
-      emissive: 0x5db38a,
-      emissiveIntensity: 0.65,
-      transparent: true,
-      opacity: 0.82,
-      side: THREE.DoubleSide,
-    }),
+    new THREE.PlaneGeometry(0.52, 0.64),
+    referenceCardMaterial ||
+      new THREE.MeshStandardMaterial({
+        color: 0xd9ffe8,
+        emissive: 0x5db38a,
+        emissiveIntensity: 0.65,
+        transparent: true,
+        opacity: 0.82,
+        side: THREE.DoubleSide,
+      }),
   );
   referenceCard.position.set(-0.68, 0.56, -0.26);
   referenceCard.rotation.y = Math.PI / 8;
@@ -7028,8 +7219,13 @@ function createCalibrationLabDisplay() {
   group.add(referenceCard);
   addHoverInfo(
     referenceCard,
-    'Calibration cards — document target pull force and sensor offsets.',
+    'Calibration cards — document target pull force and sensor offsets driven by planner defaults.',
   );
+  calibrationCardControllers.push({
+    mesh: referenceCard,
+    material: referenceCardMaterial,
+  });
+  updateCalibrationCards(tensionCalibration);
 
   const lamp = new THREE.PointLight(0x8be3ff, 1.0, 3.6);
   lamp.position.set(0, 1.28, 0.12);

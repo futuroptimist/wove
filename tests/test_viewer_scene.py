@@ -256,6 +256,16 @@ def test_tension_lab_mentions_servo_adjuster() -> None:
     assert "Servo Tensioner Prototype" in html
 
 
+def test_tension_lab_calibration_card_tracks_sensor_pairs() -> None:
+    """Calibration card should render hall sensor calibration guidance."""
+
+    html = load_viewer_bundle()
+
+    assert "Hall sensor tuning card" in html
+    assert "Awaiting tension_sensor_calibration pairs" in html
+    assert "updateCalibrationCards" in html
+
+
 def test_viewer_animates_servo_adjuster() -> None:
     """Servo controllers should pulse in sync with yarn feed events."""
 
