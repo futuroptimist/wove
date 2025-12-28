@@ -35,6 +35,11 @@ viewer/
 └── main.js                 # Temporary host for legacy logic while modules land
 ```
 
+## Progress
+- Renderer, scene, camera, and control bootstrap now live in `viewer/src/scene/setup.js`, returning
+  `{ renderer, scene, camera, controls }` so future refactors can import the shared defaults instead
+  of rebuilding the config inline.
+
 ## Migration phases
 1. **Extract shared assets (done)**
    - Move inline CSS into `viewer/styles/main.css` and load it from `index.html`.
@@ -71,8 +76,8 @@ viewer/
 
 ## Immediate next steps
 - Carve out DOM lookups into `viewer/src/dom.js` and import them in `viewer/main.js`.
-- Move renderer/camera/control bootstrap into `viewer/src/scene/setup.js` and keep the animation
-  loop in `viewer/main.js` temporarily.
+- Reuse the shared bootstrap in `viewer/src/scene/setup.js` while the animation loop lives in
+  `viewer/main.js` temporarily.
 - Extract overlay tone helpers and formatter utilities so panel updates no longer depend on globals.
 - Align directory naming with the target structure above to minimize diff churn in future sessions.
 
