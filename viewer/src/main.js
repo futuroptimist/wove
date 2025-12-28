@@ -1,5 +1,4 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js';
-import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/controls/OrbitControls.js';
+import { THREE, createViewerScene } from './scene/setup.js';
 import { comparePlannerToMachineBounds } from '../bounds.js';
 import { getDom } from './dom.js';
 import { computeYarnFeedIndices } from './feeds.js';
@@ -43,14 +42,7 @@ import {
 } from './constants.js';
 import { formatFileSize } from './format.js';
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-document.body.appendChild(renderer.domElement);
-
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0b0c13);
+const { renderer, scene, camera, controls } = createViewerScene();
 const dom = getDom();
 
 const pointer = new THREE.Vector2();
@@ -160,14 +152,6 @@ const LOWER_RAIL_Y = 0.25;
 const UPPER_RAIL_Y = 4.3;
 const RAIL_THICKNESS = 0.22;
 
-const camera = new THREE.PerspectiveCamera(
-  45,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  500,
-);
-camera.position.set(12, 8, 18);
-
 const currentCameraTarget = new THREE.Vector3(0, 1.2, 0);
 const desiredCameraTarget = currentCameraTarget.clone();
 const desiredCameraPosition = camera.position.clone();
@@ -180,12 +164,6 @@ const cameraMoveDamping = 4.0;
 let userIsControllingCamera = false;
 let cameraWasMovedByControls = false;
 
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.05;
-controls.minDistance = 4;
-controls.maxDistance = 60;
-controls.maxPolarAngle = Math.PI * 0.49;
 controls.target.copy(currentCameraTarget);
 
 controls.addEventListener('start', () => {
