@@ -19,6 +19,8 @@ import {
   patternBoundsFallbackMessage,
   patternDefaultsFallbackMessage,
   patternPreviewSource,
+  plannerFileNameFallbackMessage,
+  plannerFileSizeFallbackMessage,
   plannerMetadataFallbackMessage,
   selectionRingHeight,
   selectionSweepSpeed,
@@ -39,6 +41,7 @@ import {
   yarnFlowTotalFallbackMessage,
   yarnFlowUpcomingFallbackMessage,
 } from './constants.js';
+import { formatFileSize } from './format.js';
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(window.devicePixelRatio);
@@ -1500,6 +1503,11 @@ function updatePlannerMetadataPanel(metadata) {
 
   const data = metadata && typeof metadata === 'object' ? metadata : null;
   const entries = [];
+  const fileName = typeof data?.fileName === 'string' ? data.fileName.trim() : '';
+  const hasFileName = fileName.length > 0;
+  const fileSizeBytes = Number(data?.fileSizeBytes);
+  const hasFileSize = Number.isFinite(fileSizeBytes) && fileSizeBytes >= 0;
+  const formattedFileSize = formatFileSize(fileSizeBytes);
 
   if (typeof data?.version === 'string' && data.version.trim().length > 0) {
     entries.push({ label: 'Schema version', value: data.version.trim() });
@@ -1514,17 +1522,13 @@ function updatePlannerMetadataPanel(metadata) {
     entries.push({ label: 'Planner steps', value: `${rounded}` });
   }
 
-  if (Number.isFinite(data?.fileSizeBytes)) {
-    const kilobytes = data.fileSizeBytes / 1024;
-    const megabytes = data.fileSizeBytes / (1024 * 1024);
-    const formatted = data.fileSizeBytes >= 1024 * 1024
-      ? `${megabytes.toFixed(2)} MB`
-      : `${(Math.floor(kilobytes * 10) / 10).toFixed(1)} kB`;
+  if (hasFileSize) {
+    const formatted = formattedFileSize ?? `${Math.max(0, fileSizeBytes).toFixed(0)} B`;
     entries.push({ label: 'File size', value: formatted });
   }
 
-  if (typeof data?.fileName === 'string' && data.fileName.trim().length > 0) {
-    entries.push({ label: 'File name', value: data.fileName.trim() });
+  if (hasFileName) {
+    entries.push({ label: 'File name', value: fileName });
   }
 
   if (Number.isFinite(data?.durationSeconds)) {
@@ -1534,6 +1538,30 @@ function updatePlannerMetadataPanel(metadata) {
 
   if (typeof data?.source === 'string' && data.source.trim().length > 0) {
     entries.push({ label: 'Source', value: data.source.trim() });
+  }
+
+  if (dom.plannerFileNameElement) {
+    if (hasFileName) {
+      dom.plannerFileNameElement.textContent = `Planner file: ${fileName}`;
+      setTone(dom.plannerFileNameElement, 'info');
+    } else {
+      dom.plannerFileNameElement.textContent = plannerFileNameFallbackMessage;
+      setTone(dom.plannerFileNameElement, 'neutral');
+    }
+  }
+
+  if (dom.plannerFileSizeElement) {
+    if (formattedFileSize) {
+      dom.plannerFileSizeElement.textContent = `Planner size: ${formattedFileSize}`;
+      setTone(dom.plannerFileSizeElement, 'info');
+    } else if (hasFileName) {
+      dom.plannerFileSizeElement.textContent =
+        'Planner size: Not provided — Content-Length missing.';
+      setTone(dom.plannerFileSizeElement, 'warning');
+    } else {
+      dom.plannerFileSizeElement.textContent = plannerFileSizeFallbackMessage;
+      setTone(dom.plannerFileSizeElement, 'neutral');
+    }
   }
 
   if (entries.length === 0) {
