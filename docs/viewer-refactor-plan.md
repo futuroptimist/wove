@@ -20,12 +20,12 @@ viewer/
 │   └── main.css            # Shared styling for overlay panels and status banners
 ├── src/
 │   ├── constants.js        # Shared constants, fallbacks, palette definitions
-│   ├── dom.js              # DOM lookups, event wiring helpers (planned)
+│   ├── dom.js              # DOM lookups, event wiring helpers
 │   ├── loaders/
 │   │   ├── planner.js      # Fetch/parse planner exports, defaults, metadata (planned)
 │   │   └── assets.js       # Static asset loading: textures, models, fonts (planned)
 │   ├── scene/
-│   │   ├── setup.js        # Renderer, camera, controls bootstrap (planned)
+│   │   ├── setup.js        # Renderer, camera, controls bootstrap
 │   │   ├── components.js   # Geometry builders for frames, pedestals, anchors (planned)
 │   │   └── effects.js      # Billboards, glows, pulses, sweep rings (planned)
 │   ├── ui/
@@ -45,8 +45,8 @@ viewer/
 2. **Stabilize entry points**
    - Create `viewer/src/dom.js` to centralize all `getElementById` lookups and reusable event
      wiring helpers (e.g., drag-drop, file input change listeners).
-   - Move renderer/camera/control setup into `viewer/src/scene/setup.js`, exporting a factory that
-     returns `{ renderer, scene, camera, controls }` while keeping configuration in one place.
+   - Renderer/camera/control setup now lives in `viewer/src/scene/setup.js`, exporting a factory
+     that returns `{ renderer, scene, camera, controls }` while keeping configuration in one place.
 
 3. **Module boundaries for logic**
    - Split planner parsing, default application, and bounds comparisons into `viewer/src/loaders/`.
@@ -71,8 +71,8 @@ viewer/
 
 ## Immediate next steps
 - Carve out DOM lookups into `viewer/src/dom.js` and import them in `viewer/main.js`.
-- Move renderer/camera/control bootstrap into `viewer/src/scene/setup.js` and keep the animation
-  loop in `viewer/main.js` temporarily.
+- Keep renderer/camera/control bootstrap centralized in `viewer/src/scene/setup.js` while the
+  animation loop lives in `viewer/main.js` temporarily.
 - Extract overlay tone helpers and formatter utilities so panel updates no longer depend on globals.
 - Align directory naming with the target structure above to minimize diff churn in future sessions.
 
