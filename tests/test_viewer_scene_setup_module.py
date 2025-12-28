@@ -16,4 +16,8 @@ def test_scene_setup_module_exports_bootstrap_factory() -> None:
     assert "PerspectiveCamera" in source
     assert "OrbitControls" in source
     assert "outputColorSpace = THREE.SRGBColorSpace" in source
-    assert "maxPolarAngle = Math.PI * 0.49" in source
+    assert "DEFAULT_CAMERA_POSITION = new THREE.Vector3(12, 8, 18)" in source
+    assert "controlsConfig = {}" in source
+    assert "maxPolarAngle: Math.PI * 0.49" in source
+    assert "controlsTarget = null" in source
+    assert "export { THREE }" in source
