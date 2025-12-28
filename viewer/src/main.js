@@ -2,6 +2,7 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.m
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/controls/OrbitControls.js';
 import { comparePlannerToMachineBounds } from '../bounds.js';
 import { getDom } from './dom.js';
+import { computeYarnFeedIndices } from './feeds.js';
 import {
   boundsComparisonFallbackMessage,
   defaultPatternPreviewDurationSeconds,
@@ -1012,45 +1013,6 @@ function computeExtrusionSummary(events, bounds) {
   const normalizedTarget = Number.isFinite(target) ? target : normalizedBaseline;
 
   return [normalizedBaseline, normalizedTarget];
-}
-
-function computeYarnFeedIndices(events, baselineExtrusion = null) {
-  if (!Array.isArray(events) || events.length === 0) {
-    return [];
-  }
-
-  const feedIndices = new Set();
-  const feedCommentPattern = /feed/i;
-  const feedDeltaTolerance = 0.01;
-
-  let previousExtrusion = Number.isFinite(baselineExtrusion) ? baselineExtrusion : null;
-
-  events.forEach((event, index) => {
-    if (!event || typeof event !== 'object') {
-      return;
-    }
-
-    const comment = typeof event.comment === 'string' ? event.comment : '';
-    if (comment && feedCommentPattern.test(comment)) {
-      feedIndices.add(index);
-    }
-
-    const extrusion = coerceFiniteNumber(event.extrusion);
-    if (extrusion === null) {
-      return;
-    }
-
-    if (previousExtrusion !== null) {
-      const delta = extrusion - previousExtrusion;
-      if (Number.isFinite(delta) && delta > feedDeltaTolerance) {
-        feedIndices.add(index);
-      }
-    }
-
-    previousExtrusion = extrusion;
-  });
-
-  return Array.from(feedIndices.values());
 }
 
 function buildBoundsHoverText(bounds) {
@@ -2591,15 +2553,10 @@ function applyPatternPlannerEvents(events, options = {}) {
   patternExtrusionTarget = extrusionTarget;
   spoolProgressRatio = 0;
   spoolCycleProgressRatio = 0;
-  if (patternPlannerEvents.length > 0) {
-    patternPlannerEvents.forEach((event, index) => {
-      const comment =
-        typeof event?.comment === 'string' ? event.comment.toLowerCase() : '';
-      if (comment.includes('feed yarn')) {
-        yarnFeedStepIndices.push(index);
-      }
-    });
-  }
+  yarnFeedStepIndices = computeYarnFeedIndices(
+    patternPlannerEvents,
+    patternExtrusionBaseline,
+  );
   updatePatternBoundsOverlay(plannerBounds);
   updateBoundsComparisonPanel(plannerBounds, machineProfileBounds, boundsComparison);
   updateTravelEnvelope(plannerBounds, machineProfileBounds, boundsComparison);
