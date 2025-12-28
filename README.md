@@ -114,6 +114,9 @@ feed pulses approach, keeping pace with the tracer orb that leads the same path.
 reacts to the Yarn Flow countdown, ramping up as the next feed nears so crews can see the automation
 cadence before extrusion starts. The animation makes it easy to rehearse the bench automation
 stroke from the plaza overview before wiring any sensors.
+The Tension Lab bench now pins a hall-sensor tuning card that auto-fills from
+``tension_sensor_calibration`` pairs in planner defaults, so crews can read the target pull span
+and hall-reading range beside the calibration console.
 
 Pulsing magnetic anchor pucks now mark the removable workpiece bed so crews can
 practice swapping swatch plates into position before the gantry starts tracing
