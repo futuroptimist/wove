@@ -92,6 +92,15 @@ def test_pattern_preview_pause_toggle_present() -> None:
     assert "updatePatternPreview(patternPreviewElapsed)" in html
 
 
+def test_viewer_bootstraps_scene_setup_module() -> None:
+    """Renderer/camera bootstrap should live in a shared scene helper."""
+
+    html = load_viewer_bundle()
+
+    assert "from './scene/setup.js'" in html
+    assert "createSceneContext" in html
+
+
 def test_base_chain_row_embeds_machine_profile_axes() -> None:
     """The sample planner asset should include machine profile metadata."""
 

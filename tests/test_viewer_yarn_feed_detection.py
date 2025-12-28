@@ -24,7 +24,11 @@ def extract_function_block(html: str, function_name: str) -> str:
 
     start_of_remainder = start_index + len(start_token)
     remainder_tail = html[start_of_remainder:]
-    next_match = re.search(r"\n\s*function [^(]+\(", remainder_tail, flags=re.MULTILINE)
+    next_match = re.search(
+        r"\n\s*(?:export\s+)?function [^(]+\(|\n\s*import\s",
+        remainder_tail,
+        flags=re.MULTILINE,
+    )
     end_index = (
         start_index + len(start_token) + next_match.start()
         if next_match is not None
