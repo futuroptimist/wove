@@ -41,6 +41,7 @@ import {
   yarnFlowUpcomingFallbackMessage,
 } from './constants.js';
 import { formatFileSize } from './format.js';
+import { setTone } from './ui/tones.js';
 
 const { renderer, scene, camera, controls } = createViewerScene();
 const dom = getDom();
@@ -1680,18 +1681,6 @@ function updatePlannerMetadataPanel(metadata) {
     listItem.textContent = `${label}: ${value}`;
     dom.plannerMetadataListElement.appendChild(listItem);
   });
-}
-
-function setTone(element, tone) {
-  if (!element) {
-    return;
-  }
-
-  if (tone) {
-    element.dataset.tone = tone;
-  } else if (element.dataset && element.dataset.tone) {
-    delete element.dataset.tone;
-  }
 }
 
 function updatePatternPlaybackUi() {

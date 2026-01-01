@@ -39,6 +39,8 @@ viewer/
 - Renderer, scene, camera, and control bootstrap now live in `viewer/src/scene/setup.js`, returning
   `{ renderer, scene, camera, controls }` so future refactors can import the shared defaults instead
   of rebuilding the config inline.
+- Overlay tone helpers now live in `viewer/src/ui/tones.js`, keeping panel tone updates reusable
+  while `main.js` continues to shrink.
 
 ## Migration phases
 1. **Extract shared assets (done)**
@@ -78,7 +80,8 @@ viewer/
 - Carve out DOM lookups into `viewer/src/dom.js` and import them in `viewer/main.js`.
 - Reuse the shared bootstrap in `viewer/src/scene/setup.js` while the animation loop lives in
   `viewer/main.js` temporarily.
-- Extract overlay tone helpers and formatter utilities so panel updates no longer depend on globals.
+- Extract formatter utilities so panel updates no longer depend on globals and keep slim tone usage
+  alongside the shared helper.
 - Align directory naming with the target structure above to minimize diff churn in future sessions.
 
 ## Testing expectations
