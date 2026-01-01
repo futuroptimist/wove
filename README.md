@@ -258,6 +258,9 @@ envelope now also calls out the extrusion range, making it obvious when
 E-axis limits differ from the gantry travel. Bounds checks now compare the
 extrusion axis too, warning when yarn-feed envelopes outgrow the machine
 profile limits.
+The bounds comparison panel now spells out which planner or machine axes are
+missing travel limits so you can patch the export quickly when a comparison is
+unavailable.
 Translucent travel-envelope cages now float above the gantry to mirror the
 planner bounds and the machine profile envelope directly inside the hologram.
 The outer cage shifts to amber whenever planner envelopes exceed the machine
