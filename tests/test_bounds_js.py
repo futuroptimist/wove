@@ -86,3 +86,23 @@ def test_bounds_missing_axes_messages_include_axis_lists() -> None:
     assert "planner export missing bounds for: Y, Z" in result["planner"]
     assert result["fallbackMachine"].endswith("compare envelopes.")
     assert result["fallbackPlanner"].endswith("bounds metadata.")
+
+
+def test_bounds_missing_axes_defaults_to_generic_message() -> None:
+    """Default messages should be generic when the kind is not recognized."""
+
+    script = textwrap.dedent(
+        """
+        import { formatMissingBoundsMessage } from './viewer/bounds.js';
+
+        const unknown = formatMissingBoundsMessage('unknown', ['x']);
+        const emptyKind = formatMissingBoundsMessage(undefined, ['y']);
+
+        console.log(JSON.stringify({ unknown, emptyKind }));
+        """
+    )
+
+    result = run_node(script)
+
+    assert result["unknown"] == "Bounds check unavailable."
+    assert result["emptyKind"] == "Bounds check unavailable."
