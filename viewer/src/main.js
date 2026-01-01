@@ -2151,13 +2151,14 @@ function refreshSpoolCountdownLabel() {
     : lastSpoolCountdownToneSource === 'warning'
       ? 'warning'
       : lastSpoolCountdownExtrusionActive
-        ? 'ready'
-        : 'info';
+      ? 'ready'
+      : 'info';
   const countdownLines = [lastSpoolCountdownSummary];
+  if (lastSpoolCycleTimingDetail) {
+    countdownLines.push(lastSpoolCycleTimingDetail);
+  }
   if (patternPreviewPaused) {
     countdownLines.push(spoolCountdownPausedMessage);
-  } else if (lastSpoolCycleTimingDetail) {
-    countdownLines.push(lastSpoolCycleTimingDetail);
   }
 
   spoolCountdownLabelController.update({
