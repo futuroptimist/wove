@@ -1,5 +1,5 @@
 import { THREE, createViewerScene } from './scene/setup.js';
-import { comparePlannerToMachineBounds } from '../bounds.js';
+import { comparePlannerToMachineBounds, formatMissingBoundsMessage } from '../bounds.js';
 import { getDom } from './dom.js';
 import { computeYarnFeedIndices } from './feeds.js';
 import {
@@ -1213,15 +1213,19 @@ function updateBoundsComparisonPanel(plannerBounds, machineBounds, comparison = 
   }
 
   if (details.missingMachine) {
-    dom.boundsComparisonElement.textContent =
-      'Bounds check unavailable — include machine_profile axis limits to compare envelopes.';
+    dom.boundsComparisonElement.textContent = formatMissingBoundsMessage(
+      'machine',
+      details.missingMachineAxes,
+    );
     setTone(dom.boundsComparisonElement, 'warning');
     return;
   }
 
   if (details.missingPlanner) {
-    dom.boundsComparisonElement.textContent =
-      'Bounds check unavailable — planner export missing bounds metadata.';
+    dom.boundsComparisonElement.textContent = formatMissingBoundsMessage(
+      'planner',
+      details.missingPlannerAxes,
+    );
     setTone(dom.boundsComparisonElement, 'warning');
     return;
   }

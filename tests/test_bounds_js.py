@@ -57,3 +57,32 @@ def test_bounds_comparison_accepts_uppercase_axes() -> None:
     assert result["missingMachine"] is False
     assert result["fits"] is True
     assert result["exceeding"] == []
+
+
+def test_bounds_missing_axes_messages_include_axis_lists() -> None:
+    """Missing-axis status lines should name the absent planner/machine bounds."""
+
+    script = textwrap.dedent(
+        """
+        import { formatMissingBoundsMessage } from './viewer/bounds.js';
+
+        const machineText = formatMissingBoundsMessage('machine', ['x', 'e']);
+        const plannerText = formatMissingBoundsMessage('planner', ['y', 'z']);
+        const fallbackMachine = formatMissingBoundsMessage('machine');
+        const fallbackPlanner = formatMissingBoundsMessage('planner', []);
+
+        console.log(JSON.stringify({
+          machine: machineText,
+          planner: plannerText,
+          fallbackMachine,
+          fallbackPlanner,
+        }));
+        """
+    )
+
+    result = run_node(script)
+
+    assert "missing bounds for: X, E" in result["machine"]
+    assert "planner export missing bounds for: Y, Z" in result["planner"]
+    assert result["fallbackMachine"].endswith("compare envelopes.")
+    assert result["fallbackPlanner"].endswith("bounds metadata.")

@@ -98,3 +98,28 @@ export function comparePlannerToMachineBounds(plannerBounds, machineBounds) {
     details,
   };
 }
+
+export function formatMissingBoundsMessage(kind, axes = []) {
+  const normalizedAxes = Array.isArray(axes)
+    ? axes
+        .map((axis) => (typeof axis === 'string' ? axis.trim() : ''))
+        .filter((axis) => axis.length > 0)
+        .map((axis) => axis.toUpperCase())
+    : [];
+
+  if (kind === 'machine') {
+    const suffix = normalizedAxes.length > 0
+      ? `missing bounds for: ${normalizedAxes.join(', ')}`
+      : 'include machine_profile axis limits to compare envelopes';
+    return `Bounds check unavailable — ${suffix}.`;
+  }
+
+  if (kind === 'planner') {
+    const suffix = normalizedAxes.length > 0
+      ? `planner export missing bounds for: ${normalizedAxes.join(', ')}`
+      : 'planner export missing bounds metadata';
+    return `Bounds check unavailable — ${suffix}.`;
+  }
+
+  return 'Bounds check unavailable.';
+}
