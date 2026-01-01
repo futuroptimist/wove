@@ -5,7 +5,7 @@ export function setTone(element, tone) {
 
   if (tone) {
     element.dataset.tone = tone;
-  } else if (element.dataset && element.dataset.tone) {
+  } else if (element.dataset.tone) {
     delete element.dataset.tone;
   }
 }
