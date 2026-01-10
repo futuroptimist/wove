@@ -26,6 +26,7 @@ import {
   spoolCountdownPausedMessage,
   spoolPrePulseSettings,
   spoolProgressCountdownFallbackMessage,
+  spoolProgressPausedMessage,
   spoolProgressTonePalette,
   yarnFlowCalibrationFallbackMessage,
   yarnFlowCycleFallbackMessage,
@@ -79,6 +80,7 @@ let lastSpoolCountdownSummary = spoolProgressCountdownFallbackMessage;
 let lastSpoolCycleTimingDetail = yarnFlowCycleFallbackMessage;
 let lastSpoolCountdownToneSource = 'neutral';
 let lastSpoolCountdownExtrusionActive = false;
+let lastSpoolProgressPanel = null;
 const boundsCageControllers = [];
 const travelEnvelopeHaloControllers = [];
 const boundsZMarkerControllers = [];
@@ -1711,6 +1713,7 @@ function setPatternPreviewPaused(paused) {
   patternPreviewPaused = Boolean(paused);
   updatePatternPlaybackUi();
   refreshSpoolCountdownLabel();
+  renderSpoolProgressBillboard();
 }
 
 updatePatternPlaybackUi();
@@ -2108,13 +2111,12 @@ function resetYarnFlowPanel() {
   cableChainFollowingFeedSeconds = null;
   cableChainRemainingFeeds = null;
   cableChainCycleTimingDetail = null;
-  if (spoolProgressLabelController) {
-    spoolProgressLabelController.update({
-      header: 'Yarn Feed',
-      detail: 'Awaiting planner preview…',
-      tone: 'neutral',
-    });
-  }
+  lastSpoolProgressPanel = {
+    header: 'Yarn Feed',
+    detailLines: ['Awaiting planner preview…'],
+    tone: 'neutral',
+  };
+  renderSpoolProgressBillboard();
   if (spoolCountdownLabelController) {
     lastSpoolCountdownSummary = spoolProgressCountdownFallbackMessage;
     lastSpoolCycleTimingDetail = yarnFlowCycleFallbackMessage;
@@ -2157,6 +2159,23 @@ function refreshSpoolCountdownLabel() {
   spoolCountdownLabelController.update({
     lines: countdownLines,
     tone: countdownTone,
+  });
+}
+
+function renderSpoolProgressBillboard() {
+  if (!spoolProgressLabelController || !lastSpoolProgressPanel) {
+    return;
+  }
+
+  const detailLines = [...lastSpoolProgressPanel.detailLines];
+  if (patternPreviewPaused) {
+    detailLines.push(spoolProgressPausedMessage);
+  }
+
+  spoolProgressLabelController.update({
+    header: lastSpoolProgressPanel.header,
+    detail: detailLines,
+    tone: lastSpoolProgressPanel.tone,
   });
 }
 
@@ -2556,46 +2575,45 @@ function updateYarnFlowPanel(
     setTone(dom.yarnFlowPositionElement, yarnExtrusionActive ? 'ready' : 'info');
   }
 
-  if (spoolProgressLabelController) {
-    const detailLines = [];
-    if (plannedAmount > 0.0001) {
-      detailLines.push(`Fed ${fedAmount.toFixed(1)} mm`);
-      const percent = Math.round(spoolProgress * 100);
-      detailLines.push(`Target ${plannedAmount.toFixed(1)} mm (${percent}% complete)`);
-    } else if (fedAmount > 0.0001) {
-      detailLines.push(`Fed ${fedAmount.toFixed(1)} mm`);
-      detailLines.push('Target not declared — progress ring paused.');
-    } else {
-      detailLines.push('Awaiting planner preview…');
-    }
-
-    detailLines.push(feedRateLabel);
-
-    const remainingFeedLabel =
-      typeof remainingFeedCount === 'number'
-        ? remainingFeedCount > 0
-          ? `Remaining feeds: ${remainingFeedCount}`
-          : 'Remaining feeds: Queue clear.'
-        : 'Remaining feeds: Awaiting planner preview…';
-    detailLines.push(remainingFeedLabel);
-
-    const countdownSummary = formatBillboardFeedCountdown(
-      nextFeedCountdown,
-      followingFeedCountdown,
-      remainingFeedCount,
-    );
-    detailLines.push(countdownSummary);
-
-    if (cycleTimingDetail) {
-      detailLines.push(cycleTimingDetail);
-    }
-
-    spoolProgressLabelController.update({
-      header: spoolProgressHeader,
-      detail: detailLines,
-      tone: spoolProgressToneState,
-    });
+  const detailLines = [];
+  if (plannedAmount > 0.0001) {
+    detailLines.push(`Fed ${fedAmount.toFixed(1)} mm`);
+    const percent = Math.round(spoolProgress * 100);
+    detailLines.push(`Target ${plannedAmount.toFixed(1)} mm (${percent}% complete)`);
+  } else if (fedAmount > 0.0001) {
+    detailLines.push(`Fed ${fedAmount.toFixed(1)} mm`);
+    detailLines.push('Target not declared — progress ring paused.');
+  } else {
+    detailLines.push('Awaiting planner preview…');
   }
+
+  detailLines.push(feedRateLabel);
+
+  const remainingFeedLabel =
+    typeof remainingFeedCount === 'number'
+      ? remainingFeedCount > 0
+        ? `Remaining feeds: ${remainingFeedCount}`
+        : 'Remaining feeds: Queue clear.'
+      : 'Remaining feeds: Awaiting planner preview…';
+  detailLines.push(remainingFeedLabel);
+
+  const countdownSummary = formatBillboardFeedCountdown(
+    nextFeedCountdown,
+    followingFeedCountdown,
+    remainingFeedCount,
+  );
+  detailLines.push(countdownSummary);
+
+  if (cycleTimingDetail) {
+    detailLines.push(cycleTimingDetail);
+  }
+
+  lastSpoolProgressPanel = {
+    header: spoolProgressHeader,
+    detailLines,
+    tone: spoolProgressToneState,
+  };
+  renderSpoolProgressBillboard();
   lastSpoolCountdownSummary = formatBillboardFeedCountdown(
     nextFeedCountdown,
     followingFeedCountdown,

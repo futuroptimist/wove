@@ -197,6 +197,8 @@ pacing now mirrors the Yarn Flow timer on the same billboard, listing the
 elapsed and remaining seconds beside the feed countdowns for a single
 at-a-glance progress pulse. The billboard now mirrors the Yarn Flow feed-rate
 line so mm/s pacing stays visible directly from the hologram.
+When the preview is paused, the billboard pins the countdown line and adds a
+pause reminder so the upcoming feed pulses remain readable above the reel.
 Tap Space or use the Pause preview control in the overlay to freeze the Pattern
 Studio hologram while keeping the spool countdown ribbon and Yarn Flow panels
 visible.
