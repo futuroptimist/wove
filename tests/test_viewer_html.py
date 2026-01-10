@@ -21,6 +21,15 @@ def test_viewer_exposes_roadmap_panel() -> None:
         assert snippet in viewer_html
 
 
+def test_viewer_roadmap_overlay_helper() -> None:
+    """Ensure the roadmap overlay helper is part of the viewer bundle."""
+
+    viewer_html = _load_viewer_html()
+
+    assert "export function updateRoadmapPanel" in viewer_html
+    assert "roadmapTitleElement" in viewer_html
+
+
 def test_viewer_declares_product_clusters() -> None:
     """Ensure the viewer script ships the product cluster pedestals."""
 

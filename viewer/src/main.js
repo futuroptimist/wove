@@ -43,6 +43,7 @@ import {
 } from './constants.js';
 import { formatFileSize } from './format.js';
 import { setTone } from './ui/tones.js';
+import { updateRoadmapPanel } from './ui/overlay.js';
 
 const { renderer, scene, camera, controls } = createViewerScene();
 const dom = getDom();
@@ -7682,16 +7683,12 @@ function populateProductLines() {
 populateProductLines();
 loadPlannerPreviewFromSource();
 
-function updateRoadmapPanel(title, description) {
-  dom.roadmapTitleElement.textContent = title;
-  dom.roadmapDescriptionElement.textContent = description;
-}
-
 function selectCluster(cluster) {
   if (!cluster) {
     activeCluster = null;
     selectionRingGroup.visible = false;
     updateRoadmapPanel(
+      dom,
       'Assembly Roadmap',
       'Select a product cluster to learn how it advances the automation journey.',
     );
@@ -7717,7 +7714,7 @@ function selectCluster(cluster) {
   if (selectionSweep) {
     selectionSweep.rotation.y = 0;
   }
-  updateRoadmapPanel(cluster.userData.name, cluster.userData.roadmap);
+  updateRoadmapPanel(dom, cluster.userData.name, cluster.userData.roadmap);
 
   cluster.getWorldPosition(clusterFocusPosition);
   const baseFocusHeight = cluster.userData.selectionHeight ?? selectionRingHeight;
