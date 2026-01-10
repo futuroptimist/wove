@@ -41,6 +41,8 @@ viewer/
   of rebuilding the config inline.
 - Overlay tone helpers now live in `viewer/src/ui/tones.js`, keeping panel tone updates reusable
   while `main.js` continues to shrink.
+- Roadmap overlay updates now live in `viewer/src/ui/overlay.js`, allowing the main scene logic to
+  import a focused helper when pedestals are selected.
 
 ## Migration phases
 1. **Extract shared assets (done)**

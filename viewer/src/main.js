@@ -42,6 +42,7 @@ import {
 } from './constants.js';
 import { formatFileSize } from './format.js';
 import { setTone } from './ui/tones.js';
+import { updateRoadmapPanel } from './ui/overlay.js';
 
 const { renderer, scene, camera, controls } = createViewerScene();
 const dom = getDom();
@@ -7663,11 +7664,6 @@ function populateProductLines() {
 
 populateProductLines();
 loadPlannerPreviewFromSource();
-
-function updateRoadmapPanel(title, description) {
-  dom.roadmapTitleElement.textContent = title;
-  dom.roadmapDescriptionElement.textContent = description;
-}
 
 function selectCluster(cluster) {
   if (!cluster) {

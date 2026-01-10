@@ -14,4 +14,5 @@ def load_viewer_bundle() -> str:
     script = (VIEWER_DIR / "src" / "main.js").read_text(encoding="utf-8")
     constants = (VIEWER_DIR / "src" / "constants.js").read_text(encoding="utf-8")
     feeds = (VIEWER_DIR / "src" / "feeds.js").read_text(encoding="utf-8")
-    return html + script + constants + feeds
+    overlay = (VIEWER_DIR / "src" / "ui" / "overlay.js").read_text(encoding="utf-8")
+    return html + script + constants + feeds + overlay
