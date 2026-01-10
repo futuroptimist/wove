@@ -296,6 +296,17 @@ def test_viewer_mentions_selection_ring_glow() -> None:
     assert selection_ring_copy in html
 
 
+def test_preview_pause_freezes_yarn_flow_motion() -> None:
+    """Pausing the preview should freeze yarn flow pulses and beads."""
+
+    html = load_viewer_bundle()
+
+    assert "const previewDelta = patternPreviewPaused ? 0 : delta;" in html
+    assert "patternPreviewElapsed * speed" in html
+    assert "previewDelta * controller.speed" in html
+    assert "currentTravel + previewDelta * speed" in html
+
+
 def test_anchor_pucks_sequence_glow() -> None:
     """Anchor pucks should document the sequential guidance animation."""
 

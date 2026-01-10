@@ -5,6 +5,7 @@
   "scripts": {
     "lint": "echo 'no JS lint defined'",
     "format:check": "echo 'no JS formatter defined'",
-    "test": "node viewer/tests/run-tests.js"
+    "test": "node viewer/tests/run-tests.js",
+    "test:ci": "node viewer/tests/run-tests.js"
   }
 }

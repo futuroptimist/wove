@@ -62,6 +62,8 @@ overview before fading once the feed cycle pauses.
 The viewer now also renders the optional filament break sensor as a glowing inline checkpoint,
 brightening with each yarn feed so builders can see exactly where to drop the detector into the
 PTFE run before wiring hardware.
+Pausing the Pattern Studio preview freezes the PTFE pulse texture and bead queue so the flow
+path stays locked in place while the hologram is held.
 The supply spool now spins in the hologram whenever yarn is extruding so teams can watch fiber
 unwind from the source while the tube pulses, then glides to a stop when feed events pause so idle
 segments stay calm.

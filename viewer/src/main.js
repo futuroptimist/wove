@@ -7822,6 +7822,7 @@ const clock = new THREE.Clock();
 function animate() {
   const delta = clock.getDelta();
   const elapsed = clock.elapsedTime;
+  const previewDelta = patternPreviewPaused ? 0 : delta;
   if (!patternPreviewPaused) {
     patternPreviewElapsed += delta;
   }
@@ -8389,7 +8390,8 @@ function animate() {
     if (!controller.texture || !controller.material) {
       return;
     }
-    controller.texture.offset.x = (controller.texture.offset.x + delta * controller.speed) % 1;
+    controller.texture.offset.x =
+      (controller.texture.offset.x + previewDelta * controller.speed) % 1;
     const target = yarnExtrusionActive
       ? controller.activeIntensity
       : controller.restIntensity;
@@ -8420,7 +8422,7 @@ function animate() {
     }
 
     const speed = yarnExtrusionActive ? activeSpeed : idleSpeed;
-    const travel = (offset + elapsed * speed) % 1;
+    const travel = (offset + patternPreviewElapsed * speed) % 1;
     if (point) {
       curve.getPointAt(travel, point);
       mesh.position.copy(point);
@@ -8465,7 +8467,7 @@ function animate() {
 
     const speed = yarnExtrusionActive ? activeSpeed : idleSpeed;
     const currentTravel = typeof controller.travel === 'number' ? controller.travel : 0;
-    const updatedTravel = (currentTravel + delta * speed) % 1;
+    const updatedTravel = (currentTravel + previewDelta * speed) % 1;
     controller.travel = updatedTravel;
 
     if (point) {

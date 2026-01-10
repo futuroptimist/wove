@@ -200,6 +200,8 @@ line so mm/s pacing stays visible directly from the hologram.
 Tap Space or use the Pause preview control in the overlay to freeze the Pattern
 Studio hologram while keeping the spool countdown ribbon and Yarn Flow panels
 visible.
+Pausing the preview also freezes the PTFE tube pulse texture and bead queue so
+the flow cues hold their place while the hologram is stopped.
 A pair of cooling fans—the electronics bay exhaust and the hook-carriage
 mount—idle with a gentle spin and ramp up whenever the yarn feed engages, so the
 viewer keeps thermal cues in step with spool choreography.
