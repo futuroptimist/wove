@@ -7670,6 +7670,7 @@ function selectCluster(cluster) {
     activeCluster = null;
     selectionRingGroup.visible = false;
     updateRoadmapPanel(
+      dom,
       'Assembly Roadmap',
       'Select a product cluster to learn how it advances the automation journey.',
     );
@@ -7695,7 +7696,7 @@ function selectCluster(cluster) {
   if (selectionSweep) {
     selectionSweep.rotation.y = 0;
   }
-  updateRoadmapPanel(cluster.userData.name, cluster.userData.roadmap);
+  updateRoadmapPanel(dom, cluster.userData.name, cluster.userData.roadmap);
 
   cluster.getWorldPosition(clusterFocusPosition);
   const baseFocusHeight = cluster.userData.selectionHeight ?? selectionRingHeight;
