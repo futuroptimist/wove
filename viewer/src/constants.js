@@ -74,6 +74,8 @@ export const spoolProgressCountdownFallbackMessage =
   'Next feeds: Awaiting Yarn Flow timing…';
 export const spoolCountdownPausedMessage =
   'Countdown ribbon pinned while the preview is paused — resume to advance timing.';
+export const spoolProgressPausedMessage =
+  'Preview paused — countdowns pinned above the spool.';
 
 export const spoolProgressTonePalette = {
   neutral: { color: 0xffb173, emissive: 0xff8c2f },

@@ -405,6 +405,14 @@ def test_spool_billboard_tracks_following_feed() -> None:
     assert "Following in" in html
 
 
+def test_spool_billboard_pins_countdown_on_pause() -> None:
+    """The spool billboard should keep countdowns visible during pauses."""
+
+    html = load_viewer_bundle()
+    pause_copy = "Preview paused — countdowns pinned above the spool."
+    assert pause_copy in html
+
+
 def test_spool_progress_ring_pre_pulse_documented() -> None:
     """The spool ring should call out the pre-pulse sweep before feed events."""
 
