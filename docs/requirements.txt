@@ -1,4 +1,4 @@
-sphinx>=7
+sphinx>=9.1.0
 furo
 myst-parser
 # docutils<0.18
