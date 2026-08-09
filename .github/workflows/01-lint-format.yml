@@ -10,7 +10,7 @@ jobs:
           python-version: '3.x'
       - run: |
           python -m pip install --upgrade pip
-          pip install flake8 isort black
+          pip install flake8==7.3.0 isort==8.0.1 black==26.5.1
           flake8 . --exclude=.venv
           isort --profile black --check-only . --skip .venv
           black --check . --exclude ".venv/"

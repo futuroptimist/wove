@@ -53,8 +53,7 @@ def test_load_machine_profile_json(tmp_path):
 
 
 def test_load_machine_profile_yaml(tmp_path):
-    payload = textwrap.dedent(
-        """
+    payload = textwrap.dedent("""
         axes:
           x:
             microstepping: 32
@@ -71,8 +70,7 @@ def test_load_machine_profile_yaml(tmp_path):
             steps_per_mm: 400
             travel_min_mm: -5
             travel_max_mm: 10
-        """
-    )
+        """)
     profile_path = tmp_path / "machine.yaml"
     profile_path.write_text(payload, encoding="utf-8")
     profile = load_machine_profile(profile_path)
