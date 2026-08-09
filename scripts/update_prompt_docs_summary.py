@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Generate a markdown summary of prompt documentation across repositories."""
+
 from __future__ import annotations
 
 import argparse

@@ -13,5 +13,5 @@ jobs:
         run: pip install pytest
       - name: Run checks
         run: |
-          pip install flake8 isort black linkchecker
+          pip install flake8==7.3.0 isort==8.0.1 black==26.5.1 linkchecker
           bash scripts/checks.sh

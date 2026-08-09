@@ -20,8 +20,7 @@ def run_node(script: str) -> dict:
 
 
 def test_format_file_size_formats_common_ranges() -> None:
-    script = textwrap.dedent(
-        """
+    script = textwrap.dedent("""
         import { formatFileSize } from './viewer/src/format.js';
 
         const payload = {
@@ -32,8 +31,7 @@ def test_format_file_size_formats_common_ranges() -> None:
         };
 
         console.log(JSON.stringify(payload));
-        """
-    )
+        """)
 
     result = run_node(script)
 
@@ -46,8 +44,7 @@ def test_format_file_size_formats_common_ranges() -> None:
 
 
 def test_format_file_size_handles_small_and_invalid_inputs() -> None:
-    script = textwrap.dedent(
-        """
+    script = textwrap.dedent("""
         import { formatFileSize } from './viewer/src/format.js';
 
         const values = [
@@ -59,8 +56,7 @@ def test_format_file_size_handles_small_and_invalid_inputs() -> None:
         ];
 
         console.log(JSON.stringify({ values }));
-        """
-    )
+        """)
 
     result = run_node(script)
 

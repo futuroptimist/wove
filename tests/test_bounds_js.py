@@ -22,8 +22,7 @@ def run_node(script: str) -> dict:
 def test_bounds_comparison_accepts_uppercase_axes() -> None:
     """Machine profile bounds should be case-insensitive."""
 
-    script = textwrap.dedent(
-        """
+    script = textwrap.dedent("""
         import { comparePlannerToMachineBounds } from './viewer/bounds.js';
 
         const planner = {
@@ -48,8 +47,7 @@ def test_bounds_comparison_accepts_uppercase_axes() -> None:
           fits: comparison.fits,
           exceeding: comparison.exceedingAxes,
         }));
-        """
-    )
+        """)
 
     result = run_node(script)
 
@@ -62,8 +60,7 @@ def test_bounds_comparison_accepts_uppercase_axes() -> None:
 def test_bounds_missing_axes_messages_include_axis_lists() -> None:
     """Missing-axis status lines should name the absent planner/machine bounds."""
 
-    script = textwrap.dedent(
-        """
+    script = textwrap.dedent("""
         import { formatMissingBoundsMessage } from './viewer/bounds.js';
 
         const machineText = formatMissingBoundsMessage('machine', ['x', 'e']);
@@ -77,8 +74,7 @@ def test_bounds_missing_axes_messages_include_axis_lists() -> None:
           fallbackMachine,
           fallbackPlanner,
         }));
-        """
-    )
+        """)
 
     result = run_node(script)
 
@@ -91,16 +87,14 @@ def test_bounds_missing_axes_messages_include_axis_lists() -> None:
 def test_bounds_missing_axes_defaults_to_generic_message() -> None:
     """Default messages should be generic when the kind is not recognized."""
 
-    script = textwrap.dedent(
-        """
+    script = textwrap.dedent("""
         import { formatMissingBoundsMessage } from './viewer/bounds.js';
 
         const unknown = formatMissingBoundsMessage('unknown', ['x']);
         const emptyKind = formatMissingBoundsMessage(undefined, ['y']);
 
         console.log(JSON.stringify({ unknown, emptyKind }));
-        """
-    )
+        """)
 
     result = run_node(script)
 

@@ -13,8 +13,7 @@ def prompt_repo(tmp_path: Path) -> Path:
     (prompt_dir / "b_nested").mkdir(parents=True)
 
     (prompt_dir / "a_prompt.md").write_text(
-        textwrap.dedent(
-            """
+        textwrap.dedent("""
             ---
             slug: sample
             ---
@@ -24,21 +23,16 @@ def prompt_repo(tmp_path: Path) -> Path:
             One-click: no
 
             This is the description for the sample prompt.
-            """
-        ).strip()
-        + "\n",
+            """).strip() + "\n",
         encoding="utf-8",
     )
 
     (prompt_dir / "b_nested" / "prompt.md").write_text(
-        textwrap.dedent(
-            """
+        textwrap.dedent("""
             # Nested Prompt
 
             Content without metadata.
-            """
-        ).strip()
-        + "\n",
+            """).strip() + "\n",
         encoding="utf-8",
     )
 
