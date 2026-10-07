@@ -1,6 +1,7 @@
 # Documentation
 
-New machine planning starts with [K022: knitting-first tabletop machine](design/k022-knitting-first.md).
+New machine planning starts with
+[K022: knitting-first tabletop machine](design/k022-knitting-first.md).
 It proposes v1k first, defers v1c, and separates simulation checks from physical stitch evidence.
 
 ## Choose Your Path

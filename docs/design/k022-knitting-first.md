@@ -53,6 +53,9 @@ panels on a circular machine [S1]; this supports the alternative, not compatibil
 Neither mechanism inherently creates a flat circular doily. Compare complete output and finishing
 work, not only motor count. Select the route after the manual stitch gate; record why any reversal
 of the recommendation occurred. Do not buy a donor machine as part of this design task.
+Any change of mechanism, including a circular fallback selected during P2, invalidates earlier
+assembly, collision, motion-limit, and stitch evidence. Repeat P1 and P2 for the replacement before
+P3. Each gate applies to the same recorded mechanism revision; evidence cannot cross architectures.
 
 ## First sample and mechanism contract
 
@@ -141,6 +144,22 @@ the failure, added cost, and revalidation. PLA is not the universal structural o
 Inspect printed cam surfaces and needle channels after each prototype sample; log wear, debris,
 and changes in sliding force. Stop trials if damage can affect needle retention or loop formation.
 
+Before P4, P3 must complete 1,000 full outward-and-return carriage cycles after the stop/fault tests.
+Use the selected needle set and a documented load that meets or exceeds the cam force measured in
+P2; unloaded travel alone does not satisfy this endurance gate. Inspect at baseline and every 100
+cycles, with the drive isolated. Record peak sliding force at the same speed, load, and temperature,
+and measure fixed cam/bed reference surfaces with a tool resolving 0.02 mm or better. Proposed limits:
+
+- No cracks, loose particles, needle damage, jams, or loss of needle retention at any inspection.
+- Peak sliding force changes by no more than 20% from the baseline after initial fit adjustment.
+- Working-surface wear is <=0.10 mm and consumes no more than 25% of the smallest validated
+  functional clearance, whichever limit is tighter. The measuring tool must resolve that limit.
+- The mechanism still passes the P2 stitch and reversal checks after endurance testing. Repeat
+  the force and dimensional measurements after the P4 sample series as a further exit condition.
+
+These are provisional engineering targets, not demonstrated service life. Failure blocks P4;
+revise the wear interface or material, repeat affected P1/P2 checks, and restart the endurance count.
+
 | Item | Initial quantity | Selection gate |
 | --- | --- | --- |
 | Matched steel latch needles | 24 active + 4 spares, provisional | Geometry, gauge, two sources |
@@ -227,9 +246,11 @@ before hardware work; do not relabel assistance as automation.
 
 Freeze the recipe and acceptance target before testing. Proposed finished-sample gate:
 
-- Three consecutive samples from one build, then one sample by an independent builder using the
-  released instructions and BOM. Record every attempt, including failures, rather than selecting
-  only successful outputs.
+- Three consecutive samples from one build, then one sample on a separately fabricated and assembled
+  machine made by an independent builder from the released CAD, BOM, and instructions. That second
+  build must pass the same calibration, safety, and endurance gates; borrowing the first machine
+  only tests another operator. Record every attempt and undocumented assistance, including failures,
+  rather than selecting only successful outputs.
 - No dropped stitches, yarn breaks, unintended holes, or manual loop repairs in the body run.
 - Secured live loops and ends; no unraveling after the documented handling/wash process.
 - Finished length and width within +/-10% of the frozen target after 24 hours relaxed conditioning.
@@ -245,7 +266,7 @@ Freeze the recipe and acceptance target before testing. Proposed finished-sample
 | P0: design and recipe shortlist | Proposed in K022 | Daniel reviews scope, budget and assistance |
 | P1: CAD and browser model | Not started | Rebuildable assembly, motion checks, limits |
 | P2: manual stitch mechanism | After P1; not started | Loops, edges, reversal, chosen yarn |
-| P3: guarded dry motion | Blocked by P2 | BOM, calibration, stop and fault evidence |
+| P3: guarded motion | Blocked by current P1/P2 | BOM, calibration, faults, endurance |
 | P4: finished tabletop sample | Blocked by P3 | Consecutive samples and independent reproduction |
 | P5: patterns and flat shapes | Deferred | New operations each earn simulation and sample gates |
 | P6: three-dimensional textiles | Deferred | Transfer/shaping strategy and physical proof |
