@@ -138,6 +138,8 @@ rails, bearings, motor mounts or spacers for stiffness and heat separation; smoo
 liners for yarn abrasion; a suitable transparent guard for containment. Printed cam wear and bed
 creep need testing. Change to a machined wear insert or a better-suited polymer only after recording
 the failure, added cost, and revalidation. PLA is not the universal structural or thermal solution.
+Inspect printed cam surfaces and needle channels after each prototype sample; log wear, debris,
+and changes in sliding force. Stop trials if damage can affect needle retention or loop formation.
 
 | Item | Initial quantity | Selection gate |
 | --- | --- | --- |
