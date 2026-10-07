@@ -144,11 +144,11 @@ the failure, added cost, and revalidation. PLA is not the universal structural o
 Inspect printed cam surfaces and needle channels after each prototype sample; log wear, debris,
 and changes in sliding force. Stop trials if damage can affect needle retention or loop formation.
 
-Before P4, P3 must complete 1,000 full outward-and-return carriage cycles after the stop/fault tests.
+Before P4, P3 must complete 1,000 full outward-and-return cycles after the stop/fault tests.
 Use the selected needle set and a documented load that meets or exceeds the cam force measured in
 P2; unloaded travel alone does not satisfy this endurance gate. Inspect at baseline and every 100
 cycles, with the drive isolated. Record peak sliding force at the same speed, load, and temperature,
-and measure fixed cam/bed reference surfaces with a tool resolving 0.02 mm or better. Proposed limits:
+and measure fixed cam/bed surfaces with a tool resolving 0.02 mm or better. Proposed limits:
 
 - No cracks, loose particles, needle damage, jams, or loss of needle retention at any inspection.
 - Peak sliding force changes by no more than 20% from the baseline after initial fit adjustment.
@@ -158,7 +158,7 @@ and measure fixed cam/bed reference surfaces with a tool resolving 0.02 mm or be
   the force and dimensional measurements after the P4 sample series as a further exit condition.
 
 These are provisional engineering targets, not demonstrated service life. Failure blocks P4;
-revise the wear interface or material, repeat affected P1/P2 checks, and restart the endurance count.
+revise the wear interface or material, repeat affected P1/P2 checks, and restart the cycle count.
 
 | Item | Initial quantity | Selection gate |
 | --- | --- | --- |
