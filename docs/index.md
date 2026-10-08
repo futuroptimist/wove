@@ -1,5 +1,9 @@
 # Documentation
 
+New machine planning starts with
+[K022: knitting-first tabletop machine](design/k022-knitting-first.md).
+It proposes v1k first, defers v1c, and separates simulation checks from physical stitch evidence.
+
 ## Choose Your Path
 
 Pick a starting point based on your current focus, then weave both tracks together as projects
@@ -26,6 +30,8 @@ advance.
 ```{toctree}
 :maxdepth: 2
 
+design/README
+design/k022-knitting-first
 knitting-basics
 crochet-basics
 crochet-tools
