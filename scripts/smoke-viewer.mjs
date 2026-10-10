@@ -39,10 +39,18 @@ try {
   assert.equal((await page.goto(origin)).status(), 200);
   await expect(page.locator('canvas').first()).toBeVisible();
   await expect(page.locator('#planner-file-name')).toContainText('base_chain_row.planner.json');
+  const playbackPosition = page.locator('#pattern-step-index');
+  const initialPosition = await playbackPosition.textContent();
+  await expect(playbackPosition).not.toHaveText(initialPosition, { timeout: 30000 });
   await page.getByRole('button', { name: 'Pause preview', exact: true }).click();
   await expect(page.locator('#pattern-playback-status')).toContainText('Paused');
+  const pausedPosition = await playbackPosition.textContent();
+  // Observe a real pause interval, not just the label changed by the button.
+  await page.waitForTimeout(1500);
+  await expect(playbackPosition).toHaveText(pausedPosition);
   await page.getByRole('button', { name: 'Resume preview', exact: true }).click();
   await expect(page.locator('#pattern-playback-status')).toContainText('Running');
+  await expect(playbackPosition).not.toHaveText(pausedPosition, { timeout: 30000 });
   await page.locator('#planner-upload').setInputFiles(path.join(dist, 'assets/base_chain_row.planner.json'));
   await expect(page.locator('#status')).toContainText('Planner upload loaded: base_chain_row.planner.json');
   await page.locator('#planner-upload').blur();
