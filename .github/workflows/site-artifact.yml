@@ -1,0 +1,27 @@
+name: Site artifact
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  viewer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22.19.0'}
+      - run: npm ci
+      - run: npm test && npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wove-site-${{ github.event.pull_request.head.sha }}
+          path: dist/
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wove-viewer-screenshot
+          path: test-results/viewer.png

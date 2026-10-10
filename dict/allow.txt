@@ -1,4 +1,7 @@
 AES
+CDN
+ChatGPT
+OrbitControls
 CLI
 CodeQL
 DEPENDABOT

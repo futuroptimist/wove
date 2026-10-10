@@ -50,6 +50,9 @@ Key features include:
 
 ## Visualize the Product Assembly
 
+For a complete static export and owner-managed ChatGPT Site handoff, see
+[Viewer artifact and owner handoff](docs/sites.md). Packaging does not deploy it.
+
 Kick the tires on the new Three.js assembly viewer to see how our product lines
 fit together as the roadmap grows. The scene currently spotlights `v1c`, the
 first crochet robot, and is designed for incremental upgrades as new Codex
@@ -60,6 +63,8 @@ The heat-set insert grid now glows to mark the M3 anchor spacing so accessory
 fixtures line up with the removable bed from the hologram alone.
 
 ```bash
+npm ci
+npm run viewer:prepare
 python scripts/serve_viewer.py
 # open http://127.0.0.1:8000/index.html in your browser
 ```

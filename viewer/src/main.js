@@ -163,6 +163,9 @@ const desiredCameraPosition = camera.position.clone();
 const defaultCameraTarget = currentCameraTarget.clone();
 const defaultCameraPosition = camera.position.clone();
 const defaultCameraOffset = defaultCameraPosition.clone().sub(defaultCameraTarget);
+const clusterFocusPosition = new THREE.Vector3();
+const cameraOffsetVector = new THREE.Vector3();
+const candidateCameraPosition = new THREE.Vector3();
 const minCameraRadius = 6;
 const maxCameraRadius = 26;
 const cameraMoveDamping = 4.0;
@@ -4631,10 +4634,10 @@ function createElectronicsBay() {
     transparent: true,
     opacity: 0.85,
   });
-  let statusLed = new THREE.Mesh(new THREE.SphereGeometry(0.06, 18, 18), statusLedMaterial);
-  statusLed.position.set(0.36, 0.3, 0.32);
-  statusLed.castShadow = true;
-  controllerStack.add(statusLed);
+  const controllerStatusLed = new THREE.Mesh(new THREE.SphereGeometry(0.06, 18, 18), statusLedMaterial);
+  controllerStatusLed.position.set(0.36, 0.3, 0.32);
+  controllerStatusLed.castShadow = true;
+  controllerStack.add(controllerStatusLed);
   controllerStackGlowControllers.push({
     material: statusLedMaterial,
     restIntensity: 0.9,
