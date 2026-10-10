@@ -21,8 +21,11 @@ await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const origin = `http://127.0.0.1:${server.address().port}`;
 let browser;
 try {
-  browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+  browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+  // The full assembly is expensive on CI's software GPU. Keep real playback and
+  // actionability checks, but give that renderer a smaller canvas and more time.
+  const page = await browser.newPage({ viewport: { width: 960, height: 720 } });
+  page.setDefaultTimeout(90000);
   const errors = [], external = [];
   page.on('pageerror', error => { errors.push(error.message); console.error(error.message); });
   page.on('console', message => { if (message.type() === 'error') console.error(message.text()); });
