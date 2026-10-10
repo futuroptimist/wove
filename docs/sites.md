@@ -18,7 +18,7 @@ locally, removing the broken CDN bare import and the runtime CDN dependency.
 It copies the existing viewer modules, CSS and assets to `dist/`, includes the
 Wove and Three.js MIT notices, and writes `dist/SHA256SUMS`. The browser smoke
 test blocks external requests and checks sample loading, pause/resume, planner
-upload and keyboard interaction. A screenshot is saved in `test-results/`.
+upload and keyboard roadmap selection. A screenshot is saved in `test-results/`.
 
 For the existing source preview workflow:
 
