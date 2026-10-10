@@ -3,9 +3,19 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "viewer:prepare": "node scripts/prepare-viewer.mjs",
+    "build": "node scripts/build-viewer.mjs",
+    "test:browser": "node scripts/smoke-viewer.mjs",
     "lint": "echo 'no JS lint defined'",
     "format:check": "echo 'no JS formatter defined'",
     "test": "node viewer/tests/run-tests.js",
     "test:ci": "npm test"
+  },
+  "dependencies": {
+    "three": "0.161.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.1",
+    "esbuild": "0.25.12"
   }
 }

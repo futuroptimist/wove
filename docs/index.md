@@ -44,6 +44,7 @@ learn/pattern-recipes/base-chain-row
 learning-resources
 plans/polish-work-plan
 viewer-refactor-plan
+sites
 testing
 repository-overview
 glossary

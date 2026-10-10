@@ -31,6 +31,12 @@ This Agents.md file provides comprehensive guidance for OpenAI Codex and other A
 
 ## Testing Requirements for OpenAI Codex
 
+The viewer uses pinned, locally bundled Three.js and OrbitControls. Run `npm ci`
+and `npm run viewer:prepare` before the Python preview server. `npm run build`
+exports the existing viewer to `dist/`; `npm run test:browser` checks that export.
+See `docs/sites.md` for owner-only deployment. Do not commit generated vendor
+files, Site identities or credentials.
+
 Run the following commands before opening a PR:
 
 ```bash

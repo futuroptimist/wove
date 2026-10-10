@@ -12,6 +12,7 @@ venv/
 # Node
 node_modules/
 dist/
+/viewer/vendor/
 
 # Misc
 .DS_Store
