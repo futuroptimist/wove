@@ -28,7 +28,7 @@ export async function inventory(directory, prefix = '') {
 export function assertIdentity(identity, head, tree) {
   assert.match(tree, /^[a-f0-9]{40}$/);
   assert.deepEqual(Object.keys(identity).sort(), ['artifactName', 'commit', 'pr', 'repository', 'requestedRef', 'tree'].sort());
-  assert.match(identity.repository, /^[A-Za-z0-9_.-]+\/wove$/);
+  assert.match(identity.repository, /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/);
   validateRef(identity.requestedRef);
   assert(identity.pr === null || (Number.isSafeInteger(identity.pr) && identity.pr > 0));
   assert.equal(identity.commit, head, 'Checkout differs from resolved source');

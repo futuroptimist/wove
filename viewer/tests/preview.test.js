@@ -40,9 +40,9 @@ test('invalid input is rejected before lookup', async () => {
 test('PR uses explicit head repository and SHA, never synthetic merge SHA', async () => {
   const result = await resolvePreview({ repository, eventName: 'pull_request', event: {
     sha: merge,
-    pull_request: { number: 42, merge_commit_sha: merge, head: { sha, repo: { full_name: 'synthetic-owner/wove' } } },
+    pull_request: { number: 42, merge_commit_sha: merge, head: { sha, repo: { full_name: 'synthetic-owner/renamed-fork' } } },
   } }, async (repo, ref) => {
-    assert.equal(repo, 'synthetic-owner/wove');
+    assert.equal(repo, 'synthetic-owner/renamed-fork');
     assert.equal(ref, sha);
     return commit;
   });

@@ -43,7 +43,7 @@ headers and the browser controls on the final origin before sharing its URL.
 
 `.sites/preview.json` is an identity-free recipe for this static export, not a
 Sites runtime manifest. Use Node **22.19.0**, its npm **10.9.3**, and the existing
-lockfile. No dependency update is needed. The original build and browser smoke
+`package-lock.json`. No dependency update is needed. The original build and browser smoke
 scripts remain unchanged.
 
 The Site artifact workflow also accepts a manual `ref`, defaulting to `main`.
@@ -53,7 +53,7 @@ tree. Missing, deleted or malformed refs fail; there is no fallback to main.
 For pull requests, resolution uses the explicit head repository and head SHA,
 not GitHub's synthetic merge commit. Checkout, the receipt and artifact naming
 all use that resolved identity. Checkout does not persist credentials, and the
-job retains only `contents: read`. The resolver's token is scoped to its step.
+job retains only `contents: read`. The lookup token is scoped to its step.
 
 Manual dispatch requires this workflow on the default branch. Until an owner
 merges it, local resolver tests and a successful PR artifact do **not** establish
@@ -81,14 +81,14 @@ node scripts/package-preview.mjs /absolute/path/to/resolved-source.json
 The packager requires a clean, detached checkout matching the resolved commit
 and tree. It runs `npm test`, `npm run build` and `npm run test:browser` itself.
 It checks every exported file against the checked-out viewer and newly bundled
-vendor files, blocks unexpected files, maps, symlinks and executables, and
+vendor files, blocks unexpected files, maps, symbolic links and executable files, and
 checks that browser QA leaves the artifact bytes unchanged. The existing
 external-request, actual play/pause/resume, upload and keyboard checks remain.
 This establishes the existing 960-by-720 software-rendered browser scenarios;
 it does not establish mobile, physical GPU, hardware or final-origin acceptance.
 
 `dist/preview-provenance.json` records the requested ref, full source commit and
-tree, recipe and lockfile hashes, runtime and dependency versions, synthetic
+tree, recipe and `package-lock.json` hashes, runtime and dependency versions, synthetic
 fixture hashes, commands, successful checks, per-file artifact hashes and CI
 run/attempt/workflow identity (or `null` for a local run). Publication metadata
 is `null`. It never collects arbitrary environment variables, private records,
