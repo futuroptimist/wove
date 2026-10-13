@@ -32,7 +32,10 @@ export async function resolvePreview({ repository, eventName, event, ref = 'main
     assert.equal(eventName, 'workflow_dispatch', 'Unsupported event');
   }
   assert.match(sourceRepository, /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/);
-  const commit = await getCommit(sourceRepository, requestedRef);
+  // A bare input is a branch, never a tag or abbreviated commit fallback.
+  const lookupRef = requestedRef.startsWith('refs/') || /^[a-f0-9]{40}$/i.test(requestedRef)
+    ? requestedRef : `refs/heads/${requestedRef}`;
+  const commit = await getCommit(sourceRepository, lookupRef);
   const sha = commit.sha;
   const tree = commit.commit.tree.sha;
   assert.match(sha, /^[a-f0-9]{40}$/);

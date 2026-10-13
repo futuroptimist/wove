@@ -75,6 +75,20 @@ export function validateReceipt(receipt, expected) {
   assert.equal(receipt.publication, null);
 }
 
+export function validateRecipeContract(recipe) {
+  assert.deepEqual(recipe.artifact, {
+    type: 'static', directory: 'dist', entryPoint: 'index.html',
+    include: ['index.html', 'bounds.js', 'src', 'styles', 'assets', 'vendor', 'wove-MIT.txt', 'SHA256SUMS'],
+    exclude: ['*.map', '.env', '.git', '.openai', 'node_modules'],
+  }, 'Recipe artifact contract differs from the fixed builder');
+  assert.deepEqual(recipe.verify, {
+    commands: [['npm', 'test'], ['npm', 'run', 'test:browser']],
+    browserScenarios: ['external request blocking', 'sample load', 'play', 'pause', 'resume', 'planner upload', 'keyboard selection'],
+    viewport: { width: 960, height: 720 },
+    hostingHeaders: 'Not established by a local static artifact',
+  }, 'Recipe verification contract differs from the fixed browser checks');
+}
+
 export function verifyCheckout(root, identity) {
   assertIdentity(identity, git(root, 'rev-parse', 'HEAD'), git(root, 'rev-parse', 'HEAD^{tree}'));
   assert.equal(git(root, 'status', '--porcelain', '--untracked-files=normal'), '', 'Packaging requires a clean checkout');
@@ -85,6 +99,7 @@ export async function packagePreview(root, identity, { run = null } = {}) {
   verifyCheckout(root, identity);
   const recipeBytes = await readFile(path.join(root, '.sites/preview.json'));
   const recipe = JSON.parse(recipeBytes);
+  validateRecipeContract(recipe);
   assert.equal(recipe.schemaVersion, 1);
   assert.equal(recipe.project.repository, 'futuroptimist/wove');
   assert.equal(recipe.build.node, process.versions.node, 'Use the recipe Node version');

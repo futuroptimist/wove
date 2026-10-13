@@ -5,7 +5,7 @@ import os from 'node:os';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { resolvePreview, validateRef, artifactName } from '../../scripts/resolve-preview.mjs';
-import { assertIdentity, inventory, validateReceipt, verifyChecksums, verifyCheckout } from '../../scripts/package-preview.mjs';
+import { assertIdentity, inventory, validateReceipt, verifyChecksums, verifyCheckout, validateRecipeContract } from '../../scripts/package-preview.mjs';
 
 const sha = 'a'.repeat(40), tree = 'b'.repeat(40), merge = 'c'.repeat(40);
 const commit = { sha, commit: { tree: { sha: tree } } };
@@ -15,7 +15,7 @@ for (const ref of ['main', 'feature/preview', 'refs/heads/feature/preview', 'ref
   test(`resolves immutable identity for ${ref}`, async () => {
     const result = await resolvePreview(dispatch(ref), async (repo, requested) => {
       assert.equal(repo, repository);
-      assert.equal(requested, ref);
+      assert.equal(requested, ref.startsWith('refs/') || ref === sha ? ref : `refs/heads/${ref}`);
       return commit;
     });
     assert.deepEqual(result, { repository, requestedRef: ref, pr: null, commit: sha, tree, artifactName: artifactName(sha) });
@@ -122,4 +122,34 @@ test('real checkout must be detached, clean and match the captured commit and tr
   assert.throws(() => verifyCheckout(root, { ...identity, tree: sha }), /resolved source/);
   await writeFile(path.join(root, 'synthetic.txt'), 'changed fixture\n');
   assert.throws(() => verifyCheckout(root, identity), /clean checkout/);
+});
+
+test('deleted bare branch cannot fall back to a same-named tag or abbreviated SHA', async () => {
+  for (const ref of ['deleted-branch', 'abcdef0']) {
+    const lookedUp = [];
+    await assert.rejects(resolvePreview(dispatch(ref), async (_repo, lookup) => {
+      lookedUp.push(lookup);
+      if (lookup === ref || lookup === `refs/tags/${ref}`) return commit;
+      throw new Error('Branch does not exist');
+    }), /Branch does not exist/);
+    assert.deepEqual(lookedUp, [`refs/heads/${ref}`]);
+  }
+});
+
+test('recipe file and verification settings must match the fixed producer', async () => {
+  const recipe = JSON.parse(await readFile(new URL('../../.sites/preview.json', import.meta.url), 'utf8'));
+  validateRecipeContract(recipe);
+  for (const mutate of [
+    r => r.artifact.include.push('extra.txt'),
+    r => r.artifact.exclude.pop(),
+    r => { r.artifact.entryPoint = 'other.html'; },
+    r => { r.verify.viewport.width = 640; },
+    r => r.verify.commands.pop(),
+    r => r.verify.browserScenarios.pop(),
+    r => { r.verify.hostingHeaders = 'unchecked claim'; },
+  ]) {
+    const changed = structuredClone(recipe);
+    mutate(changed);
+    assert.throws(() => validateRecipeContract(changed), /contract differs/);
+  }
 });
