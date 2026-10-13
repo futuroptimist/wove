@@ -75,10 +75,14 @@ export function validateReceipt(receipt, expected) {
   assert.equal(receipt.publication, null);
 }
 
-export async function packagePreview(root, identity, { run = null } = {}) {
+export function verifyCheckout(root, identity) {
   assertIdentity(identity, git(root, 'rev-parse', 'HEAD'), git(root, 'rev-parse', 'HEAD^{tree}'));
   assert.equal(git(root, 'status', '--porcelain', '--untracked-files=normal'), '', 'Packaging requires a clean checkout');
   assert.equal(git(root, 'branch', '--show-current'), '', 'Packaging requires a detached checkout');
+}
+
+export async function packagePreview(root, identity, { run = null } = {}) {
+  verifyCheckout(root, identity);
   const recipeBytes = await readFile(path.join(root, '.sites/preview.json'));
   const recipe = JSON.parse(recipeBytes);
   assert.equal(recipe.schemaVersion, 1);

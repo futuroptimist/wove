@@ -2,9 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, writeFile, symlink, chmod, readFile } from 'node:fs/promises';
 import os from 'node:os';
+import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { resolvePreview, validateRef, artifactName } from '../../scripts/resolve-preview.mjs';
-import { assertIdentity, inventory, validateReceipt, verifyChecksums } from '../../scripts/package-preview.mjs';
+import { assertIdentity, inventory, validateReceipt, verifyChecksums, verifyCheckout } from '../../scripts/package-preview.mjs';
 
 const sha = 'a'.repeat(40), tree = 'b'.repeat(40), merge = 'c'.repeat(40);
 const commit = { sha, commit: { tree: { sha: tree } } };
@@ -102,4 +103,23 @@ test('workflow checkout, naming and receipt share resolved identity without shel
   assert.match(workflow, /name: \$\{\{ steps.source.outputs.artifactName \}\}/);
   assert(!workflow.split('\n').some(line => line.includes('run:') && line.includes('${{')));
   assert.equal((workflow.match(/persist-credentials: false/g) || []).length, 2);
+});
+
+test('real checkout must be detached, clean and match the captured commit and tree', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'wove-checkout-'));
+  const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+  git('init', '--initial-branch=main');
+  await writeFile(path.join(root, 'synthetic.txt'), 'synthetic preview fixture\n');
+  git('add', 'synthetic.txt');
+  git('-c', 'user.name=Preview Test', '-c', 'user.email=preview@example.invalid', 'commit', '-m', 'Synthetic fixture');
+  const commit = git('rev-parse', 'HEAD');
+  const tree = git('rev-parse', 'HEAD^{tree}');
+  const identity = { repository, requestedRef: 'main', pr: null, commit, tree, artifactName: artifactName(commit) };
+  assert.throws(() => verifyCheckout(root, identity), /detached/);
+  git('checkout', '--detach', commit);
+  verifyCheckout(root, identity);
+  assert.throws(() => verifyCheckout(root, { ...identity, commit: sha }), /resolved source/);
+  assert.throws(() => verifyCheckout(root, { ...identity, tree: sha }), /resolved source/);
+  await writeFile(path.join(root, 'synthetic.txt'), 'changed fixture\n');
+  assert.throws(() => verifyCheckout(root, identity), /clean checkout/);
 });
