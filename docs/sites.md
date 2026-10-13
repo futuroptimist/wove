@@ -49,7 +49,7 @@ scripts remain unchanged.
 The Site artifact workflow also accepts a manual `ref`, defaulting to `main`.
 It accepts a branch name, `refs/heads/<branch>`, `refs/tags/<tag>`, or a full
 40-character commit SHA. GitHub resolves that input once to a full commit and
-tree. Bare names resolve only under `refs/heads/`, never as tags or short SHAs.
+tree. Bare names resolve only under `refs/heads/`, never as tags or short commit hashes.
 Missing, deleted or malformed refs fail; there is no fallback to main.
 For pull requests, resolution uses the explicit head repository and head SHA,
 not GitHub's synthetic merge commit. Checkout, the receipt and artifact naming
