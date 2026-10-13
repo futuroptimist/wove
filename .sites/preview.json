@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "project": { "name": "wove", "repository": "futuroptimist/wove", "recipeRevision": 1 },
+  "build": {
+    "workingDirectory": ".",
+    "node": "22.19.0",
+    "npm": "10.9.3",
+    "lockfile": "package-lock.json",
+    "commands": [["npm", "ci"], ["npm", "test"], ["npm", "run", "build"], ["npm", "run", "test:browser"]]
+  },
+  "artifact": {
+    "type": "static",
+    "directory": "dist",
+    "entryPoint": "index.html",
+    "include": ["index.html", "bounds.js", "src", "styles", "assets", "vendor", "wove-MIT.txt", "SHA256SUMS"],
+    "exclude": ["*.map", ".env", ".git", ".openai", "node_modules"]
+  },
+  "preview": {
+    "features": ["assembly viewer", "planner playback", "browser-local planner upload", "keyboard roadmap selection"],
+    "dataMode": "synthetic",
+    "fixtureInputs": ["viewer/assets/base_chain_row.planner.json"],
+    "allowedExternalOrigins": [],
+    "routes": ["/"],
+    "unavailable": ["Python compilation", "hardware control", "backend services"],
+    "originLocalStorage": false
+  },
+  "verify": {
+    "commands": [["npm", "test"], ["npm", "run", "test:browser"]],
+    "browserScenarios": ["external request blocking", "sample load", "play", "pause", "resume", "planner upload", "keyboard selection"],
+    "viewport": { "width": 960, "height": 720 },
+    "hostingHeaders": "Not established by a local static artifact"
+  }
+}
