@@ -2,6 +2,13 @@ name: Site artifact
 on:
   pull_request:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch, refs/heads/branch, refs/tags/tag, or full commit SHA'
+        required: true
+        default: main
+        type: string
 permissions:
   contents: read
 jobs:
@@ -9,16 +16,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with: {persist-credentials: false, ref: '${{ github.event.pull_request.head.sha }}'}
+        with:
+          persist-credentials: false
+          ref: ${{ github.workflow_sha }}
       - uses: actions/setup-node@v4
         with: {node-version: '22.19.0'}
+      - name: Resolve immutable source
+        id: source
+        env:
+          PREVIEW_REF: ${{ inputs.ref }}
+          PREVIEW_IDENTITY: ${{ runner.temp }}/wove-preview-source.json
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/resolve-preview.mjs
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          repository: ${{ steps.source.outputs.repository }}
+          ref: ${{ steps.source.outputs.commit }}
       - run: npm ci
-      - run: npm test && npm run build
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:browser
+      - name: Build, check and receipt exact artifact
+        env:
+          PREVIEW_IDENTITY: ${{ runner.temp }}/wove-preview-source.json
+        run: node scripts/package-preview.mjs "$PREVIEW_IDENTITY"
       - uses: actions/upload-artifact@v4
         with:
-          name: wove-site-${{ github.event.pull_request.head.sha }}
+          name: ${{ steps.source.outputs.artifactName }}
           path: dist/
           if-no-files-found: error
       - uses: actions/upload-artifact@v4
